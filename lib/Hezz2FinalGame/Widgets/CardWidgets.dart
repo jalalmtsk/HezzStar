@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hezzstar/Hezz2FinalGame/Models/Cards.dart';
+import 'package:provider/provider.dart';
 
 class CardWidget extends StatelessWidget {
   final PlayingCard card;
@@ -14,18 +15,21 @@ class CardWidget extends StatelessWidget {
     this.onTap,
     this.width = 70,
     this.height = 110,
-    super.key
+    super.key,
   });
 
   @override
   Widget build(BuildContext context) {
+    // Get the dynamic back card from ExperienceManager
+    final backAsset = card.backAsset(context);
+
     return GestureDetector(
       onTap: onTap,
       child: SizedBox(
         width: width,
         height: height,
         child: Image.asset(
-          isFaceUp ? card.assetName : card.backAsset,
+          isFaceUp ? card.assetName : backAsset,
           fit: BoxFit.cover,
         ),
       ),

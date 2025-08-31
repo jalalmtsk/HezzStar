@@ -6,32 +6,49 @@ class ExperienceManager with ChangeNotifier {
   int _gold = 0;
   int _gems = 0;
 
+  // New: card management
+  List<String> _unlockedCards = [];
+  String? _selectedCard;
+
   int get experience => _experience;
   int get gold => _gold;
   int get gems => _gems;
+  List<String> get unlockedCards => _unlockedCards;
+  String? get selectedCard => _selectedCard;
 
   ExperienceManager() {
     _loadData();
   }
 
-  // Load from SharedPreferences
+  // ---------------------------
+  // LOAD / SAVE DATA
+  // ---------------------------
   Future<void> _loadData() async {
     final prefs = await SharedPreferences.getInstance();
     _experience = prefs.getInt('experience') ?? 0;
     _gold = prefs.getInt('gold') ?? 0;
     _gems = prefs.getInt('gems') ?? 0;
+
+    _unlockedCards = prefs.getStringList('unlockedCards') ?? [];
+    _selectedCard = prefs.getString('selectedCard');
+
     notifyListeners();
   }
 
-  // Save to SharedPreferences
   Future<void> _saveData() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt('experience', _experience);
     await prefs.setInt('gold', _gold);
     await prefs.setInt('gems', _gems);
+    await prefs.setStringList('unlockedCards', _unlockedCards);
+    if (_selectedCard != null) {
+      await prefs.setString('selectedCard', _selectedCard!);
+    }
   }
 
-  // Add resources
+  // ---------------------------
+  // RESOURCE MANAGEMENT
+  // ---------------------------
   void addExperience(int amount) {
     _experience += amount;
     _saveData();
@@ -50,7 +67,6 @@ class ExperienceManager with ChangeNotifier {
     notifyListeners();
   }
 
-  // Spend resources
   bool spendGold(int amount) {
     if (_gold >= amount) {
       _gold -= amount;
@@ -83,12 +99,12 @@ class ExperienceManager with ChangeNotifier {
     }
   }
 
-
-  // Reset all
   void resetAll() {
     _experience = 0;
     _gold = 0;
     _gems = 0;
+    _unlockedCards = [];
+    _selectedCard = null;
     _saveData();
     notifyListeners();
   }
@@ -96,20 +112,29 @@ class ExperienceManager with ChangeNotifier {
   // ---------------------------
   // LEVEL SYSTEM
   // ---------------------------
-  int get level {
-    // Example: 100 XP per level
-    return (_experience ~/ 100) + 1;
+  int get level => (_experience ~/ 100) + 1;
+  int get currentLevelXP => _experience % 100;
+  int get requiredXPForNextLevel => 100;
+  double get levelProgress => currentLevelXP / requiredXPForNextLevel;
+
+  // ---------------------------
+  // CARD SYSTEM
+  // ---------------------------
+  void unlockCard(String cardPath) {
+    if (!_unlockedCards.contains(cardPath)) {
+      _unlockedCards.add(cardPath);
+      _saveData();
+      notifyListeners();
+    }
   }
 
-  int get currentLevelXP {
-    return _experience % 100;
+  void selectCard(String cardPath) {
+    if (_unlockedCards.contains(cardPath)) {
+      _selectedCard = cardPath;
+      _saveData();
+      notifyListeners();
+    }
   }
 
-  int get requiredXPForNextLevel {
-    return 100;
-  }
-
-  double get levelProgress {
-    return currentLevelXP / requiredXPForNextLevel;
-  }
+  bool isCardUnlocked(String cardPath) => _unlockedCards.contains(cardPath);
 }

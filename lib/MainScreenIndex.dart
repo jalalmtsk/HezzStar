@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hezzstar/Shop/MainShopIndex.dart';
 import 'IndexPages/HomePage/HomePage.dart';
 import 'main.dart';
 import 'dart:math';
@@ -15,7 +16,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
 
   final List<Widget> _pages = const [
     FriendsPage(),
-    ShopPage(),
+    MainCardShopPage(),
     HomePage(),
     EventsPage(),
     CollectionsPage(),

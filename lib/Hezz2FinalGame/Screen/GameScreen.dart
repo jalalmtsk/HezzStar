@@ -4,6 +4,8 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:hezzstar/Hezz2FinalGame/Models/GameCardEnums.dart';
 import 'package:hezzstar/PlayerBanner.dart';
+import 'package:hezzstar/tools/AudioManager/AudioManager.dart';
+import 'package:provider/provider.dart';
 
 import '../Models/Cards.dart';
 import '../Models/Deck.dart';
@@ -245,6 +247,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     final centerRect = _rectFor(centerKey);
     final to = centerRect?.center ?? Offset(MediaQuery.of(context).size.width / 2, MediaQuery.of(context).size.height * 0.38);
     if (start != null) {
+      final audioManager = Provider.of<AudioManager>(context, listen: false);
+      audioManager.playSfx("assets/audios/UI/SFX/CardSwap.mp3");
       await _animateMove(card, start, to, cinematic: true);
     }
     setState(() {
@@ -252,6 +256,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       topCard = card;
       discard.add(card);
     });
+
     await _handleSpecial(player, card);
     isAnimating = false;
     _checkWin(player);
@@ -496,7 +501,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
             child: SizedBox(
               width: 70,
               height: 110,
-              child: Image.asset(card.backAsset, fit: BoxFit.cover),
+              child: Image.asset(card.backAsset(context), fit: BoxFit.cover),
             ),
           );
         },
@@ -516,7 +521,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     if (currentPlayer != 0) return;
 
     // Skip if player is eliminated
-
+      final audioManager = Provider.of<AudioManager>(context, listen: false);
+      audioManager.playSfx("assets/audios/UI/SFX/CardSwap.mp3");
     if (isSpectating) {
       return;
     }
@@ -605,7 +611,11 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
               child: SizedBox(
                 width: 70,
                 height: 110,
-                child: Image.asset(showFront ? card.assetName : card.backAsset, fit: BoxFit.cover),
+                child: Image.asset(
+                  showFront ? card.assetName : card.backAsset(context),
+                  fit: BoxFit.cover,
+                ),
+
               ),
             ),
           );
@@ -857,10 +867,17 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
           actions: [
             ElevatedButton(
               onPressed: () {
-                showGameSummaryDialog(context, [
-                  {"name": "Player 1", "bet": 200, "isWinner": true},
-                  {"name": "Bot 1", "bet": 200, "isWinner": false},
-                ], 400);
+                showGameSummaryDialog(
+                  context,
+                  [
+                    {"name": "Winner","bet" :"", "isWinner": true},
+                    {"name": "Player 1", "bet": widget.selectedBet, "isWinner": false},
+                    for (int i = 1; i <= widget.botCount; i++)
+                      {"name": "Bot $i", "bet": widget.selectedBet, "isWinner": false},
+                  ],
+                  widget.selectedBet * (widget.botCount + 1), // total pool
+                );
+
               },
               child: const Text("Show Game Summary"),
             ),
@@ -871,18 +888,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       body: SafeArea(
         child: Stack(
           children: [
-            Positioned.fill(
-                child: Container(
-                    decoration: const BoxDecoration(
-                        gradient: LinearGradient(
-                            colors: [Color(0xFFF6F6F8), Color(0xFFECF9F0)],
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter
-                        )
-                    )
-                )
-            ),
-
+            _buildTableBackground(),
             if (isBetweenRounds)
               Positioned.fill(
                 child: Container(
@@ -959,7 +965,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                                               ),
                                               child: const Center(child: Text('Empty'))
                                           )
-                                              : Image.asset(deck.cards.last.backAsset, fit: BoxFit.cover)
+                                              : Image.asset(deck.cards.last.backAsset(context), fit: BoxFit.cover)
                                       ),
                                     ],
                                   )
@@ -1124,6 +1130,28 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     );
   }
 
+
+  Widget _buildTableBackground() {
+    return Positioned.fill(
+      child: Container(
+        decoration: BoxDecoration(
+          // Example: gradient background
+          gradient: LinearGradient(
+            colors: [Color(0xFF1B5E20), Color(0xFF4CAF50)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+          // OR use an image
+          image: DecorationImage(
+            image: AssetImage('assets/UI/modes/bg2.jpg'), // your table image
+            fit: BoxFit.cover,
+          ),
+        ),
+      ),
+    );
+  }
+
+
   Widget _botStack(int bot, {bool vertical = false}) {
     if (eliminatedPlayers[bot]) {
       return Container(
@@ -1197,12 +1225,13 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                     top: i * 2,
                     child: Image.asset(
                       hands[bot].isNotEmpty
-                          ? hands[bot].first.backAsset
+                          ? hands[bot].first.backAsset(context)
                           : 'assets/images/cards/backCard.png',
                       width: 86,
                       height: 120,
                       fit: BoxFit.cover,
                     ),
+
                   ),
               ],
             ),
