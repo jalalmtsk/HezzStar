@@ -55,7 +55,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
         child: SafeArea(
           child: Column(
             children: [
-              const SizedBox(height: 20,),
+              const SizedBox(height: 10,),
               UserStatusBar(),
 
               const SizedBox(height: 20),
@@ -73,10 +73,10 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                 ),
               ),
 
-              const SizedBox(height: 80,),
+              const SizedBox(height: 20,),
               // Scrollable Game Modes
               SizedBox(
-                height: 240,
+                height: 200,
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -87,7 +87,6 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                   },
                 ),
               ),
-              const SizedBox(height: 30),
               ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.purpleAccent,
