@@ -4,6 +4,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import 'package:hezzstar/Hezz2FinalGame/Screen/GameScreen.dart';
 import 'package:hezzstar/Hezz2FinalGame/Models/GameCardEnums.dart';
 import 'package:hezzstar/widgets/userStatut/userStatus.dart';
@@ -47,11 +48,11 @@ class _CardGameLauncherState extends State<CardGameLauncher>
   @override
   void initState() {
     super.initState();
-    _pageController = PageController(viewportFraction: 0.7, initialPage: 0);
+    _pageController = PageController(viewportFraction: 0.7);
 
-    // Background gradient animation
+    // Smooth animated background
     _bgController =
-    AnimationController(vsync: this, duration: Duration(seconds: 5))
+    AnimationController(vsync: this, duration: const Duration(seconds: 10))
       ..repeat(reverse: true);
 
     _bgAnimation1 =
@@ -63,10 +64,10 @@ class _CardGameLauncherState extends State<CardGameLauncher>
 
     // Pulse animation for selected bet
     _pulseController =
-    AnimationController(vsync: this, duration: Duration(seconds: 1))
+    AnimationController(vsync: this, duration: const Duration(seconds: 1))
       ..repeat(reverse: true);
     _pulseAnimation =
-        Tween<double>(begin: 1.0, end: 1.1).animate(CurvedAnimation(
+        Tween<double>(begin: 1.0, end: 1.12).animate(CurvedAnimation(
           parent: _pulseController,
           curve: Curves.easeInOut,
         ));
@@ -106,9 +107,9 @@ class _CardGameLauncherState extends State<CardGameLauncher>
             child: SafeArea(
               child: Column(
                 children: [
-                  SizedBox(height: 20),
-                  UserStatusBar(),
-                  SizedBox(height: 20),
+                  const SizedBox(height: 20),
+                  const UserStatusBar(),
+                  const SizedBox(height: 20),
                   Expanded(
                     child: Padding(
                       padding: const EdgeInsets.all(16),
@@ -118,14 +119,15 @@ class _CardGameLauncherState extends State<CardGameLauncher>
                           filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
                           child: Container(
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.1),
+                              color: Colors.black.withOpacity(0.25),
                               borderRadius: BorderRadius.circular(30),
                               border: Border.all(color: Colors.white24),
                             ),
                             child: Column(
                               children: [
+                                const SizedBox(height: 12),
                                 _connectedGameModeToggle(),
-                                SizedBox(height: 20),
+                                const SizedBox(height: 20),
                                 _connectedHandSizeSelector(),
                                 Expanded(child: _awesomeBetCarousel()),
                               ],
@@ -145,34 +147,35 @@ class _CardGameLauncherState extends State<CardGameLauncher>
     );
   }
 
-  // -------- Connected Game Mode Toggle --------
+  // -------- Game Mode Toggle --------
   Widget _connectedGameModeToggle() {
     return Container(
-      width: 250,
+      width: 260,
       height: 50,
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.2),
+        color: Colors.white.withOpacity(0.15),
         borderRadius: BorderRadius.circular(30),
       ),
       child: Stack(
         children: [
           AnimatedAlign(
-            duration: Duration(milliseconds: 300),
-            curve: Curves.easeInOut,
+            duration: const Duration(milliseconds: 300),
             alignment: gameMode == GameModeType.playToWin
                 ? Alignment.centerLeft
                 : Alignment.centerRight,
             child: Container(
-              width: 125,
-              margin: EdgeInsets.all(4),
+              width: 130,
+              margin: const EdgeInsets.all(4),
               decoration: BoxDecoration(
-                color: Colors.orangeAccent,
+                gradient: const LinearGradient(
+                  colors: [Colors.orange, Colors.redAccent],
+                ),
                 borderRadius: BorderRadius.circular(30),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.orangeAccent.withOpacity(0.5),
-                    blurRadius: 12,
-                    offset: Offset(0, 6),
+                    color: Colors.orangeAccent.withOpacity(0.6),
+                    blurRadius: 14,
+                    offset: const Offset(0, 6),
                   ),
                 ],
               ),
@@ -189,9 +192,9 @@ class _CardGameLauncherState extends State<CardGameLauncher>
                       style: TextStyle(
                         color: gameMode == GameModeType.playToWin
                             ? Colors.white
-                            : Colors.white70,
+                            : Colors.white54,
                         fontWeight: FontWeight.bold,
-                        fontSize: 16,
+                        fontSize: 15,
                       ),
                     ),
                   ),
@@ -199,16 +202,17 @@ class _CardGameLauncherState extends State<CardGameLauncher>
               ),
               Expanded(
                 child: GestureDetector(
-                  onTap: () => setState(() => gameMode = GameModeType.elimination),
+                  onTap: () =>
+                      setState(() => gameMode = GameModeType.elimination),
                   child: Center(
                     child: Text(
                       'Elimination',
                       style: TextStyle(
                         color: gameMode == GameModeType.elimination
                             ? Colors.white
-                            : Colors.white70,
+                            : Colors.white54,
                         fontWeight: FontWeight.bold,
-                        fontSize: 16,
+                        fontSize: 15,
                       ),
                     ),
                   ),
@@ -221,20 +225,19 @@ class _CardGameLauncherState extends State<CardGameLauncher>
     );
   }
 
-  // -------- Connected Hand Size Toggle --------
+  // -------- Hand Size Selector --------
   Widget _connectedHandSizeSelector() {
     return Container(
       width: 300,
       height: 45,
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.2),
+        color: Colors.white.withOpacity(0.15),
         borderRadius: BorderRadius.circular(30),
       ),
       child: Stack(
         children: [
           AnimatedAlign(
-            duration: Duration(milliseconds: 300),
-            curve: Curves.easeInOut,
+            duration: const Duration(milliseconds: 300),
             alignment: handSize == 3
                 ? Alignment.centerLeft
                 : handSize == 5
@@ -242,15 +245,16 @@ class _CardGameLauncherState extends State<CardGameLauncher>
                 : Alignment.centerRight,
             child: Container(
               width: 100,
-              margin: EdgeInsets.all(4),
+              margin: const EdgeInsets.all(4),
               decoration: BoxDecoration(
-                color: Colors.purpleAccent,
+                gradient: const LinearGradient(
+                  colors: [Colors.purpleAccent, Colors.blueAccent],
+                ),
                 borderRadius: BorderRadius.circular(30),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.purpleAccent.withOpacity(0.4),
-                    blurRadius: 10,
-                    offset: Offset(0, 4),
+                    color: Colors.purpleAccent.withOpacity(0.5),
+                    blurRadius: 12,
                   ),
                 ],
               ),
@@ -258,51 +262,9 @@ class _CardGameLauncherState extends State<CardGameLauncher>
           ),
           Row(
             children: [
-              Expanded(
-                child: GestureDetector(
-                  onTap: () => setState(() => handSize = 3),
-                  child: Center(
-                    child: Text(
-                      'Quick',
-                      style: TextStyle(
-                        color: handSize == 3 ? Colors.white : Colors.white70,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              Expanded(
-                child: GestureDetector(
-                  onTap: () => setState(() => handSize = 5),
-                  child: Center(
-                    child: Text(
-                      'Medium',
-                      style: TextStyle(
-                        color: handSize == 5 ? Colors.white : Colors.white70,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              Expanded(
-                child: GestureDetector(
-                  onTap: () => setState(() => handSize = 9),
-                  child: Center(
-                    child: Text(
-                      'Long',
-                      style: TextStyle(
-                        color: handSize == 9 ? Colors.white : Colors.white70,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
+              _handOption('Quick', 3),
+              _handOption('Medium', 5),
+              _handOption('Long', 9),
             ],
           ),
         ],
@@ -310,7 +272,25 @@ class _CardGameLauncherState extends State<CardGameLauncher>
     );
   }
 
-  // -------- Awesome Bet Carousel with Pulse --------
+  Widget _handOption(String label, int size) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: () => setState(() => handSize = size),
+        child: Center(
+          child: Text(
+            label,
+            style: TextStyle(
+              color: handSize == size ? Colors.white : Colors.white60,
+              fontWeight: FontWeight.bold,
+              fontSize: 13,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // -------- Bet Carousel --------
   Widget _awesomeBetCarousel() {
     return PageView.builder(
       controller: _pageController,
@@ -334,29 +314,24 @@ class _CardGameLauncherState extends State<CardGameLauncher>
               child: Transform.scale(
                 scale: scale,
                 child: Container(
-                  width: MediaQuery.of(context).size.width * 0.7,
-                  margin: EdgeInsets.symmetric(horizontal: 8, vertical: 20),
-                  padding: EdgeInsets.all(24),
+                  margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 20),
+                  padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
                     gradient: isSelected
-                        ? LinearGradient(
-                      colors: [Colors.greenAccent, Colors.lightGreen],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
+                        ? const LinearGradient(
+                      colors: [Colors.greenAccent, Colors.tealAccent],
                     )
-                        : LinearGradient(
+                        : const LinearGradient(
                       colors: [Colors.white24, Colors.white10],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
                     ),
                     borderRadius: BorderRadius.circular(20),
                     boxShadow: [
                       BoxShadow(
                         color: isSelected
-                            ? Colors.greenAccent.withOpacity(0.7)
-                            : Colors.black26,
-                        blurRadius: 15,
-                        offset: Offset(0, 8),
+                            ? Colors.greenAccent.withOpacity(0.8)
+                            : Colors.black38,
+                        blurRadius: 18,
+                        offset: const Offset(0, 8),
                       ),
                     ],
                   ),
@@ -368,15 +343,15 @@ class _CardGameLauncherState extends State<CardGameLauncher>
                         style: TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
-                          color: isSelected ? Colors.white : Colors.white70,
+                          color: isSelected ? Colors.black : Colors.white70,
                         ),
                       ),
-                      SizedBox(height: 12),
+                      const SizedBox(height: 10),
                       Text(
-                        '${bet['xp']} XP',
+                        '+${bet['xp']} XP',
                         style: TextStyle(
                           fontSize: 18,
-                          color: isSelected ? Colors.white70 : Colors.white54,
+                          color: isSelected ? Colors.black87 : Colors.white54,
                         ),
                       ),
                     ],
@@ -395,14 +370,14 @@ class _CardGameLauncherState extends State<CardGameLauncher>
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
       child: GestureDetector(
-        onTapDown: (_) => setState(() {}),
-        onTapUp: (_) => setState(() {}),
         child: AnimatedContainer(
-          duration: Duration(milliseconds: 300),
+          duration: const Duration(milliseconds: 400),
           height: 60,
           width: double.infinity,
           decoration: BoxDecoration(
-            gradient: LinearGradient(colors: [Colors.orangeAccent, Colors.redAccent]),
+            gradient: const LinearGradient(
+              colors: [Colors.orangeAccent, Colors.redAccent],
+            ),
             borderRadius: BorderRadius.circular(30),
             boxShadow: [
               BoxShadow(
@@ -416,7 +391,8 @@ class _CardGameLauncherState extends State<CardGameLauncher>
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.transparent,
               shadowColor: Colors.transparent,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30)),
             ),
             onPressed: () async {
               final bet = bets[selectedBetIndex];
@@ -446,7 +422,11 @@ class _CardGameLauncherState extends State<CardGameLauncher>
             },
             child: Text(
               'Start Game',
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
             ),
           ),
         ),
@@ -454,7 +434,7 @@ class _CardGameLauncherState extends State<CardGameLauncher>
     );
   }
 
-  // -------- Pre-Game Loading Popup (unchanged) --------
+  // -------- Pre-Game Searching Popup --------
   Future<void> _showSearchingPopup(BuildContext context, int players) async {
     return showDialog(
       context: context,
@@ -464,12 +444,13 @@ class _CardGameLauncherState extends State<CardGameLauncher>
 
         void findNextPlayer() {
           if (foundPlayers >= players) {
-            Future.delayed(Duration(seconds: 1), () {
+            Future.delayed(const Duration(seconds: 1), () {
               if (Navigator.canPop(context)) Navigator.of(context).pop();
             });
             return;
           }
-          final randomDelay = Duration(milliseconds: 500 + Random().nextInt(1500));
+          final randomDelay =
+          Duration(milliseconds: 500 + Random().nextInt(1500));
           Future.delayed(randomDelay, () {
             foundPlayers++;
             if (Navigator.canPop(context)) (context as Element).markNeedsBuild();
@@ -483,58 +464,66 @@ class _CardGameLauncherState extends State<CardGameLauncher>
           builder: (context, setState) {
             return Dialog(
               backgroundColor: Colors.black87,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20)),
               child: Padding(
-                padding: EdgeInsets.all(24),
+                padding: const EdgeInsets.all(24),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    CircularProgressIndicator(
+                    const CircularProgressIndicator(
                       color: Colors.orangeAccent,
                       strokeWidth: 4,
                     ),
-                    SizedBox(height: 20),
+                    const SizedBox(height: 20),
                     Text(
                       foundPlayers < players
                           ? "Searching Player $foundPlayers/$players..."
-                          : "Match Found!",
+                          : "⚡ Match Found!",
                       style: TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
                       ),
                     ),
-                    SizedBox(height: 12),
+                    const SizedBox(height: 15),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: List.generate(players, (index) {
                         bool isActive = index < foundPlayers;
                         return AnimatedContainer(
-                          duration: Duration(milliseconds: 300),
-                          margin: EdgeInsets.symmetric(horizontal: 4),
-                          width: 12,
-                          height: 12,
+                          duration: const Duration(milliseconds: 400),
+                          margin: const EdgeInsets.symmetric(horizontal: 6),
+                          width: 24,
+                          height: 24,
                           decoration: BoxDecoration(
-                            color: isActive ? Colors.orangeAccent : Colors.grey[600],
+                            color: isActive
+                                ? Colors.orangeAccent
+                                : Colors.grey[600],
                             shape: BoxShape.circle,
                             boxShadow: isActive
                                 ? [
                               BoxShadow(
-                                color: Colors.orangeAccent.withOpacity(0.6),
-                                blurRadius: 6,
+                                color:
+                                Colors.orangeAccent.withOpacity(0.7),
+                                blurRadius: 10,
                                 spreadRadius: 2,
                               )
                             ]
                                 : [],
                           ),
+                          child: isActive
+                              ? const Icon(Icons.person,
+                              size: 14, color: Colors.white)
+                              : null,
                         );
                       }),
                     ),
-                    SizedBox(height: 8),
+                    const SizedBox(height: 12),
                     Text(
                       "Please wait...",
                       style: TextStyle(
-                        color: Colors.white.withOpacity(0.8),
+                        color: Colors.white70,
                         fontSize: 14,
                       ),
                     ),
