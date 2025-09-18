@@ -2,17 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../tools/AudioManager/AudioManager.dart';
-import 'Tools/CardGridWidget.dart';
+import 'AvatrSkins/AvatarSkinPage.dart';
+import 'CardSkins/CardSkinsIndexPage.dart';
 
-
-class MainCardShopPage extends StatefulWidget {
+class MainCardShopPage extends StatelessWidget {
   const MainCardShopPage({super.key});
 
-  @override
-  State<MainCardShopPage> createState() => _MainCardShopPageState();
-}
-
-class _MainCardShopPageState extends State<MainCardShopPage> {
   @override
   Widget build(BuildContext context) {
     final audioManager = Provider.of<AudioManager>(context, listen: false);
@@ -23,52 +18,35 @@ class _MainCardShopPageState extends State<MainCardShopPage> {
       surface: Colors.white,
     );
 
-    // Example cards data
-    final List<Map<String, dynamic>> cardData = [
-      {"image": "assets/images/Skins/BackCard_Skins/MythCard1.jpg", "cost": 10},
-      {"image": "assets/images/Skins/BackCard_Skins/MythCard2.jpg", "cost": 20},
-      {"image": "assets/images/Skins/BackCard_Skins/Fantasy/Crystal1.jpg", "cost": 50},
-      {"image": "assets/images/Skins/BackCard_Skins/Fantasy/Crystal2.jpg", "cost": 100},
-      {"image": "assets/images/Skins/BackCard_Skins/Fantasy/Crystal3.jpg", "cost": 150},
-      {"image": "assets/images/Skins/BackCard_Skins/Fantasy/Drag1.jpg", "cost": 200},
-    ];
-
-    return Scaffold(
-      backgroundColor: colorScheme.surface,
-      body: SafeArea(
-        child: Column(
+    return DefaultTabController(
+      length: 3,
+      child: Scaffold(
+        backgroundColor: colorScheme.surface,
+        appBar: AppBar(
+          backgroundColor: colorScheme.surface,
+          elevation: 2,
+          title: const Text(
+            "Shop",
+            style: TextStyle(
+                fontWeight: FontWeight.bold, fontSize: 20, color: Colors.black),
+          ),
+          centerTitle: true,
+          bottom: TabBar(
+            indicatorColor: colorScheme.primary,
+            labelColor: colorScheme.primary,
+            unselectedLabelColor: Colors.grey,
+            tabs: const [
+              Tab(icon: Icon(Icons.style), text: "Card Skins"),
+              Tab(icon: Icon(Icons.table_bar), text: "Table Skins"),
+              Tab(icon: Icon(Icons.person), text: "Avatars"),
+            ],
+          ),
+        ),
+        body: const TabBarView(
           children: [
-            // Top bar
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-              child: Row(
-                children: [
-                  _circularButton(
-                    icon: Icons.arrow_back,
-                    onTap: () {
-                      audioManager.playEventSound("cancelButton");
-                      Navigator.pop(context);
-                    },
-                    color: colorScheme.primary,
-                  ),
-                  const SizedBox(width: 8),
-                  const Expanded(
-                      child: Text("Cards Shop",
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 20))),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 12),
-
-            // Card grid
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: CardGridWidget(imageCards: cardData),
-              ),
-            ),
+            CardSkinsIndexPage(),
+            CardSkinsIndexPage(),
+            AvatarShopPage(),
           ],
         ),
       ),

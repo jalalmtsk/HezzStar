@@ -531,8 +531,6 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       return;
     }
 
-
-
     if (deck.isEmpty) _recycle();
     if (deck.isEmpty) {
       _showSnack('Deck empty');
