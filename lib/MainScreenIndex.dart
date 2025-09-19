@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hezzstar/Shop/MainShopIndex.dart';
 import 'IndexPages/HomePage/HomePage.dart';
+import 'IndexPages/SettingsPage/SettingsPage.dart';
 import 'main.dart';
 import 'dart:math';
 
@@ -12,14 +13,14 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
-  int _selectedIndex = 2;
+  int _selectedIndex = 0;
 
-  final List<Widget> _pages = const [
-    FriendsPage(),
-    MainCardShopPage(),
-    HomePage(),
-    EventsPage(),
-    CollectionsPage(),
+  final List<Widget> _pages = [
+    const CollectionsPage(),
+    const MainCardShopPage(),
+    const HomePage(),
+    const EventsPage(),
+    SettingsPage(),
   ];
 
   late final AnimationController _pulseController;
@@ -59,21 +60,21 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     return Scaffold(
       extendBody: true,
       body: _pages[_selectedIndex],
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+      bottomNavigationBar: SafeArea(
+        minimum: const EdgeInsets.symmetric(horizontal: 25, vertical: 2),
         child: Container(
           height: 100,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(30),
-            gradient: LinearGradient(
-              colors: [Colors.deepPurple.shade800, Colors.purpleAccent.shade700],
+            gradient: const LinearGradient(
+              colors: [Color(0x9B59B6), Color(0xF1C40F)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(0.6),
-                blurRadius: 30,
+                blurRadius: 20,
                 offset: const Offset(0, 8),
               ),
             ],
@@ -92,15 +93,17 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                   onTap: _onItemTapped,
                   type: BottomNavigationBarType.fixed,
                   showUnselectedLabels: true,
-                  selectedLabelStyle:
-                  const TextStyle(fontWeight: FontWeight.bold, color: Colors.yellowAccent),
+                  selectedLabelStyle: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xF1C40F),
+                  ),
                   items: List.generate(5, (index) {
                     IconData icon;
                     String label;
                     switch (index) {
                       case 0:
-                        icon = Icons.people;
-                        label = "Friends";
+                        icon = Icons.collections_bookmark_outlined;
+                        label = "Collections";
                         break;
                       case 1:
                         icon = Icons.storefront_outlined;
@@ -115,8 +118,8 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                         label = "Events";
                         break;
                       default:
-                        icon = Icons.image_aspect_ratio;
-                        label = "Collections";
+                        icon = Icons.settings_outlined;
+                        label = "Settings";
                     }
 
                     bool isSelected = _selectedIndex == index;
@@ -125,7 +128,6 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                       icon: Stack(
                         alignment: Alignment.center,
                         children: [
-                          // Neon glow bubble
                           if (isSelected)
                             AnimatedBuilder(
                               animation: _pulseController,
@@ -133,23 +135,23 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                                 return Transform.scale(
                                   scale: _pulseController.value,
                                   child: Container(
-                                    width: 64,
-                                    height: 64,
+                                    width: 50,
+                                    height: 50,
                                     decoration: BoxDecoration(
                                       shape: BoxShape.circle,
-                                      gradient: LinearGradient(
-                                        colors: [Colors.yellowAccent, Colors.orangeAccent],
+                                      gradient: const LinearGradient(
+                                        colors: [Color(0xF1C40F), Color(0x9B59B6)],
                                         begin: Alignment.topLeft,
                                         end: Alignment.bottomRight,
                                       ),
                                       boxShadow: [
                                         BoxShadow(
-                                          color: Colors.yellowAccent.withOpacity(0.8),
+                                          color: Color(0xF1C40F).withOpacity(0.8),
                                           blurRadius: 20,
                                           spreadRadius: 2,
                                         ),
                                         BoxShadow(
-                                          color: Colors.orangeAccent.withOpacity(0.6),
+                                          color: Color(0x9B59B6).withOpacity(0.6),
                                           blurRadius: 30,
                                           spreadRadius: 3,
                                         ),
@@ -163,7 +165,6 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                                 );
                               },
                             ),
-                          // Particle sparks
                           if (isSelected)
                             AnimatedBuilder(
                               animation: _sparkController,
@@ -210,7 +211,7 @@ class _SparkPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
     final paint = Paint()
-      ..color = Colors.yellowAccent.withOpacity(0.6)
+      ..color = Color(0xF1C40F).withOpacity(0.6)
       ..strokeWidth = 2
       ..strokeCap = StrokeCap.round;
 

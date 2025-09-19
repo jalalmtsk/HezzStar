@@ -1,10 +1,8 @@
 import 'dart:async';
 import 'dart:math';
 import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
 import 'package:hezzstar/Hezz2FinalGame/Screen/GameScreen.dart';
 import 'package:hezzstar/Hezz2FinalGame/Models/GameCardEnums.dart';
 import 'package:hezzstar/widgets/userStatut/userStatus.dart';
@@ -23,11 +21,10 @@ class _CardGameLauncherState extends State<CardGameLauncher>
   GameModeType gameMode = GameModeType.playToWin;
   int handSize = 5;
   int selectedBetIndex = 0;
+
   late PageController _pageController;
-  late AnimationController _bgController;
   late AnimationController _pulseController;
-  late Animation<Color?> _bgAnimation1;
-  late Animation<Color?> _bgAnimation2;
+  late AnimationController _chipController;
   late Animation<double> _pulseAnimation;
 
   final List<Map<String, dynamic>> bets = [
@@ -37,47 +34,37 @@ class _CardGameLauncherState extends State<CardGameLauncher>
     {'gold': 500, 'xp': 20},
     {'gold': 2000, 'xp': 25},
     {'gold': 10000, 'xp': 30},
-    {'gold': 50000, 'xp': 35},
-    {'gold': 250000, 'xp': 40},
-    {'gold': 1000000, 'xp': 50},
-    {'gold': 5000000, 'xp': 100},
-    {'gold': 10000000, 'xp': 200},
-    {'gold': 20000000, 'xp': 250},
+    {'gold': 20000, 'xp': 60},
+    {'gold': 50000, 'xp': 100},
+    {'gold': 100000, 'xp': 200},
+    {'gold': 200000, 'xp': 300},
+    {'gold': 1000000, 'xp': 500},
+    {'gold': 2000000, 'xp': 1000},
   ];
 
   @override
   void initState() {
     super.initState();
-    _pageController = PageController(viewportFraction: 0.7);
+    _pageController = PageController(viewportFraction: 0.65);
 
-    // Smooth animated background
-    _bgController =
-    AnimationController(vsync: this, duration: const Duration(seconds: 10))
-      ..repeat(reverse: true);
-
-    _bgAnimation1 =
-        ColorTween(begin: Colors.purple.shade400, end: Colors.orangeAccent)
-            .animate(_bgController);
-    _bgAnimation2 =
-        ColorTween(begin: Colors.blue.shade300, end: Colors.pinkAccent)
-            .animate(_bgController);
-
-    // Pulse animation for selected bet
+    // Pulse animation for selected bet card
     _pulseController =
     AnimationController(vsync: this, duration: const Duration(seconds: 1))
       ..repeat(reverse: true);
-    _pulseAnimation =
-        Tween<double>(begin: 1.0, end: 1.12).animate(CurvedAnimation(
-          parent: _pulseController,
-          curve: Curves.easeInOut,
-        ));
+    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.12).animate(
+        CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut));
+
+    // Floating chips animation
+    _chipController =
+    AnimationController(vsync: this, duration: const Duration(seconds: 8))
+      ..repeat();
   }
 
   @override
   void dispose() {
     _pageController.dispose();
-    _bgController.dispose();
     _pulseController.dispose();
+    _chipController.dispose();
     super.dispose();
   }
 
@@ -91,182 +78,143 @@ class _CardGameLauncherState extends State<CardGameLauncher>
   Widget build(BuildContext context) {
     final expManager = context.watch<ExperienceManager>();
 
-    return AnimatedBuilder(
-      animation: _bgController,
-      builder: (context, child) {
-        return Scaffold(
-          backgroundColor: Colors.transparent,
-          body: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [_bgAnimation1.value!, _bgAnimation2.value!],
-              ),
+    return Scaffold(
+      body: Stack(
+        children: [
+          // Background Image
+          Positioned.fill(
+            child: Image.asset(
+              'assets/images/Skins/BackCard_Skins/HomeBg1.jpg',
+              fit: BoxFit.cover,
             ),
-            child: SafeArea(
-              child: Column(
-                children: [
-                  const SizedBox(height: 20),
-                  const UserStatusBar(),
-                  const SizedBox(height: 20),
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(30),
-                        child: BackdropFilter(
-                          filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: Colors.black.withOpacity(0.25),
-                              borderRadius: BorderRadius.circular(30),
-                              border: Border.all(color: Colors.white24),
-                            ),
-                            child: Column(
-                              children: [
-                                const SizedBox(height: 12),
-                                _connectedGameModeToggle(),
-                                const SizedBox(height: 20),
-                                _connectedHandSizeSelector(),
-                                Expanded(child: _awesomeBetCarousel()),
-                              ],
-                            ),
+          ),
+
+          SafeArea(
+            child: Column(
+              children: [
+                const SizedBox(height: 20),
+                const UserStatusBar(),
+                const SizedBox(height: 20),
+                _luxTitle(),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(30),
+                      child: BackdropFilter(
+                        filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.25),
+                            borderRadius: BorderRadius.circular(30),
+                            border: Border.all(color: Colors.white24),
+                          ),
+                          child: Column(
+                            children: [
+                              const SizedBox(height: 16),
+                              _premiumGameModeToggle(),
+                              const SizedBox(height: 20),
+                              _premiumHandSizeSelector(),
+                              Expanded(child: _luxBetCarousel()),
+                            ],
                           ),
                         ),
                       ),
                     ),
                   ),
-                  _glowingStartButton(expManager),
-                ],
-              ),
+                ),
+                _premiumStartButton(expManager),
+              ],
             ),
-          ),
-        );
-      },
-    );
-  }
-
-  // -------- Game Mode Toggle --------
-  Widget _connectedGameModeToggle() {
-    return Container(
-      width: 260,
-      height: 50,
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.15),
-        borderRadius: BorderRadius.circular(30),
-      ),
-      child: Stack(
-        children: [
-          AnimatedAlign(
-            duration: const Duration(milliseconds: 300),
-            alignment: gameMode == GameModeType.playToWin
-                ? Alignment.centerLeft
-                : Alignment.centerRight,
-            child: Container(
-              width: 130,
-              margin: const EdgeInsets.all(4),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Colors.orange, Colors.redAccent],
-                ),
-                borderRadius: BorderRadius.circular(30),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.orangeAccent.withOpacity(0.6),
-                    blurRadius: 14,
-                    offset: const Offset(0, 6),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          Row(
-            children: [
-              Expanded(
-                child: GestureDetector(
-                  onTap: () => setState(() => gameMode = GameModeType.playToWin),
-                  child: Center(
-                    child: Text(
-                      'Play To Win',
-                      style: TextStyle(
-                        color: gameMode == GameModeType.playToWin
-                            ? Colors.white
-                            : Colors.white54,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 15,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              Expanded(
-                child: GestureDetector(
-                  onTap: () =>
-                      setState(() => gameMode = GameModeType.elimination),
-                  child: Center(
-                    child: Text(
-                      'Elimination',
-                      style: TextStyle(
-                        color: gameMode == GameModeType.elimination
-                            ? Colors.white
-                            : Colors.white54,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 15,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
           ),
         ],
       ),
     );
   }
 
-  // -------- Hand Size Selector --------
-  Widget _connectedHandSizeSelector() {
+
+  Widget _luxTitle() {
     return Container(
-      width: 300,
-      height: 45,
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 24),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.15),
+        gradient: const LinearGradient(
+            colors: [Colors.yellowAccent, Colors.orangeAccent]),
         borderRadius: BorderRadius.circular(30),
+        boxShadow: [
+          BoxShadow(
+              color: Colors.orangeAccent.withOpacity(0.7),
+              blurRadius: 12,
+              offset: const Offset(0, 4))
+        ],
       ),
-      child: Stack(
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          AnimatedAlign(
-            duration: const Duration(milliseconds: 300),
-            alignment: handSize == 3
-                ? Alignment.centerLeft
-                : handSize == 5
-                ? Alignment.center
-                : Alignment.centerRight,
-            child: Container(
-              width: 100,
-              margin: const EdgeInsets.all(4),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Colors.purpleAccent, Colors.blueAccent],
-                ),
-                borderRadius: BorderRadius.circular(30),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.purpleAccent.withOpacity(0.5),
-                    blurRadius: 12,
-                  ),
-                ],
+          const Text(
+            "🎴 Card Game Lobby",
+            style: TextStyle(
+                fontSize: 28, fontWeight: FontWeight.bold, color: Colors.black87),
+          ),
+          const SizedBox(width: 12),
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 12),
+            decoration: BoxDecoration(
+              color: Colors.black.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Text(
+              "${widget.botCount + 1} Players",
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
               ),
             ),
           ),
-          Row(
-            children: [
-              _handOption('Quick', 3),
-              _handOption('Medium', 5),
-              _handOption('Long', 9),
-            ],
+        ],
+      ),
+    );
+  }
+
+
+  Widget _premiumGameModeToggle() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        GestureDetector(
+          onTap: () => setState(() => gameMode = GameModeType.playToWin),
+          child: Image.asset(
+            gameMode == GameModeType.playToWin
+                ? 'assets/images/Skins/BackCard_Skins/button.png'
+                : 'assets/images/Skins/BackCard_Skins/MythCard2.jpg',
+            width: 140,
+            height: 60,
           ),
+        ),
+        const SizedBox(width: 16),
+        GestureDetector(
+          onTap: () => setState(() => gameMode = GameModeType.elimination),
+          child: Image.asset(
+            gameMode == GameModeType.elimination
+                ? 'assets/images/Skins/BackCard_Skins/button.png'
+                : 'assets/images/Skins/BackCard_Skins/MythCard2.jpg',
+            width: 140,
+            height: 60,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _premiumHandSizeSelector() {
+    return Container(
+      width: 300,
+      height: 60,
+      child: Row(
+        children: [
+          _handOption('Quick', 3),
+          _handOption('Medium', 5),
+          _handOption('Long', 9),
         ],
       ),
     );
@@ -276,22 +224,17 @@ class _CardGameLauncherState extends State<CardGameLauncher>
     return Expanded(
       child: GestureDetector(
         onTap: () => setState(() => handSize = size),
-        child: Center(
-          child: Text(
-            label,
-            style: TextStyle(
-              color: handSize == size ? Colors.white : Colors.white60,
-              fontWeight: FontWeight.bold,
-              fontSize: 13,
-            ),
-          ),
+        child: Image.asset(
+          handSize == size
+              ? 'assets/images/${label}_active.png'
+              : 'assets/images/$label.png',
+          fit: BoxFit.contain,
         ),
       ),
     );
   }
 
-  // -------- Bet Carousel --------
-  Widget _awesomeBetCarousel() {
+  Widget _luxBetCarousel() {
     return PageView.builder(
       controller: _pageController,
       itemCount: bets.length,
@@ -300,191 +243,170 @@ class _CardGameLauncherState extends State<CardGameLauncher>
         final bet = bets[index];
         bool isSelected = selectedBetIndex == index;
 
-        return AnimatedBuilder(
-          animation: Listenable.merge([_pageController, _pulseController]),
-          builder: (context, child) {
-            double value = 1.0;
-            if (_pageController.position.haveDimensions) {
-              value = 1 - ((_pageController.page ?? 0) - index).abs() * 0.25;
-            }
-
-            double scale = isSelected ? value * _pulseAnimation.value : value;
-
-            return Center(
-              child: Transform.scale(
-                scale: scale,
-                child: Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 20),
-                  padding: const EdgeInsets.all(24),
-                  decoration: BoxDecoration(
-                    gradient: isSelected
-                        ? const LinearGradient(
-                      colors: [Colors.greenAccent, Colors.tealAccent],
-                    )
-                        : const LinearGradient(
-                      colors: [Colors.white24, Colors.white10],
-                    ),
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: [
-                      BoxShadow(
-                        color: isSelected
-                            ? Colors.greenAccent.withOpacity(0.8)
-                            : Colors.black38,
-                        blurRadius: 18,
-                        offset: const Offset(0, 8),
-                      ),
-                    ],
+        return Center(
+          child: Transform.scale(
+            scale: isSelected ? _pulseAnimation.value : 1.0,
+            child: GestureDetector(
+              onTap: () => setState(() => selectedBetIndex = index),
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  Image.asset(
+                    isSelected
+                        ? 'assets/images/Skins/BackCard_Skins/Untitled_design__9_-removebg-preview.png'
+                        : 'assets/images/Skins/BackCard_Skins/2.png',
+                    width: 180,
+                    height: 240,
+                    fit: BoxFit.cover,
                   ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                  // Overlay Gold and XP
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        '${_formatGold(bet['gold'])} Gold',
+                        "${_formatGold(bet['gold'])} G",
                         style: TextStyle(
-                          fontSize: 22,
+                          fontSize: 28,
                           fontWeight: FontWeight.bold,
-                          color: isSelected ? Colors.black : Colors.white70,
+                          color: Colors.yellowAccent,
+                          shadows: [
+                            Shadow(
+                              color: Colors.black45,
+                              offset: Offset(2, 2),
+                              blurRadius: 4,
+                            ),
+                          ],
                         ),
                       ),
-                      const SizedBox(height: 10),
+                      const SizedBox(height: 8),
                       Text(
-                        '+${bet['xp']} XP',
+                        "+${bet['xp']} XP",
                         style: TextStyle(
-                          fontSize: 18,
-                          color: isSelected ? Colors.black87 : Colors.white54,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white70,
+                          shadows: [
+                            Shadow(
+                              color: Colors.black45,
+                              offset: Offset(2, 2),
+                              blurRadius: 4,
+                            ),
+                          ],
                         ),
                       ),
                     ],
                   ),
-                ),
+                ],
               ),
-            );
-          },
+            ),
+          ),
         );
       },
     );
   }
 
-  // -------- Glowing Start Button --------
-  Widget _glowingStartButton(ExperienceManager expManager) {
+
+
+  Widget _premiumStartButton(ExperienceManager expManager) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
       child: GestureDetector(
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 400),
+        onTap: () async {
+          final bet = bets[selectedBetIndex];
+          if (expManager.gold >= bet['gold']) {
+            expManager.spendGold(bet['gold']);
+            expManager.addExperience(bet['xp']);
+
+            // Show the searching popup using widget.botCount
+            await _showSearchingPopup(context, widget.botCount);
+
+            // After searching popup closes, navigate to GameScreen
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => GameScreen(
+                  startHandSize: handSize,
+                  botCount: widget.botCount,
+                  mode: GameMode.local,
+                  gameModeType: gameMode,
+                  selectedBet: bet['gold'],
+                ),
+              ),
+            );
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Not enough Gold!')),
+            );
+          }
+        },
+        child: Image.asset(
+          'assets/images/start_button.png',
           height: 60,
-          width: double.infinity,
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [Colors.orangeAccent, Colors.redAccent],
-            ),
-            borderRadius: BorderRadius.circular(30),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.orangeAccent.withOpacity(0.7),
-                blurRadius: 20,
-                spreadRadius: 2,
-              ),
-            ],
-          ),
-          child: ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.transparent,
-              shadowColor: Colors.transparent,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30)),
-            ),
-            onPressed: () async {
-              final bet = bets[selectedBetIndex];
-              if (expManager.gold >= bet['gold']) {
-                expManager.spendGold(bet['gold']);
-                expManager.addExperience(bet['xp']);
-                await _showSearchingPopup(context, widget.botCount);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => GameScreen(
-                      startHandSize: handSize,
-                      botCount: widget.botCount,
-                      mode: GameMode.local,
-                      gameModeType: gameMode,
-                      selectedBet: bet['gold'],
-                    ),
-                  ),
-                );
-              } else {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Not enough Gold to start this game!'),
-                  ),
-                );
-              }
-            },
-            child: Text(
-              'Start Game',
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
-          ),
         ),
       ),
     );
   }
 
-  // -------- Pre-Game Searching Popup --------
+// Updated Future to use widget.botCount
   Future<void> _showSearchingPopup(BuildContext context, int players) async {
+    int foundPlayers = 0; // Reset at the start of the dialog
+
     return showDialog(
       context: context,
       barrierDismissible: false,
       builder: (context) {
-        int foundPlayers = 0;
-
-        void findNextPlayer() {
+        void findNextPlayer(void Function(void Function()) setState) {
           if (foundPlayers >= players) {
             Future.delayed(const Duration(seconds: 1), () {
               if (Navigator.canPop(context)) Navigator.of(context).pop();
             });
             return;
           }
-          final randomDelay =
-          Duration(milliseconds: 500 + Random().nextInt(1500));
+
+          // Random delay between 1s (1000ms) and 3s (3000ms)
+          final randomDelay = Duration(milliseconds: 1000 + Random().nextInt(2001));
           Future.delayed(randomDelay, () {
-            foundPlayers++;
-            if (Navigator.canPop(context)) (context as Element).markNeedsBuild();
-            findNextPlayer();
+            if (!Navigator.canPop(context)) return;
+            setState(() {
+              foundPlayers++;
+            });
+            findNextPlayer(setState);
           });
         }
 
-        findNextPlayer();
-
         return StatefulBuilder(
           builder: (context, setState) {
+            if (foundPlayers == 0) {
+              findNextPlayer(setState);
+            }
+
             return Dialog(
-              backgroundColor: Colors.black87,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20)),
+              backgroundColor: Colors.green.shade900.withOpacity(0.9),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
               child: Padding(
                 padding: const EdgeInsets.all(24),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     const CircularProgressIndicator(
-                      color: Colors.orangeAccent,
+                      color: Colors.yellowAccent,
                       strokeWidth: 4,
                     ),
                     const SizedBox(height: 20),
                     Text(
-                      foundPlayers < players
-                          ? "Searching Player $foundPlayers/$players..."
-                          : "⚡ Match Found!",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
+                      "$foundPlayers/$players",
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 20),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      foundPlayers < players ? "Searching..." : "⚡ Match Found!",
+                      style: const TextStyle(
+                          color: Colors.white70,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16),
                     ),
                     const SizedBox(height: 15),
                     Row(
@@ -497,15 +419,12 @@ class _CardGameLauncherState extends State<CardGameLauncher>
                           width: 24,
                           height: 24,
                           decoration: BoxDecoration(
-                            color: isActive
-                                ? Colors.orangeAccent
-                                : Colors.grey[600],
+                            color: isActive ? Colors.yellowAccent : Colors.grey[600],
                             shape: BoxShape.circle,
                             boxShadow: isActive
                                 ? [
                               BoxShadow(
-                                color:
-                                Colors.orangeAccent.withOpacity(0.7),
+                                color: Colors.yellowAccent.withOpacity(0.7),
                                 blurRadius: 10,
                                 spreadRadius: 2,
                               )
@@ -513,20 +432,14 @@ class _CardGameLauncherState extends State<CardGameLauncher>
                                 : [],
                           ),
                           child: isActive
-                              ? const Icon(Icons.person,
-                              size: 14, color: Colors.white)
+                              ? const Icon(Icons.person, size: 14, color: Colors.white)
                               : null,
                         );
                       }),
                     ),
                     const SizedBox(height: 12),
-                    Text(
-                      "Please wait...",
-                      style: TextStyle(
-                        color: Colors.white70,
-                        fontSize: 14,
-                      ),
-                    ),
+                    const Text("Please wait...",
+                        style: TextStyle(color: Colors.white70, fontSize: 14)),
                   ],
                 ),
               ),
@@ -537,3 +450,4 @@ class _CardGameLauncherState extends State<CardGameLauncher>
     );
   }
 }
+

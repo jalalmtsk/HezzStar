@@ -248,7 +248,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     final to = centerRect?.center ?? Offset(MediaQuery.of(context).size.width / 2, MediaQuery.of(context).size.height * 0.38);
     if (start != null) {
       final audioManager = Provider.of<AudioManager>(context, listen: false);
-      audioManager.playSfx("assets/audios/UI/SFX/CardSwap.mp3");
+      audioManager.playSfx("assets/audios/UI/SFX/CardSwapVolumeUp.mp3");
       await _animateMove(card, start, to, cinematic: true);
     }
     setState(() {
@@ -274,6 +274,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       if (player == 0) {
         final choice = await _askSuit();
         if (choice != null) {
+          final audioManager = Provider.of<AudioManager>(context, listen: false);
+          audioManager.playSfx("assets/audios/UI/SFX/CardSound.mp3");
           setState(() => topCard = PlayingCard(suit: choice, rank: 7));
           discard.removeLast();
           discard.add(topCard!);
@@ -522,7 +524,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
 
     // Skip if player is eliminated
       final audioManager = Provider.of<AudioManager>(context, listen: false);
-      audioManager.playSfx("assets/audios/UI/SFX/CardSwap.mp3");
+      audioManager.playSfx("assets/audios/UI/SFX/CardSwapVolumeUp.mp3");
     if (isSpectating) {
       return;
     }
