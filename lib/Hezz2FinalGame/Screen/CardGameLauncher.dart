@@ -11,7 +11,6 @@ import '../../ExperieneManager.dart';
 class CardGameLauncher extends StatefulWidget {
   final int botCount;
   const CardGameLauncher({super.key, required this.botCount});
-
   @override
   State<CardGameLauncher> createState() => _CardGameLauncherState();
 }
@@ -84,7 +83,7 @@ class _CardGameLauncherState extends State<CardGameLauncher>
           // Background Image
           Positioned.fill(
             child: Image.asset(
-              'assets/images/Skins/BackCard_Skins/HomeBg1.jpg',
+              'assets/images/Skins/BackCard_Skins/bgLauncher.jpg',
               fit: BoxFit.cover,
             ),
           ),
@@ -102,7 +101,7 @@ class _CardGameLauncherState extends State<CardGameLauncher>
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(30),
                       child: BackdropFilter(
-                        filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+                        filter: ImageFilter.blur(sigmaX: 2, sigmaY: 1),
                         child: Container(
                           decoration: BoxDecoration(
                             color: Colors.black.withOpacity(0.25),
@@ -151,7 +150,7 @@ class _CardGameLauncherState extends State<CardGameLauncher>
         mainAxisSize: MainAxisSize.min,
         children: [
           const Text(
-            "🎴 Card Game Lobby",
+            "🎴Lobby",
             style: TextStyle(
                 fontSize: 28, fontWeight: FontWeight.bold, color: Colors.black87),
           ),
@@ -163,7 +162,7 @@ class _CardGameLauncherState extends State<CardGameLauncher>
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
-              "${widget.botCount + 1} Players",
+              "${widget.botCount + 1} P",
               style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -304,8 +303,6 @@ class _CardGameLauncherState extends State<CardGameLauncher>
       },
     );
   }
-
-
 
   Widget _premiumStartButton(ExperienceManager expManager) {
     return Padding(

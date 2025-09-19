@@ -1143,7 +1143,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
           ),
           // OR use an image
           image: DecorationImage(
-            image: AssetImage('assets/UI/modes/bg2.jpg'), // your table image
+            image: AssetImage('assets/images/Skins/BackCard_Skins/table1.jpg'), // your table image
             fit: BoxFit.cover,
           ),
         ),
@@ -1231,7 +1231,6 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                       height: 120,
                       fit: BoxFit.cover,
                     ),
-
                   ),
               ],
             ),

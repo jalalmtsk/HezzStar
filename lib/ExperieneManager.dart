@@ -6,15 +6,27 @@ class ExperienceManager with ChangeNotifier {
   int _gold = 0;
   int _gems = 0;
 
-  // New: card management
+  // ---------------------------
+  // CARD SYSTEM
+  // ---------------------------
   List<String> _unlockedCards = [];
   String? _selectedCard;
+
+  // ---------------------------
+  // AVATAR SYSTEM
+  // ---------------------------
+  List<String> _unlockedAvatars = [];
+  String? _selectedAvatar;
 
   int get experience => _experience;
   int get gold => _gold;
   int get gems => _gems;
+
   List<String> get unlockedCards => _unlockedCards;
   String? get selectedCard => _selectedCard;
+
+  List<String> get unlockedAvatars => _unlockedAvatars;
+  String? get selectedAvatar => _selectedAvatar;
 
   ExperienceManager() {
     _loadData();
@@ -32,6 +44,9 @@ class ExperienceManager with ChangeNotifier {
     _unlockedCards = prefs.getStringList('unlockedCards') ?? [];
     _selectedCard = prefs.getString('selectedCard');
 
+    _unlockedAvatars = prefs.getStringList('unlockedAvatars') ?? [];
+    _selectedAvatar = prefs.getString('selectedAvatar');
+
     notifyListeners();
   }
 
@@ -41,8 +56,12 @@ class ExperienceManager with ChangeNotifier {
     await prefs.setInt('gold', _gold);
     await prefs.setInt('gems', _gems);
     await prefs.setStringList('unlockedCards', _unlockedCards);
+    await prefs.setStringList('unlockedAvatars', _unlockedAvatars);
     if (_selectedCard != null) {
       await prefs.setString('selectedCard', _selectedCard!);
+    }
+    if (_selectedAvatar != null) {
+      await prefs.setString('selectedAvatar', _selectedAvatar!);
     }
   }
 
@@ -103,8 +122,13 @@ class ExperienceManager with ChangeNotifier {
     _experience = 0;
     _gold = 0;
     _gems = 0;
+
     _unlockedCards = [];
     _selectedCard = null;
+
+    _unlockedAvatars = [];
+    _selectedAvatar = null;
+
     _saveData();
     notifyListeners();
   }
@@ -137,4 +161,25 @@ class ExperienceManager with ChangeNotifier {
   }
 
   bool isCardUnlocked(String cardPath) => _unlockedCards.contains(cardPath);
+
+  // ---------------------------
+  // AVATAR SYSTEM
+  // ---------------------------
+  void unlockAvatar(String avatarPath) {
+    if (!_unlockedAvatars.contains(avatarPath)) {
+      _unlockedAvatars.add(avatarPath);
+      _saveData();
+      notifyListeners();
+    }
+  }
+
+  void selectAvatar(String avatarPath) {
+    if (_unlockedAvatars.contains(avatarPath)) {
+      _selectedAvatar = avatarPath;
+      _saveData();
+      notifyListeners();
+    }
+  }
+
+  bool isAvatarUnlocked(String avatarPath) => _unlockedAvatars.contains(avatarPath);
 }
