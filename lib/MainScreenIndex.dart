@@ -97,105 +97,118 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                     fontWeight: FontWeight.bold,
                     color: Color(0xF1C40F),
                   ),
-                  items: List.generate(5, (index) {
-                    IconData icon;
-                    String label;
-                    switch (index) {
-                      case 0:
-                        icon = Icons.collections_bookmark_outlined;
-                        label = "Collections";
-                        break;
-                      case 1:
-                        icon = Icons.storefront_outlined;
-                        label = "Shop";
-                        break;
-                      case 2:
-                        icon = Icons.home_mini;
-                        label = "Home";
-                        break;
-                      case 3:
-                        icon = Icons.event_outlined;
-                        label = "Events";
-                        break;
-                      default:
-                        icon = Icons.settings_outlined;
-                        label = "Settings";
-                    }
-
-                    bool isSelected = _selectedIndex == index;
-
-                    return BottomNavigationBarItem(
-                      icon: Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          if (isSelected)
-                            AnimatedBuilder(
-                              animation: _pulseController,
-                              builder: (context, child) {
-                                return Transform.scale(
-                                  scale: _pulseController.value,
-                                  child: Container(
-                                    width: 50,
-                                    height: 50,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      gradient: const LinearGradient(
-                                        colors: [Color(0xF1C40F), Color(0x9B59B6)],
-                                        begin: Alignment.topLeft,
-                                        end: Alignment.bottomRight,
-                                      ),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Color(0xF1C40F).withOpacity(0.8),
-                                          blurRadius: 20,
-                                          spreadRadius: 2,
-                                        ),
-                                        BoxShadow(
-                                          color: Color(0x9B59B6).withOpacity(0.6),
-                                          blurRadius: 30,
-                                          spreadRadius: 3,
-                                        ),
-                                      ],
-                                      border: Border.all(
-                                        color: Colors.white.withOpacity(0.2),
-                                        width: 2,
-                                      ),
-                                    ),
-                                  ),
-                                );
-                              },
-                            ),
-                          if (isSelected)
-                            AnimatedBuilder(
-                              animation: _sparkController,
-                              builder: (context, child) {
-                                return CustomPaint(
-                                  size: const Size(64, 64),
-                                  painter: _SparkPainter(_sparkController.value),
-                                );
-                              },
-                            ),
-                          ScaleTransition(
-                            scale: isSelected
-                                ? Tween(begin: 1.0, end: 1.2).animate(_pulseController)
-                                : const AlwaysStoppedAnimation(1.0),
-                            child: Icon(
-                              icon,
-                              size: isSelected ? 32 : 26,
-                              color: isSelected ? Colors.white : Colors.white70,
-                            ),
-                          ),
-                        ],
-                      ),
-                      label: label,
-                    );
-                  }),
+                  items: [
+                    _buildNavItem(
+                      index: 0,
+                      label: "Collections",
+                      selectedIcon: 'assets/UI/Icons/Collection_Icon.png',
+                      unselectedIcon: 'assets/UI/Icons/Collection_Icon.png',
+                    ),
+                    _buildNavItem(
+                      index: 1,
+                      label: "Shop",
+                      selectedIcon: 'assets/UI/Icons/Shop_Icon.png',
+                      unselectedIcon: 'assets/UI/Icons/Shop_Icon.png',
+                    ),
+                    _buildNavItem(
+                      index: 2,
+                      label: "Home",
+                      selectedIcon: 'assets/UI/Icons/Home_Icon.png',
+                      unselectedIcon: 'assets/UI/Icons/Home_Icon.png',
+                    ),
+                    _buildNavItem(
+                      index: 3,
+                      label: "Events",
+                      selectedIcon: 'assets/UI/Icons/Events_Icon.png',
+                      unselectedIcon: 'assets/UI/Icons/Events_Icon.png',
+                    ),
+                    _buildNavItem(
+                      index: 4,
+                      label: "Settings",
+                      selectedIcon: 'assets/UI/Icons/Settings_Icon.png',
+                      unselectedIcon: 'assets/UI/Icons/Settings_Icon.png',
+                    ),
+                  ],
                 ),
               ],
             ),
           ),
         ),
       ),
+    );
+  }
+
+  BottomNavigationBarItem _buildNavItem({
+    required int index,
+    required String label,
+    required String selectedIcon,
+    required String unselectedIcon,
+  }) {
+    bool isSelected = _selectedIndex == index;
+
+    return BottomNavigationBarItem(
+      icon: Stack(
+        alignment: Alignment.center,
+        children: [
+          if (isSelected)
+            AnimatedBuilder(
+              animation: _pulseController,
+              builder: (context, child) {
+                return Transform.scale(
+                  scale: _pulseController.value,
+                  child: Container(
+                    width: 50,
+                    height: 50,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: const LinearGradient(
+                        colors: [Color(0xF1C40F), Color(0x9B59B6)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Color(0xF1C40F).withOpacity(0.8),
+                          blurRadius: 20,
+                          spreadRadius: 2,
+                        ),
+                        BoxShadow(
+                          color: Color(0x9B59B6).withOpacity(0.6),
+                          blurRadius: 30,
+                          spreadRadius: 3,
+                        ),
+                      ],
+                      border: Border.all(
+                        color: Colors.white.withOpacity(0.2),
+                        width: 2,
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          if (isSelected)
+            AnimatedBuilder(
+              animation: _sparkController,
+              builder: (context, child) {
+                return CustomPaint(
+                  size: const Size(64, 64),
+                  painter: _SparkPainter(_sparkController.value),
+                );
+              },
+            ),
+          ScaleTransition(
+            scale: isSelected
+                ? Tween(begin: 1.0, end: 1.2).animate(_pulseController)
+                : const AlwaysStoppedAnimation(1.0),
+            child: Image.asset(
+              isSelected ? selectedIcon : unselectedIcon,
+              height: isSelected ? 65 : 58,
+            ),
+          ),
+        ],
+      ),
+      label: label,
     );
   }
 }
@@ -211,7 +224,7 @@ class _SparkPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
     final paint = Paint()
-      ..color = Color(0xF1C40F).withOpacity(0.6)
+      ..color = const Color(0xF1C40F).withOpacity(0.6)
       ..strokeWidth = 2
       ..strokeCap = StrokeCap.round;
 

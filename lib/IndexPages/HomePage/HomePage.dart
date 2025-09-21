@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:hezzstar/ExperieneManager.dart';
 import 'package:provider/provider.dart';
 
-import '../../Hezz2FinalGame/Screen/CardGameLauncher.dart';
+import '../../Hezz2FinalGame/Screen/GameLauncher/CardGameLauncher.dart';
 import '../../widgets/userStatut/userStatus.dart';
 import 'AvatarSelectionPopup.dart';
 
@@ -63,8 +63,8 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  Colors.black.withOpacity(0.6),
-                  Colors.black.withOpacity(0.85),
+                  Colors.black.withOpacity(0.2),
+                  Colors.black.withOpacity(0.79),
                 ],
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
@@ -83,72 +83,48 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const UserStatusBar(),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 10),
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                        padding: const EdgeInsets.symmetric(horizontal: 14.0),
                         child: GestureDetector(
-                          onTap: () => AvatarSelectionPopup.show(context, xpManager),
+                          onTap: () => AvatarDetailsPopup.show(context, xpManager),
                           child: Container(
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(color: Colors.purpleAccent, width: 3),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.purpleAccent.withOpacity(0.6),
-                                  blurRadius: 12,
-                                  spreadRadius: 2,
+                            child: Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                // Background photo icon
+                                Image.asset(
+                                  "assets/UI/Icons/AvatarProfile_Icon.png", // replace with your background image
+                                  height: 150, // adjust size
+                                  width: 120,
+                                  fit: BoxFit.contain,
+                                ),
+
+                                // CircleAvatar on top
+                                CircleAvatar(
+                                  radius: 28,
+                                  backgroundColor: Colors.grey.withValues(alpha: 0.8),
+                                  backgroundImage: xpManager.selectedAvatar != null
+                                      ? AssetImage(xpManager.selectedAvatar!)
+                                      : const AssetImage("assets/images/Skins/AvatarSkins/DefaultUser.png"),
                                 ),
                               ],
-                            ),
-                            child: CircleAvatar(
-                              radius: 45,
-                              backgroundColor: Colors.deepPurple,
-                              backgroundImage: xpManager.selectedAvatar != null
-                                  ? AssetImage(xpManager.selectedAvatar!)
-                                  : const AssetImage("assets/avatars/default.png"),
-                            ),
+                            )
+
                           ),
                         ),
                       ),
                     ],
                   ),
 
-                  // 🌟 Animated Logo
-                  Center(
-                    child: AnimatedBuilder(
-                      animation: _bgController,
-                      builder: (context, child) {
-                        return Transform.scale(
-                          scale: 1 + (_bgController.value * 0.05),
-                          child: ShaderMask(
-                            shaderCallback: (bounds) => const LinearGradient(
-                              colors: [Color(0xF1C40F), Color(0x9B59B6)],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ).createShader(bounds),
-                            child: Container(
-                              height: 180,
-                              width: 320,
-                              decoration: const BoxDecoration(
-                                image: DecorationImage(
-                                  image: AssetImage('assets/UI/modes/logo4-removebg-preview.png'),
-                                  fit: BoxFit.contain,
-                                ),
-                              ),
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-
+                  const SizedBox(height: 100,),
 
                   // 🎮 Expanded Horizontal Game Modes
                   Expanded(
                     child: ListView.builder(
                       scrollDirection: Axis.horizontal,
                       itemCount: _modes.length,
-                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
                       itemBuilder: (context, index) {
                         final mode = _modes[index];
                         return Padding(
@@ -158,70 +134,20 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                       },
                     ),
                   ),
-
-
-                  // 💎 Add Gold Button
+                  const SizedBox(height: 50,),
                   Center(
                     child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.transparent,
-                        padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 18),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(40)),
-                        elevation: 0,
-                      ).copyWith(
-                        shadowColor: MaterialStateProperty.all(Colors.transparent),
-                      ),
                       onPressed: () {
                         xpManager.addGold(30000);
                         xpManager.addGems(40000);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            backgroundColor: Colors.black87,
-                            content: Text(
-                              "💰 30000 Gold & 40000 Gems added!",
-                              style: TextStyle(
-                                color: Color(0xF1C40F),
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            duration: Duration(seconds: 2),
-                          ),
-                        );
                       },
-                      child: Container(
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [Color(0x9B59B6), Color(0xF1C40F)],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          ),
-                          borderRadius: BorderRadius.circular(40),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Color(0xF1C40F).withOpacity(0.6),
-                              blurRadius: 25,
-                              spreadRadius: 2,
-                              offset: const Offset(0, 8),
-                            ),
-                          ],
-                        ),
-                        child: const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 16, horizontal: 45),
-                          child: Text(
-                            "💎 Add 30k Gold",
-                            style: TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                              letterSpacing: 1.3,
-                            ),
-                          ),
-                        ),
+                      child: Text(
+                        "💎 Add 30k Gold",
                       ),
                     ),
                   ),
+                  // 💎 Add Gold Button
 
-                  const SizedBox(height: 25),
                 ],
               ),
             ),

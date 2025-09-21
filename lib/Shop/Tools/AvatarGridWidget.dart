@@ -3,7 +3,8 @@ import 'package:provider/provider.dart';
 
 import '../../ExperieneManager.dart';
 import '../../tools/AudioManager/AudioManager.dart';
-import 'CardItem.dart'; // You can reuse the same CardItemWidget for avatars
+import 'CardItem.dart';
+import 'CurrencyTypeEnum.dart';
 
 class AvatarGridWidget extends StatelessWidget {
   final List<Map<String, dynamic>> avatars;
@@ -15,12 +16,21 @@ class AvatarGridWidget extends StatelessWidget {
     final xpManager = Provider.of<ExperienceManager>(context);
     final audioManager = Provider.of<AudioManager>(context, listen: false);
 
-    void showPurchaseDialog(BuildContext parentContext, String imagePath, int cost) {
+    void showPurchaseDialog(
+        BuildContext parentContext,
+        String imagePath,
+        int cost,
+        CurrencyType currency,
+        ) {
+      String currencySymbol =
+      currency == CurrencyType.gold ? "💰 Gold" : "💎 Gems";
+
       showDialog(
         context: parentContext,
         builder: (context) => AlertDialog(
           title: const Text("Confirm Purchase"),
-          content: Text("Do you want to unlock this avatar for $cost 💰?"),
+          content:
+          Text("Do you want to unlock this avatar for $cost $currencySymbol?"),
           actions: [
             TextButton(
               onPressed: () {
@@ -31,7 +41,15 @@ class AvatarGridWidget extends StatelessWidget {
             ),
             TextButton(
               onPressed: () {
-                if (xpManager.spendGold(cost)) {
+                bool success = false;
+
+                if (currency == CurrencyType.gold) {
+                  success = xpManager.spendGold(cost);
+                } else {
+                  success = xpManager.spendGems(cost);
+                }
+
+                if (success) {
                   xpManager.unlockAvatar(imagePath);
                   xpManager.selectAvatar(imagePath);
                   audioManager.playEventSound("clickButton");
@@ -41,7 +59,7 @@ class AvatarGridWidget extends StatelessWidget {
                   );
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Not enough gold!")),
+                    SnackBar(content: Text("Not enough $currencySymbol!")),
                   );
                 }
               },
@@ -68,17 +86,20 @@ class AvatarGridWidget extends StatelessWidget {
         final item = avatars[index];
         final imagePath = item['image'];
         final cost = item['cost'];
+        final currency = item['currency'] as CurrencyType; // 👈 read currency
         final unlocked = xpManager.isAvatarUnlocked(imagePath);
         final selected = xpManager.selectedAvatar == imagePath;
 
         return CardItemWidget(
           imagePath: imagePath,
           cost: cost,
+          currencyType: currency, // 👈 gold or gems
           unlocked: unlocked,
           selected: selected,
           userGold: xpManager.gold,
+          userGems: xpManager.gems,
           onSelect: () => xpManager.selectAvatar(imagePath),
-          onBuy: () => showPurchaseDialog(context, imagePath, cost),
+          onBuy: () => showPurchaseDialog(context, imagePath, cost, currency),
         );
       },
     );

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../tools/AudioManager/AudioManager.dart';
-import 'AvatrSkins/AvatarSkinPage.dart';
+import 'AvatrSkins/AvatarShopIndex.dart';
 import 'CardSkins/CardSkinsIndexPage.dart';
 
 class MainCardShopPage extends StatelessWidget {
@@ -46,7 +46,7 @@ class MainCardShopPage extends StatelessWidget {
           children: [
             CardSkinsIndexPage(),
             CardSkinsIndexPage(),
-            AvatarShopPage(),
+            AvatarShopIndex(),
           ],
         ),
       ),

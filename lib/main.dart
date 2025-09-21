@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:hezzstar/Hezz2FinalGame/Screen/CardGameLauncher.dart';
+import 'package:hezzstar/Hezz2FinalGame/Screen/GameLauncher/CardGameLauncher.dart';
 import 'package:hezzstar/tools/AudioManager/AudioManager.dart';
 import 'package:hezzstar/widgets/userStatut/userStatus.dart';
 import 'package:provider/provider.dart';

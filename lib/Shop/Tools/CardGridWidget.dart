@@ -4,6 +4,9 @@ import 'package:provider/provider.dart';
 import '../../ExperieneManager.dart';
 import '../../tools/AudioManager/AudioManager.dart';
 import 'CardItem.dart';
+import 'CurrencyTypeEnum.dart';
+
+// Define currency types
 
 class CardGridWidget extends StatelessWidget {
   final List<Map<String, dynamic>> imageCards;
@@ -15,12 +18,15 @@ class CardGridWidget extends StatelessWidget {
     final xpManager = Provider.of<ExperienceManager>(context);
     final audioManager = Provider.of<AudioManager>(context, listen: false);
 
-    void showPurchaseDialog(BuildContext parentContext, String imagePath, int cost) {
+    void showPurchaseDialog(
+        BuildContext parentContext, String imagePath, int cost, CurrencyType currency) {
+      String currencySymbol = currency == CurrencyType.gold ? "💰 Gold" : "💎 Gems";
+
       showDialog(
         context: parentContext,
         builder: (context) => AlertDialog(
           title: const Text("Confirm Purchase"),
-          content: Text("Do you want to unlock this card for $cost ⭐?"),
+          content: Text("Do you want to unlock this card for $cost $currencySymbol?"),
           actions: [
             TextButton(
               onPressed: () {
@@ -31,20 +37,29 @@ class CardGridWidget extends StatelessWidget {
             ),
             TextButton(
               onPressed: () {
-                if (xpManager.spendGold(cost)) {
+                bool success = false;
+
+                if (currency == CurrencyType.gold) {
+                  success = xpManager.spendGold(cost);
+                } else {
+                  success = xpManager.spendGems(cost);
+                }
+
+                if (success) {
                   xpManager.unlockCard(imagePath);
                   xpManager.selectCard(imagePath);
                   audioManager.playEventSound("clickButton");
                   Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Card unlocked!")));
+                    const SnackBar(content: Text("Card unlocked!")),
+                  );
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Not enough gold!")));
+                    SnackBar(content: Text("Not enough $currencySymbol!")),
+                  );
                 }
               },
-              child:
-              const Text("Pay", style: TextStyle(color: Colors.deepOrange)),
+              child: const Text("Pay", style: TextStyle(color: Colors.deepOrange)),
             ),
           ],
         ),
@@ -64,17 +79,20 @@ class CardGridWidget extends StatelessWidget {
         final item = imageCards[index];
         final imagePath = item['image'];
         final cost = item['cost'];
+        final currency = item['currency'] as CurrencyType; // 👈 gold or gems
         final unlocked = xpManager.isCardUnlocked(imagePath);
         final selected = xpManager.selectedCard == imagePath;
 
         return CardItemWidget(
           imagePath: imagePath,
           cost: cost,
+          currencyType: currency, // 👈 pass it to widget
           unlocked: unlocked,
           selected: selected,
           userGold: xpManager.gold,
+          userGems: xpManager.gems,
           onSelect: () => xpManager.selectCard(imagePath),
-          onBuy: () => showPurchaseDialog(context, imagePath, cost),
+          onBuy: () => showPurchaseDialog(context, imagePath, cost, currency),
         );
       },
     );

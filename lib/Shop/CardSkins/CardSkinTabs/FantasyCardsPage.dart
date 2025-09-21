@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../Tools/CardGridWidget.dart';
+import '../../Tools/CurrencyTypeEnum.dart';
 
 class FantasyCardsPage extends StatelessWidget {
   const FantasyCardsPage({super.key});
@@ -9,9 +10,10 @@ class FantasyCardsPage extends StatelessWidget {
     return Scaffold(
       body: CardGridWidget(
         imageCards: [
-          {"image": "assets/images/Skins/BackCard_Skins/Fantasy/Crystal1.jpg", "cost": 50},
-          {"image": "assets/images/Skins/BackCard_Skins/Fantasy/Crystal2.jpg", "cost": 100},
-          {"image": "assets/images/Skins/BackCard_Skins/Fantasy/Drag1.jpg", "cost": 200},
+          {"image": "assets/images/Skins/BackCard_Skins/Fantasy/Crystal1.jpg", 'currency': CurrencyType.gold, "cost": 50},
+          {"image": "assets/images/Skins/BackCard_Skins/Fantasy/Crystal2.jpg", 'currency': CurrencyType.gems, "cost": 100000},
+          {"image": "assets/images/Skins/BackCard_Skins/Fantasy/Crystal3.jpg", 'currency': CurrencyType.gems, "cost": 50},
+
         ],
       ),
     );

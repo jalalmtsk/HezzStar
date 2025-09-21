@@ -1,15 +1,24 @@
-import 'dart:convert';
 import 'dart:math';
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:hezzstar/ExperieneManager.dart';
 import 'package:hezzstar/Hezz2FinalGame/Models/GameCardEnums.dart';
-import 'package:hezzstar/PlayerBanner.dart';
 import 'package:hezzstar/tools/AudioManager/AudioManager.dart';
+import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 
 import '../Models/Cards.dart';
 import '../Models/Deck.dart';
+import '../Tools/BotStack.dart';
+import '../Tools/Dialog/GameInfoDialog.dart';
+import '../Tools/Dialog/SuitSelectionDialog.dart';
+import '../Tools/MessagesInGame/AnimatedMessages.dart';
+import '../Tools/MessagesInGame/EmojiesBubble.dart';
+import '../Tools/TextUI/CardReamingTextUi.dart';
+import '../Tools/TextUI/MinimalBageText.dart';
 import 'endGameScreen.dart';
+
 
 class GameScreen extends StatefulWidget {
   final int startHandSize;
@@ -43,6 +52,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   int currentPlayer = 0;
   bool isAnimating = false;
   OverlayEntry? moving;
+  bool handDealt = false;
 
   int pendingDraw = 0;
   bool skipNext = false;
@@ -88,7 +98,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     // Reset game state
     deck = Deck();
     deck.shuffle();
-    for (var h in hands) h.clear();
+    for (var h in hands)
+      h.clear();
     discard.clear();
     currentPlayer = 0;
     pendingDraw = 0;
@@ -124,11 +135,19 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
           if (idx < playerCardKeys.length) {
             end = _rectFor(playerCardKeys[idx])?.center;
           }
-          end ??= Offset(MediaQuery.of(context).size.width / 2, MediaQuery.of(context).size.height - 90);
-          if (start != null && end != null) await _animateMoveFaceDown(c, start, end);
+          end ??= Offset(MediaQuery
+              .of(context)
+              .size
+              .width / 2, MediaQuery
+              .of(context)
+              .size
+              .height - 90);
+          if (start != null && end != null) await _animateMoveFaceDown(
+              c, start, end);
         } else {
           final botPos = _cardStartForPlayer(p, hands[p].length - 1);
-          if (start != null && botPos != null) await _animateMoveFaceDown(c, start, botPos);
+          if (start != null && botPos != null) await _animateMoveFaceDown(
+              c, start, botPos);
         }
 
         setState(() {});
@@ -143,15 +162,18 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
 
     await Future.delayed(const Duration(milliseconds: 400));
     isAnimating = false;
+    handDealt = true;  // ✅ Turn timer can start now
+    setState(() {});
     _maybeAutoPlay();
   }
 
   Future<void> _precacheAssets(BuildContext ctx) async {
     try {
-      await precacheImage(const AssetImage('assets/images/cards/backCard.png'), ctx);
+      await precacheImage(
+          const AssetImage('assets/images/cards/backCard.png'), ctx);
       final sample = PlayingCard(suit: 'Coins', rank: 1);
       await precacheImage(AssetImage(sample.assetName), ctx);
-    } catch(_) {}
+    } catch (_) {}
   }
 
   void _recycle() {
@@ -185,7 +207,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     }
   }
 
-  Future<void> _animateMove(PlayingCard card, Offset from, Offset to, {required bool cinematic}) async {
+  Future<void> _animateMove(PlayingCard card, Offset from, Offset to,
+      {required bool cinematic}) async {
     final overlay = Overlay.of(context);
     if (overlay == null) return;
     final dur = cinematic ? playDur : drawDur;
@@ -245,7 +268,13 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     final card = hands[player][idx];
     final start = _cardStartForPlayer(player, idx);
     final centerRect = _rectFor(centerKey);
-    final to = centerRect?.center ?? Offset(MediaQuery.of(context).size.width / 2, MediaQuery.of(context).size.height * 0.38);
+    final to = centerRect?.center ?? Offset(MediaQuery
+        .of(context)
+        .size
+        .width / 2, MediaQuery
+        .of(context)
+        .size
+        .height * 0.38);
     if (start != null) {
       final audioManager = Provider.of<AudioManager>(context, listen: false);
       audioManager.playSfx("assets/audios/UI/SFX/CardSwapVolumeUp.mp3");
@@ -272,48 +301,56 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       _showCenterBanner('Skip', Colors.orangeAccent);
     } else if (card.rank == 7) {
       if (player == 0) {
-        final choice = await _askSuit();
+        // get the current suit of the top card before change
+        final previousSuit = topCard?.suit ?? "Coins";
+
+        final choice = await _askSuit(previousSuit);
+
         if (choice != null) {
-          final audioManager = Provider.of<AudioManager>(context, listen: false);
+          final audioManager = Provider.of<AudioManager>(
+            context,
+            listen: false,
+          );
           audioManager.playSfx("assets/audios/UI/SFX/CardSound.mp3");
-          setState(() => topCard = PlayingCard(suit: choice, rank: 7));
-          discard.removeLast();
-          discard.add(topCard!);
+
+          setState(() {
+            topCard = PlayingCard(suit: choice, rank: 7);
+            discard.removeLast();
+            discard.add(topCard!);
+          });
+
+          _showCenterBanner('Suit: $choice', Colors.blueAccent);
         }
       } else {
         final suit = _botPickSuit(player);
         _showCenterBanner('Suit: $suit', Colors.blueAccent);
         await Future.delayed(const Duration(milliseconds: 600));
-        setState(() => topCard = PlayingCard(suit: suit, rank: 7));
-        discard.removeLast();
-        discard.add(topCard!);
+
+        setState(() {
+          topCard = PlayingCard(suit: suit, rank: 7);
+          discard.removeLast();
+          discard.add(topCard!);
+        });
       }
     }
   }
 
-  Future<String?> _askSuit() {
+
+  Future<String?> _askSuit(String lastSuit) {
     return showDialog<String>(
-        context: context,
-        builder: (ctx) {
-          return AlertDialog(
-              title: const Text('Choose suit'),
-              content: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: ['Coins','Cups','Swords','Clubs'].map(
-                          (s) => ElevatedButton(
-                          onPressed: () => Navigator.of(ctx).pop(s),
-                          child: Text(s)
-                      )
-                  ).toList()
-              )
-          );
-        }
+      context: context,
+      barrierDismissible: false,
+      barrierColor: Colors.black.withOpacity(0.6),
+      builder: (ctx) => SuitSelectionDialog(previousSuit: lastSuit),
     );
   }
 
+
+
   String _botPickSuit(int bot) {
     final counts = {'Coins': 0, 'Cups': 0, 'Swords': 0, 'Clubs': 0};
-    for (final c in hands[bot]) counts[c.suit] = counts[c.suit]! + 1;
+    for (final c in hands[bot])
+      counts[c.suit] = counts[c.suit]! + 1;
     var best = 'Coins';
     var b = -1;
     counts.forEach((k, v) {
@@ -329,7 +366,13 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     final overlay = Overlay.of(context);
     if (overlay == null) return;
     final entry = OverlayEntry(builder: (_) {
-      final c = _rectFor(centerKey)?.center ?? Offset(MediaQuery.of(context).size.width / 2, MediaQuery.of(context).size.height * 0.35);
+      final c = _rectFor(centerKey)?.center ?? Offset(MediaQuery
+          .of(context)
+          .size
+          .width / 2, MediaQuery
+          .of(context)
+          .size
+          .height * 0.35);
       return Positioned(
           left: c.dx - 70,
           top: c.dy - 120,
@@ -343,7 +386,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                   ),
                   child: Text(
                       text,
-                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)
+                      style: const TextStyle(
+                          color: Colors.white, fontWeight: FontWeight.bold)
                   )
               )
           )
@@ -367,7 +411,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
 
     // Skip eliminated players, qualified players, and spectating players
     while (eliminatedPlayers[next] ||
-        (widget.gameModeType == GameModeType.elimination && qualifiedPlayers.contains(next)) ||
+        (widget.gameModeType == GameModeType.elimination &&
+            qualifiedPlayers.contains(next)) ||
         (next == 0 && isSpectating)) {
       next = (next + 1) % (widget.botCount + 1);
     }
@@ -378,7 +423,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
 
       // Skip again after skipping
       while (eliminatedPlayers[next] ||
-          (widget.gameModeType == GameModeType.elimination && qualifiedPlayers.contains(next)) ||
+          (widget.gameModeType == GameModeType.elimination &&
+              qualifiedPlayers.contains(next)) ||
           (next == 0 && isSpectating)) {
         next = (next + 1) % (widget.botCount + 1);
       }
@@ -402,7 +448,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     if (widget.mode == GameMode.online) return;
     if (currentPlayer > widget.botCount) return;
 
-    Future.delayed(Duration(milliseconds: 600 + Random().nextInt(700)), () async {
+    Future.delayed(
+        Duration(milliseconds: 600 + Random().nextInt(700)), () async {
       if (gameOver || isBetweenRounds) return;
 
       // Double-check that the bot isn't eliminated before playing
@@ -415,10 +462,10 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   }
 
   Future<void> _botTurn(int bot) async {
-
     // Skip if bot is eliminated or qualified in elimination mode
     if (eliminatedPlayers[bot] ||
-        (widget.gameModeType == GameModeType.elimination && qualifiedPlayers.contains(bot))) {
+        (widget.gameModeType == GameModeType.elimination &&
+            qualifiedPlayers.contains(bot))) {
       _advanceTurn();
       return;
     }
@@ -429,7 +476,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     if (pendingDraw > 0) {
       final chainable = hands[bot].indexWhere((c) => c.rank == 2);
       if (chainable != -1) {
-        await Future.delayed(Duration(milliseconds: 400 + Random().nextInt(400)));
+        await Future.delayed(
+            Duration(milliseconds: 400 + Random().nextInt(400)));
         await _playCard(bot, chainable);
         return;
       } else {
@@ -440,7 +488,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
           hands[bot].add(d);
           final start = _rectFor(deckKey)?.center;
           final botPos = _cardStartForPlayer(bot, hands[bot].length - 1);
-          if (start != null && botPos != null) await _animateMoveFaceDown(d, start, botPos);
+          if (start != null && botPos != null) await _animateMoveFaceDown(
+              d, start, botPos);
           await Future.delayed(const Duration(milliseconds: 90));
         }
         _showCenterBanner('Drew $pendingDraw cards', Colors.purpleAccent);
@@ -466,7 +515,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       hands[bot].add(d);
       final start = _rectFor(deckKey)?.center;
       final botPos = _cardStartForPlayer(bot, hands[bot].length - 1);
-      if (start != null && botPos != null) await _animateMoveFaceDown(d, start, botPos);
+      if (start != null && botPos != null) await _animateMoveFaceDown(
+          d, start, botPos);
 
       _showCenterBanner('Drew & skipped', Colors.purpleAccent);
       await Future.delayed(const Duration(milliseconds: 300));
@@ -487,7 +537,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     await _playCard(bot, choice);
   }
 
-  Future<void> _animateMoveFaceDown(PlayingCard card, Offset from, Offset to) async {
+  Future<void> _animateMoveFaceDown(PlayingCard card, Offset from,
+      Offset to) async {
     final overlay = Overlay.of(context);
     if (overlay == null) return;
     final ctrl = AnimationController(vsync: this, duration: drawDur);
@@ -523,13 +574,14 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     if (currentPlayer != 0) return;
 
     // Skip if player is eliminated
-      final audioManager = Provider.of<AudioManager>(context, listen: false);
-      audioManager.playSfx("assets/audios/UI/SFX/CardSwapVolumeUp.mp3");
+    final audioManager = Provider.of<AudioManager>(context, listen: false);
+    audioManager.playSfx("assets/audios/UI/SFX/CardSwapVolumeUp.mp3");
     if (isSpectating) {
       return;
     }
     // Skip if player is qualified in elimination mode
-    if (widget.gameModeType == GameModeType.elimination && qualifiedPlayers.contains(0)) {
+    if (widget.gameModeType == GameModeType.elimination &&
+        qualifiedPlayers.contains(0)) {
       return;
     }
 
@@ -554,10 +606,22 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       Offset handPos;
       if (idx < playerCardKeys.length) {
         handPos = _rectFor(playerCardKeys[idx])?.center ??
-            Offset(MediaQuery.of(context).size.width / 2, MediaQuery.of(context).size.height - 90);
+            Offset(MediaQuery
+                .of(context)
+                .size
+                .width / 2, MediaQuery
+                .of(context)
+                .size
+                .height - 90);
       } else {
-        final w = MediaQuery.of(context).size.width;
-        handPos = Offset(w * 0.5 + idx * 86 / 2, MediaQuery.of(context).size.height - 90);
+        final w = MediaQuery
+            .of(context)
+            .size
+            .width;
+        handPos = Offset(w * 0.5 + idx * 86 / 2, MediaQuery
+            .of(context)
+            .size
+            .height - 90);
       }
 
       if (start != null) {
@@ -586,11 +650,13 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     _advanceTurn();
   }
 
-  Future<void> _animateMoveFaceDownToFaceUp(PlayingCard card, Offset from, Offset to) async {
+  Future<void> _animateMoveFaceDownToFaceUp(PlayingCard card, Offset from,
+      Offset to) async {
     final overlay = Overlay.of(context);
     if (overlay == null) return;
 
-    final ctrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 600));
+    final ctrl = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 600));
     final curve = CurvedAnimation(parent: ctrl, curve: Curves.easeInOutCubic);
 
     OverlayEntry? entry;
@@ -599,7 +665,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
         animation: curve,
         builder: (_, __) {
           final pos = Offset.lerp(from, to, curve.value)!;
-          final flip = curve.value < 0.5 ? pi * curve.value : pi * (1 - curve.value);
+          final flip = curve.value < 0.5 ? pi * curve.value : pi *
+              (1 - curve.value);
           final showFront = curve.value > 0.5;
 
           return Positioned(
@@ -647,7 +714,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
           int lastActivePlayer = -1;
 
           for (int i = 0; i <= widget.botCount; i++) {
-            if (!eliminatedPlayers[i] && !qualifiedPlayers.contains(i) && hands[i].isNotEmpty) {
+            if (!eliminatedPlayers[i] && !qualifiedPlayers.contains(i) &&
+                hands[i].isNotEmpty) {
               activePlayers++;
               lastActivePlayer = i;
             }
@@ -656,7 +724,9 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
           // If only one player remains who hasn't qualified, eliminate them
           if (activePlayers == 1) {
             eliminatedPlayers[lastActivePlayer] = true;
-            _showCenterBanner('Player ${lastActivePlayer == 0 ? "You" : "Bot $lastActivePlayer"} eliminated!', Colors.red);
+            _showCenterBanner('Player ${lastActivePlayer == 0
+                ? "You"
+                : "Bot $lastActivePlayer"} eliminated!', Colors.red);
 
             // Check if the eliminated player is the current player
             // If so, advance the turn immediately
@@ -693,6 +763,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
 
 
   bool isSpectating = false;
+
   void _toggleSpectate() {
     // Don't allow eliminated players to toggle spectate
     if (eliminatedPlayers[0]) return;
@@ -784,13 +855,14 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => EndGameScreen(
-          hands: hands,
-          winnerIndex: winnerIndex,
-          gameModeType: widget.gameModeType,
-          currentRound: currentRound,
-          betAmount: widget.selectedBet, // pass the actual bet amount
-        ),
+        builder: (context) =>
+            EndGameScreen(
+              hands: hands,
+              winnerIndex: winnerIndex,
+              gameModeType: widget.gameModeType,
+              currentRound: currentRound,
+              betAmount: widget.selectedBet, // pass the actual bet amount
+            ),
       ),
     );
   }
@@ -800,24 +872,30 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     super.dispose();
   }
 
-  void showGameSummaryDialog(BuildContext context, List<Map<String, dynamic>> players, int totalPool) {
+  void showGameSummaryDialog(BuildContext context,
+      List<Map<String, dynamic>> players, int totalPool) {
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20)),
           title: const Text(
             "Game Summary",
             textAlign: TextAlign.center,
             style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
           ),
           content: SizedBox(
-            width: MediaQuery.of(context).size.width * 0.8,
+            width: MediaQuery
+                .of(context)
+                .size
+                .width * 0.8,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text("Total Pool: $totalPool DH",
-                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+                    style: const TextStyle(
+                        fontSize: 18, fontWeight: FontWeight.w600)),
                 const SizedBox(height: 15),
                 ...players.map((player) {
                   return ListTile(
@@ -845,10 +923,13 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                 onPressed: () => Navigator.pop(context),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blueAccent,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 30, vertical: 12),
                 ),
-                child: const Text("Close", style: TextStyle(color: Colors.white, fontSize: 16)),
+                child: const Text("Close",
+                    style: TextStyle(color: Colors.white, fontSize: 16)),
               ),
             ),
           ],
@@ -856,39 +937,25 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       },
     );
   }
-
+  String? _shownEmoji;
   @override
   Widget build(BuildContext context) {
-    final w = MediaQuery.of(context).size.width;
-    final h = MediaQuery.of(context).size.height;
+    final xpManager = Provider.of<ExperienceManager>(context,listen: false);
+
+    final w = MediaQuery
+        .of(context)
+        .size
+        .width;
+    final h = MediaQuery
+        .of(context)
+        .size
+        .height;
     return Scaffold(
-      appBar: AppBar(
-          title: Text('Bright Cards - ${widget.gameModeType == GameModeType.playToWin ? 'Play To Win' : 'Elimination Round $currentRound'}'),
-          actions: [
-            ElevatedButton(
-              onPressed: () {
-                showGameSummaryDialog(
-                  context,
-                  [
-                    {"name": "Winner","bet" :"", "isWinner": true},
-                    {"name": "Player 1", "bet": widget.selectedBet, "isWinner": false},
-                    for (int i = 1; i <= widget.botCount; i++)
-                      {"name": "Bot $i", "bet": widget.selectedBet, "isWinner": false},
-                  ],
-                  widget.selectedBet * (widget.botCount + 1), // total pool
-                );
-
-              },
-              child: const Text("Show Game Summary"),
-            ),
-            IconButton(icon: const Icon(Icons.refresh), onPressed: () => _start())
-
-          ]
-      ),
       body: SafeArea(
         child: Stack(
           children: [
             _buildTableBackground(),
+
             if (isBetweenRounds)
               Positioned.fill(
                 child: Container(
@@ -899,15 +966,22 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                       children: [
                         Text(
                           'Round $currentRound Complete!',
-                          style: const TextStyle(fontSize: 32, color: Colors.white, fontWeight: FontWeight.bold),
+                          style: const TextStyle(fontSize: 32, color: Colors
+                              .white, fontWeight: FontWeight.bold),
                         ),
                         const SizedBox(height: 20),
                         Text(
-                          'Qualified: ${qualifiedPlayers.map((p) => p == 0 ? "You" : "Bot $p").join(", ")}',
-                          style: const TextStyle(fontSize: 24, color: Colors.white),
+                          'Qualified: ${qualifiedPlayers.map((p) =>
+                          p == 0
+                              ? "You"
+                              : "Bot $p").join(", ")}',
+                          style: const TextStyle(fontSize: 24, color: Colors
+                              .white),
                         ),
                         const SizedBox(height: 30),
-                        const CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(Colors.white)),
+                        const CircularProgressIndicator(
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                                Colors.white)),
                         const SizedBox(height: 20),
                         const Text(
                           'Preparing next round...',
@@ -921,25 +995,74 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
 
             if (!isBetweenRounds) ...[
               Positioned(
-                top: 12,
+                top: 70,
                 left: 0,
                 right: 0,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    if (widget.botCount >= 2) _botStack(2),
-                    if (widget.botCount >= 3) _botStack(3),
-                  ],
+                    if (widget.botCount >= 2)
+                      GestureDetector(
+                        onTap: () => _showPlayerDetails(context, 2),
+                        child: PlayerCard(
+                          bot: 2,
+                          vertical: false,
+                          isEliminated: eliminatedPlayers[2],
+                          isQualified: qualifiedPlayers.contains(2),
+                          isTurn: currentPlayer == 2,
+                          cardCount: hands[2].length,
+                          hand: hands[2],
+                          playerKey: botKeys[2],
+                        ),
+                      ),
+
+                    if (widget.botCount >= 3)
+                      PlayerCard(
+                        bot: 3,
+                        vertical: false,
+                        isEliminated: eliminatedPlayers[3],
+                        isQualified: qualifiedPlayers.contains(3),
+                        isTurn: currentPlayer == 3,
+                        cardCount: hands[3].length,
+                        hand: hands[3],
+                        playerKey: botKeys[3],
+                      ),],
                 ),
               ),
 
               if (widget.botCount >= 1)
-                Positioned(left: 12, top: h * 0.42, child: _botStack(1, vertical: true)),
+                Positioned(
+                  left: 12,
+                  top: h * 0.35,
+                  child: PlayerCard(
+                    bot: 1,
+                    vertical: true,
+                    isEliminated: eliminatedPlayers[1],
+                    isQualified: qualifiedPlayers.contains(1),
+                    isTurn: currentPlayer == 1,
+                    cardCount: hands[1].length,
+                    hand: hands[1],
+                    playerKey: botKeys[1],
+                  ),
+                ),
               if (widget.botCount >= 4)
-                Positioned(right: 12, top: h * 0.42, child: _botStack(4, vertical: true)),
+                Positioned(
+                  right: 12,
+                  top: h * 0.35,
+                  child: PlayerCard(
+                    bot: 4,
+                    vertical: true,
+                    isEliminated: eliminatedPlayers[4],
+                    isQualified: qualifiedPlayers.contains(4),
+                    isTurn: currentPlayer == 4,
+                    cardCount: hands[4].length,
+                    hand: hands[4],
+                    playerKey: botKeys[4],
+                  ),
+                ),
 
               Positioned(
-                  top: h * 0.24,
+                  top: h * 0.30,
                   left: w * 0.18,
                   right: w * 0.18,
                   child: Column(
@@ -951,7 +1074,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                                   onTap: _playerDraw,
                                   child: Column(
                                     children: [
-                                      const Text('Draw Pile'),
+                                      MinimalBadgeText(label: "Draw Pile", fontSize: 14,),
                                       const SizedBox(height: 4),
                                       SizedBox(
                                           key: deckKey,
@@ -960,20 +1083,26 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                                           child: deck.isEmpty
                                               ? Container(
                                               decoration: BoxDecoration(
-                                                  borderRadius: BorderRadius.circular(8),
+                                                  borderRadius: BorderRadius
+                                                      .circular(8),
                                                   color: Colors.white70
                                               ),
-                                              child: const Center(child: Text('Empty'))
+                                              child: const Center(
+                                                  child: Text('Empty'))
                                           )
-                                              : Image.asset(deck.cards.last.backAsset(context), fit: BoxFit.cover)
+                                              : Image.asset(
+                                              deck.cards.last.backAsset(
+                                                  context), fit: BoxFit.cover)
                                       ),
+                                      const SizedBox(height: 4,),
+                                      CardCountBadge(remaining: deck.length,)
                                     ],
                                   )
                               ),
-                              const SizedBox(width: 30),
+                              const SizedBox(width: 20),
                               Column(
                                   children: [
-                                    const Text('Top Card'),
+                                    MinimalBadgeText(label: "Top Card"),
                                     const SizedBox(height: 4),
                                     SizedBox(
                                         key: centerKey,
@@ -981,8 +1110,12 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                                         height: 110,
                                         child: topCard == null
                                             ? Container()
-                                            : Image.asset(topCard!.assetName, fit: BoxFit.cover)
-                                    )
+                                            : Image.asset(topCard!.assetName,
+                                            fit: BoxFit.cover)
+                                    ),
+                                    const SizedBox(height: 4,),
+                                    CardCountBadge(remaining: discard.length,)
+
                                   ]
                               )
                             ]
@@ -997,27 +1130,135 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                 right: 0,
                 child: Column(
                   children: [
+                    // Top Row: Player info + avatar + timer
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          eliminatedPlayers[0]
-                              ? 'Eliminated'
-                              : isSpectating
-                              ? 'Spectating'
-                              : 'Your Hand ${currentPlayer == 0 && !isSpectating ? '  (Your turn)' : ''}',
-                          style: TextStyle(
+                        // Player status text
+                        Expanded(
+                          child: Text(
+                            eliminatedPlayers[0]
+                                ? 'Eliminated'
+                                : isSpectating
+                                ? 'Spectating'
+                                : 'Your Hand${currentPlayer == 0 && !isSpectating ? ' (Your turn)' : ''}',
+                            style: TextStyle(
                               fontWeight: FontWeight.w600,
-                              color: eliminatedPlayers[0] ? Colors.red : (isSpectating ? Colors.grey : null)
+                              color: eliminatedPlayers[0]
+                                  ? Colors.red
+                                  : (isSpectating ? Colors.grey : Colors.white),
+                            ),
                           ),
                         ),
-                        Text("${hands[0].length} cards"),
+
+                        const SizedBox(width: 8),
+
+                        // Avatar + emoji/lottie overlay
+                        Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            // Circular turn timer
+                            if (currentPlayer == 0 &&
+                                !eliminatedPlayers[0] &&
+                                !isSpectating &&
+                                handDealt)
+                              SizedBox(
+                                width: 55,
+                                height: 55,
+                                child: TweenAnimationBuilder<double>(
+                                  tween: Tween(begin: 1, end: 0),
+                                  duration: const Duration(seconds: 15),
+                                  builder: (context, value, child) {
+                                    if (value == 0) {
+                                      WidgetsBinding.instance.addPostFrameCallback((_) async {
+                                        await _playerDraw();
+                                      });
+                                    }
+                                    return CircularProgressIndicator(
+                                      value: value,
+                                      strokeWidth: 3,
+                                      backgroundColor: Colors.grey.withOpacity(0.3),
+                                      color: Colors.greenAccent,
+                                    );
+                                  },
+                                ),
+                              ),
+
+                            // Player avatar
+                            CircleAvatar(
+                              radius: 25,
+                              backgroundColor: Colors.deepPurple,
+                              backgroundImage: xpManager.selectedAvatar != null
+                                  ? AssetImage(xpManager.selectedAvatar!)
+                                  : const AssetImage("assets/images/Skins/AvatarSkins/DefaultUser.png"),
+                            ),
+
+                            // ✅ Show emoji OR lottie animation
+                            if (_shownEmoji != null && !_shownEmoji!.endsWith(".json"))
+                              Positioned(
+                                top: 10,
+                                child: Text(
+                                  _shownEmoji!,
+                                  style: const TextStyle(fontSize: 25, color: Colors.white),
+                                ),
+                              ),
+                            if (_shownEmoji != null && _shownEmoji!.endsWith(".json"))
+                              Positioned(
+                                top: -20,
+                                child: SizedBox(
+                                  width: 70,
+                                  height: 70,
+                                  child: Lottie.asset(
+                                    _shownEmoji!, // plays the lottie instead of showing text
+                                    repeat: false,
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                        const SizedBox(width: 8),
+
+                        // Emoji bubble button
+                        AnimatedEmojiBubble(
+                          onSelected: (emoji) {
+                            setState(() {
+                              _shownEmoji = emoji;
+                            });
+                            Future.delayed(const Duration(milliseconds: 1600), () {
+                              setState(() {
+                                _shownEmoji = null;
+                              });
+                            });
+                          },
+                        ),
+
+                        // Lottie animation bubble button
+                        AnimatedLottieEmojiBubble(
+                          onSelected: (filePath) {
+                            setState(() {
+                              _shownEmoji = filePath; // ✅ Play animation directly
+                            });
+                            Future.delayed(const Duration(milliseconds: 2000), () {
+                              setState(() {
+                                _shownEmoji = null;
+                              });
+                            });
+                          },
+                        ),
+                      ],
+                    ),
+                    // Action buttons
+                    Row(
+                      children: [
                         if (!eliminatedPlayers[0] && !isSpectating)
                           ElevatedButton(
-                            onPressed: (!isAnimating && currentPlayer == 0) ? () => _playerDraw() : null,
+                            onPressed: (!isAnimating && currentPlayer == 0)
+                                ? () => _playerDraw()
+                                : null,
                             child: const Text('Draw'),
                           ),
-                        // Show different buttons based on player status
+                        CardCountBadge(remaining:hands[0].length, fontSize: 14,),
+                        const SizedBox(width: 6),
                         if (widget.gameModeType == GameModeType.elimination)
                           if (eliminatedPlayers[0])
                             ElevatedButton(
@@ -1032,8 +1273,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                             ),
                       ],
                     ),
-                    const SizedBox(height: 8),
-                    // Show different content based on player status
+                    // Cards or eliminated/spectating messages
                     if (eliminatedPlayers[0])
                       Container(
                         height: 135,
@@ -1111,18 +1351,74 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                       ),
                   ],
                 ),
-              ),              Positioned(
-                  top: 8,
-                  left: 8,
-                  child: Container(
-                      padding: const EdgeInsets.all(6),
-                      decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(8)
-                      ),
-                      child: Text('Deck: ${deck.length}  Discard: ${discard.length}')
-                  )
               ),
+
+
+              // TOP APPBAR
+              Positioned(
+                top: 8,
+                left: 8,
+                child: Builder(
+                  builder: (context) {
+                    return GestureDetector(
+                      onTap: () {
+                        final renderBox = context.findRenderObject() as RenderBox;
+                        final offset = renderBox.localToGlobal(Offset.zero);
+                        final size = renderBox.size;
+
+                        final overlay = Overlay.of(context);
+                        OverlayEntry? entry;
+
+                        entry = OverlayEntry(
+                          builder: (context) => Positioned(
+                            left: offset.dx,
+                            top: offset.dy + size.height + 4,
+                            child: GameInfoDialog(
+                              mode: widget.gameModeType.name,
+                              players: widget.botCount + 1,
+                              prize: widget.selectedBet * (widget.botCount + 1),
+                              onSettings: () {
+                                entry?.remove();
+                                //_openSettings();
+                              },
+                              onExit: () {
+                                entry?.remove();
+                                //_exitGame();
+                              },
+                              onInstructions: () {
+                                entry?.remove();
+                                //_showInstructions();
+                              },
+                            ),
+                          ),
+                        );
+
+                        overlay.insert(entry);
+
+                        // Auto remove after 5 seconds
+                        Future.delayed(const Duration(seconds: 5), () {
+                          entry?.remove();
+                        });
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: Colors.black54,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.white24),
+                        ),
+                        child: const Text(
+                          "Game Info",
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              )
             ]
           ],
         ),
@@ -1131,111 +1427,188 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   }
 
 
+
+
   Widget _buildTableBackground() {
     return Positioned.fill(
-      child: Container(
-        decoration: BoxDecoration(
-          // Example: gradient background
-          gradient: LinearGradient(
-            colors: [Color(0xFF1B5E20), Color(0xFF4CAF50)],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
+      child: Stack(
+        children: [
+          // Background Image
+          Container(
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage(
+                    'assets/images/Skins/TableSkins/table1.jpg'),
+                fit: BoxFit.cover,
+              ),
+            ),
           ),
-          // OR use an image
-          image: DecorationImage(
-            image: AssetImage('assets/images/Skins/BackCard_Skins/table1.jpg'), // your table image
-            fit: BoxFit.cover,
+
+          // Gradient Overlay (darkens edges, focus on center)
+          Container(
+            decoration: BoxDecoration(
+              gradient: RadialGradient(
+                center: Alignment.center,
+                radius: 1.0,
+                colors: [
+                  Colors.black.withOpacity(0.2), // center focus
+                  Colors.black.withOpacity(0.7), // edges darker
+                ],
+                stops: [0.6, 1],
+              ),
+            ),
           ),
-        ),
+
+          // Extra Top/Bottom Overlay for cinematic effect
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.black.withOpacity(0.4),
+                  Colors.transparent,
+                  Colors.transparent,
+                  Colors.black.withOpacity(0.4),
+                ],
+                stops: [0.0, 0.25, 0.75, 1.0],
+              ),
+            ),
+          ),
+
+          // Subtle Blur Overlay (gives depth)
+          BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 2.5, sigmaY: 1.5),
+            child: Container(color: Colors.black.withOpacity(0.1)),
+          ),
+        ],
       ),
     );
   }
 
 
-  Widget _botStack(int bot, {bool vertical = false}) {
-    if (eliminatedPlayers[bot]) {
-      return Container(
-        padding: const EdgeInsets.all(4),
-        decoration: BoxDecoration(
-          border: Border.all(color: Colors.red, width: 2),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text('Bot $bot', style: const TextStyle(fontWeight: FontWeight.w600, color: Colors.red)),
-            const SizedBox(height: 6),
-            const Icon(Icons.block, color: Colors.red, size: 40),
-            const Text('Eliminated', style: TextStyle(color: Colors.red)),
-          ],
-        ),
-      );
-    }
 
+  void _showPlayerDetails(BuildContext context, int bot) {
+    final isEliminated = eliminatedPlayers[bot];
     final isQualified = qualifiedPlayers.contains(bot);
-    final key = botKeys[bot];
-
-    if (isQualified) {
-      return Container(
-        key: key,
-        padding: const EdgeInsets.all(4),
-        decoration: BoxDecoration(
-          border: Border.all(color: Colors.blue, width: 2),
-          borderRadius: BorderRadius.circular(8),
-          color: Colors.blue.withOpacity(0.1),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-                'Bot $bot (Qualified)',
-                style: const TextStyle(fontWeight: FontWeight.w600, color: Colors.blue)
-            ),
-            const SizedBox(height: 6),
-            const Icon(Icons.check_circle, color: Colors.blue, size: 40),
-            const Text('Watching', style: TextStyle(color: Colors.blue)),
-          ],
-        ),
-      );
-    }
-
     final isTurn = currentPlayer == bot;
-    return Container(
-      key: key,
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        border: isTurn
-            ? Border.all(color: Colors.greenAccent, width: 3)
-            : null,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text('Bot $bot', style: const TextStyle(fontWeight: FontWeight.w600)),
-          const SizedBox(height: 6),
-          SizedBox(
-            width: vertical ? 50 : 60,
-            height: vertical ? 70 : 80,
-            child: Stack(
+    final cardCount = hands[bot].length;
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          backgroundColor: Colors.black.withOpacity(0.85),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                for (int i = 0; i < min(hands[bot].length, 4); i++)
-                  Positioned(
-                    left: i * 4,
-                    top: i * 2,
-                    child: Image.asset(
-                      hands[bot].isNotEmpty
-                          ? hands[bot].first.backAsset(context)
-                          : 'assets/images/cards/backCard.png',
-                      width: 86,
-                      height: 120,
-                      fit: BoxFit.cover,
+                // Header with avatar and name
+                Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 22,
+                      backgroundColor: Colors.blueGrey.shade700,
+                      child: Text(
+                        "P$bot",
+                        style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                            color: Colors.white),
+                      ),
                     ),
+                    const SizedBox(width: 12),
+                    Text(
+                      isEliminated
+                          ? "Eliminated"
+                          : isQualified
+                          ? "Qualified"
+                          : isTurn
+                          ? "Current Turn"
+                          : "In Game",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: isEliminated
+                            ? Colors.redAccent
+                            : isQualified
+                            ? Colors.blueAccent
+                            : isTurn
+                            ? Colors.greenAccent
+                            : Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 20),
+
+                // Card count
+                Text(
+                  "Cards: $cardCount",
+                  style: const TextStyle(
+                      fontSize: 14, fontWeight: FontWeight.w600, color: Colors.white),
+                ),
+
+                const SizedBox(height: 12),
+
+                // Show hand preview (up to 6)
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    for (int i = 0; i < cardCount && i < 6; i++)
+                      Image.asset(
+                        hands[bot][i].backAsset(context),
+                        width: 55,
+                        height: 80,
+                        fit: BoxFit.cover,
+                      )
+                  ],
+                ),
+
+                const SizedBox(height: 20),
+
+                // Close button
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blueAccent,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
                   ),
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text("Close"),
+                )
               ],
             ),
           ),
-          Text('${hands[bot].length} cards'),
+        );
+      },
+    );
+  }
+
+  Widget _reactionButton(String emoji, String text) {
+    return GestureDetector(
+      onTap: () {
+        // Handle emoji click
+        print("Selected: $text $emoji");
+        // Optionally close the dialog:
+        // Navigator.of(context).pop();
+      },
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            emoji,
+            style: const TextStyle(fontSize: 28),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            text,
+            style: const TextStyle(color: Colors.white, fontSize: 12),
+          ),
         ],
       ),
     );

@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
-
 import '../../tools/AudioManager/AudioManager.dart';
+import 'CurrencyTypeEnum.dart';
 
 
 class CardItemWidget extends StatelessWidget {
   final String imagePath;
   final int cost;
+  final CurrencyType currencyType;
   final bool unlocked;
   final bool selected;
   final int userGold;
+  final int userGems;
   final VoidCallback onSelect;
   final VoidCallback onBuy;
 
@@ -18,9 +20,11 @@ class CardItemWidget extends StatelessWidget {
     super.key,
     required this.imagePath,
     required this.cost,
+    required this.currencyType,
     required this.unlocked,
     required this.selected,
     required this.userGold,
+    required this.userGems,
     required this.onSelect,
     required this.onBuy,
   });
@@ -28,7 +32,14 @@ class CardItemWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final audioManager = Provider.of<AudioManager>(context, listen: false);
-    final canBuy = !unlocked && (userGold >= cost);
+
+    // ✅ check if the player has enough currency
+    bool canBuy;
+    if (currencyType == CurrencyType.gold) {
+      canBuy = !unlocked && (userGold >= cost);
+    } else {
+      canBuy = !unlocked && (userGems >= cost);
+    }
 
     return GestureDetector(
       onTap: () {
@@ -40,8 +51,8 @@ class CardItemWidget extends StatelessWidget {
           onBuy();
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text("Not enough gold!"),
+            SnackBar(
+              content: Text("Not enough ${currencyType == CurrencyType.gold ? "gold" : "gems"}!"),
               behavior: SnackBarBehavior.floating,
             ),
           );
@@ -77,6 +88,8 @@ class CardItemWidget extends StatelessWidget {
               Positioned(top: 8, right: 8, child: _badge("Selected", Colors.green))
             else if (unlocked)
               Positioned(top: 8, right: 8, child: _badge("Unlocked", Colors.orange)),
+
+            // 🔹 Show cost if locked
             if (!unlocked)
               Positioned(
                 bottom: 0,
@@ -84,10 +97,10 @@ class CardItemWidget extends StatelessWidget {
                 right: 0,
                 child: Center(
                   child: Shimmer.fromColors(
-                    baseColor: Colors.deepOrange,
-                    highlightColor: Colors.yellow,
+                    baseColor: currencyType == CurrencyType.gold ? Colors.deepOrange : Colors.blueAccent,
+                    highlightColor: currencyType == CurrencyType.gold ? Colors.yellow : Colors.cyan,
                     child: Text(
-                      '$cost 💰',
+                      '$cost ${currencyType == CurrencyType.gold ? "💰" : "💎"}',
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
@@ -112,7 +125,10 @@ class CardItemWidget extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [BoxShadow(color: color.withOpacity(0.7), blurRadius: 4, offset: const Offset(0, 2))],
       ),
-      child: Text(text.toUpperCase(), style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 10)),
+      child: Text(
+        text.toUpperCase(),
+        style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 10),
+      ),
     );
   }
 }

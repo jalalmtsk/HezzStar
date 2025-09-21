@@ -6,7 +6,8 @@ import 'package:provider/provider.dart';
 import 'package:hezzstar/Hezz2FinalGame/Screen/GameScreen.dart';
 import 'package:hezzstar/Hezz2FinalGame/Models/GameCardEnums.dart';
 import 'package:hezzstar/widgets/userStatut/userStatus.dart';
-import '../../ExperieneManager.dart';
+import '../../../ExperieneManager.dart';
+import 'GameLauncher_Tools/SearchingPopup.dart';
 
 class CardGameLauncher extends StatefulWidget {
   final int botCount;
@@ -97,11 +98,11 @@ class _CardGameLauncherState extends State<CardGameLauncher>
                 _luxTitle(),
                 Expanded(
                   child: Padding(
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.all(12),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(30),
                       child: BackdropFilter(
-                        filter: ImageFilter.blur(sigmaX: 2, sigmaY: 1),
+                        filter: ImageFilter.blur(sigmaX: 1, sigmaY: 1),
                         child: Container(
                           decoration: BoxDecoration(
                             color: Colors.black.withOpacity(0.25),
@@ -152,7 +153,9 @@ class _CardGameLauncherState extends State<CardGameLauncher>
           const Text(
             "🎴Lobby",
             style: TextStyle(
-                fontSize: 28, fontWeight: FontWeight.bold, color: Colors.black87),
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87),
           ),
           const SizedBox(width: 12),
           Container(
@@ -184,7 +187,7 @@ class _CardGameLauncherState extends State<CardGameLauncher>
           onTap: () => setState(() => gameMode = GameModeType.playToWin),
           child: Image.asset(
             gameMode == GameModeType.playToWin
-                ? 'assets/images/Skins/BackCard_Skins/button.png'
+                ? 'assets/images/Skins/BackCard_Skins/Button1.png'
                 : 'assets/images/Skins/BackCard_Skins/MythCard2.jpg',
             width: 140,
             height: 60,
@@ -195,7 +198,7 @@ class _CardGameLauncherState extends State<CardGameLauncher>
           onTap: () => setState(() => gameMode = GameModeType.elimination),
           child: Image.asset(
             gameMode == GameModeType.elimination
-                ? 'assets/images/Skins/BackCard_Skins/button.png'
+                ? 'assets/images/Skins/BackCard_Skins/Button1.png'
                 : 'assets/images/Skins/BackCard_Skins/MythCard2.jpg',
             width: 140,
             height: 60,
@@ -213,7 +216,7 @@ class _CardGameLauncherState extends State<CardGameLauncher>
         children: [
           _handOption('Quick', 3),
           _handOption('Medium', 5),
-          _handOption('Long', 9),
+          _handOption('Long', 7),
         ],
       ),
     );
@@ -252,10 +255,10 @@ class _CardGameLauncherState extends State<CardGameLauncher>
                 children: [
                   Image.asset(
                     isSelected
-                        ? 'assets/images/Skins/BackCard_Skins/Untitled_design__9_-removebg-preview.png'
-                        : 'assets/images/Skins/BackCard_Skins/2.png',
-                    width: 180,
-                    height: 240,
+                        ? 'assets/UI/Containers/BetContainer_Active.png'
+                        : 'assets/UI/Containers/BetContainer_Inactive.png',
+                    width: 250,
+                    height: isSelected ? 300 : 220,
                     fit: BoxFit.cover,
                   ),
                   // Overlay Gold and XP
@@ -265,7 +268,7 @@ class _CardGameLauncherState extends State<CardGameLauncher>
                       Text(
                         "${_formatGold(bet['gold'])} G",
                         style: TextStyle(
-                          fontSize: 28,
+                          fontSize: 35,
                           fontWeight: FontWeight.bold,
                           color: Colors.yellowAccent,
                           shadows: [
@@ -307,144 +310,92 @@ class _CardGameLauncherState extends State<CardGameLauncher>
   Widget _premiumStartButton(ExperienceManager expManager) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-      child: GestureDetector(
-        onTap: () async {
-          final bet = bets[selectedBetIndex];
-          if (expManager.gold >= bet['gold']) {
-            expManager.spendGold(bet['gold']);
-            expManager.addExperience(bet['xp']);
+      child: Row(
+        children: [
+          GestureDetector(
+            onTap: () async {
+              final bet = bets[selectedBetIndex];
+              if (expManager.gold >= bet['gold']) {
+                expManager.spendGold(bet['gold']);
+                expManager.addExperience(bet['xp']);
 
-            // Show the searching popup using widget.botCount
-            await _showSearchingPopup(context, widget.botCount);
-
-            // After searching popup closes, navigate to GameScreen
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => GameScreen(
-                  startHandSize: handSize,
-                  botCount: widget.botCount,
-                  mode: GameMode.local,
-                  gameModeType: gameMode,
-                  selectedBet: bet['gold'],
+                // Show the searching popup using widget.botCount
+                await SearchingPopup.show(context, widget.botCount);
+                // After searching popup closes, navigate to GameScreen
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) =>
+                        GameScreen(
+                          startHandSize: handSize,
+                          botCount: widget.botCount,
+                          mode: GameMode.local,
+                          gameModeType: gameMode,
+                          selectedBet: bet['gold'],
+                        ),
+                  ),
+                );
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Not enough Gold!')),
+                );
+              }
+            },
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                Image.asset(
+                  'assets/UI/Buttons/StartButton_UI.png',
+                  height: 80,
+                ),
+                Text(
+                  "Start Game",
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.yellowAccent, // gold-like
+                    shadows: [
+                      Shadow(
+                        offset: Offset(2, 2),
+                        blurRadius: 4,
+                        color: Colors.black54,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          GestureDetector(
+            onTap: () => Navigator.of(context).pop(),
+            child: Container(
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.black.withOpacity(0.6),
+                // semi-transparent background
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.yellow.withOpacity(0.6),
+                    blurRadius: 8,
+                    spreadRadius: 2,
+                  ),
+                ],
+                border: Border.all(
+                  color: Colors.yellowAccent,
+                  width: 2,
                 ),
               ),
-            );
-          } else {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Not enough Gold!')),
-            );
-          }
-        },
-        child: Image.asset(
-          'assets/images/start_button.png',
-          height: 60,
-        ),
+              padding: EdgeInsets.all(8), // space around the icon
+              child: Icon(
+                Icons.exit_to_app,
+                color: Colors.yellowAccent,
+                size: 36,
+              ),
+            ),
+          ),
+
+        ],
       ),
     );
   }
-
-// Updated Future to use widget.botCount
-  Future<void> _showSearchingPopup(BuildContext context, int players) async {
-    int foundPlayers = 0; // Reset at the start of the dialog
-
-    return showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) {
-        void findNextPlayer(void Function(void Function()) setState) {
-          if (foundPlayers >= players) {
-            Future.delayed(const Duration(seconds: 1), () {
-              if (Navigator.canPop(context)) Navigator.of(context).pop();
-            });
-            return;
-          }
-
-          // Random delay between 1s (1000ms) and 3s (3000ms)
-          final randomDelay = Duration(milliseconds: 1000 + Random().nextInt(2001));
-          Future.delayed(randomDelay, () {
-            if (!Navigator.canPop(context)) return;
-            setState(() {
-              foundPlayers++;
-            });
-            findNextPlayer(setState);
-          });
-        }
-
-        return StatefulBuilder(
-          builder: (context, setState) {
-            if (foundPlayers == 0) {
-              findNextPlayer(setState);
-            }
-
-            return Dialog(
-              backgroundColor: Colors.green.shade900.withOpacity(0.9),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const CircularProgressIndicator(
-                      color: Colors.yellowAccent,
-                      strokeWidth: 4,
-                    ),
-                    const SizedBox(height: 20),
-                    Text(
-                      "$foundPlayers/$players",
-                      style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 20),
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      foundPlayers < players ? "Searching..." : "⚡ Match Found!",
-                      style: const TextStyle(
-                          color: Colors.white70,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16),
-                    ),
-                    const SizedBox(height: 15),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: List.generate(players, (index) {
-                        bool isActive = index < foundPlayers;
-                        return AnimatedContainer(
-                          duration: const Duration(milliseconds: 400),
-                          margin: const EdgeInsets.symmetric(horizontal: 6),
-                          width: 24,
-                          height: 24,
-                          decoration: BoxDecoration(
-                            color: isActive ? Colors.yellowAccent : Colors.grey[600],
-                            shape: BoxShape.circle,
-                            boxShadow: isActive
-                                ? [
-                              BoxShadow(
-                                color: Colors.yellowAccent.withOpacity(0.7),
-                                blurRadius: 10,
-                                spreadRadius: 2,
-                              )
-                            ]
-                                : [],
-                          ),
-                          child: isActive
-                              ? const Icon(Icons.person, size: 14, color: Colors.white)
-                              : null,
-                        );
-                      }),
-                    ),
-                    const SizedBox(height: 12),
-                    const Text("Please wait...",
-                        style: TextStyle(color: Colors.white70, fontSize: 14)),
-                  ],
-                ),
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
 }
-
