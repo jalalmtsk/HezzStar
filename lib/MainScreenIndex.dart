@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:hezzstar/IndexPages/Settings/SettingPage.dart';
 import 'package:hezzstar/Shop/MainShopIndex.dart';
+import 'IndexPages/EventsPage/EventPage.dart';
 import 'IndexPages/HomePage/HomePage.dart';
-import 'IndexPages/SettingsPage/SettingsPage.dart';
 import 'main.dart';
 import 'dart:math';
 
@@ -13,14 +14,14 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
-  int _selectedIndex = 0;
+  int _selectedIndex = 2;
 
   final List<Widget> _pages = [
     const CollectionsPage(),
     const MainCardShopPage(),
     const HomePage(),
     const EventsPage(),
-    SettingsPage(),
+    const SettingsPage(),
   ];
 
   late final AnimationController _pulseController;

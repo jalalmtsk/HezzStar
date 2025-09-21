@@ -1,57 +1,89 @@
 import 'package:flutter/material.dart';
-import 'package:hezzstar/Hezz2FinalGame/Screen/GameLauncher/CardGameLauncher.dart';
-import 'package:hezzstar/tools/AudioManager/AudioManager.dart';
-import 'package:hezzstar/widgets/userStatut/userStatus.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
+
+import 'package:hezzstar/tools/AudioManager/AudioManager.dart';
+import 'package:hezzstar/tools/ConnectivityManager/ConnectivityManager.dart';
+import 'package:hezzstar/tools/LifeCycleManager.dart';
 
 import 'ExperieneManager.dart';
 import 'MainScreenIndex.dart';
+import 'l10n/AmazighMaterialLocalizations.dart';
+import 'l10n/app_localizations.dart';
 
-void main() {
+
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+AppLocalizations tr(BuildContext context) => AppLocalizations.of(context)!;
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+  ]);
+
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: []);
 
   runApp(
-      MultiProvider(
-        providers: [
-          ChangeNotifierProvider(create: (_) => ExperienceManager()),
-          ChangeNotifierProvider(create: (_) => AudioManager()),
-        ],
-          child : ParchiStarNextLevel())
-      );
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => ExperienceManager()),
+        ChangeNotifierProvider(create: (_) => AudioManager()),
+        ChangeNotifierProvider(create: (_) => ConnectivityService()),
+      ],
+      child: AppLifecycleManager(
+        child: MyApp(),
+      ),
+    ),
+  );
 }
 
-class ParchiStarNextLevel extends StatelessWidget {
-  const ParchiStarNextLevel({super.key});
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: const MainScreen(),
+    return Consumer<ExperienceManager>(
+      builder: (context, xpManager, child) {
+        final currentLocale = Locale(xpManager.userProfile.preferredLanguage);
+
+        return MaterialApp(
+          debugShowCheckedModeBanner: false,
+          navigatorKey: navigatorKey,
+          home: const MainScreen(),
+          locale: currentLocale,
+
+          // ✅ Add localization support
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            AmazighMaterialLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+
+          supportedLocales: const [
+            Locale("en"), // English
+            Locale("ar"), // Arabic
+            Locale("fr"), // French
+            Locale("es"), // Spanish
+            Locale("zgh"), // Amazigh (standard code)
+          ],
+
+          localeResolutionCallback: (locale, supportedLocales) {
+            if (locale == null) return const Locale('en');
+
+            for (var supportedLocale in supportedLocales) {
+              if (supportedLocale.languageCode == locale.languageCode) {
+                return supportedLocale;
+              }
+            }
+            return const Locale('en'); // fallback
+          },
+        );
+      },
     );
-  }
-}
-
-
-class MyApp extends StatelessWidget{
-  Widget build(BuildContext context){
-    return Placeholder();
-  }
-}
-
-// Placeholder Pages
-class FriendsPage extends StatelessWidget {
-  const FriendsPage({super.key});
-  @override
-  Widget build(BuildContext context) {
-    return const Center(child: Text('Friends Page', style: TextStyle(fontSize: 24)));
-  }
-}
-
-class EventsPage extends StatelessWidget {
-  const EventsPage({super.key});
-  @override
-  Widget build(BuildContext context) {
-    return const Center(child: Text('Events Page', style: TextStyle(fontSize: 24)));
   }
 }
 
@@ -59,6 +91,11 @@ class CollectionsPage extends StatelessWidget {
   const CollectionsPage({super.key});
   @override
   Widget build(BuildContext context) {
-    return const Center(child: Text('Collections Page', style: TextStyle(fontSize: 24)));
+    return Center(
+      child: Text(
+"Collection",
+        style: const TextStyle(fontSize: 24),
+      ),
+    );
   }
 }

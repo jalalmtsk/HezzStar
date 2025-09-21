@@ -1,0 +1,8 @@
+{
+  "@@locale": "en",
+  "hello": "Hello",
+  "welcome": "Welcome to the game!",
+  "settings": "Settings",
+  "collections": "Collections",
+  "add" : "Add"
+}

@@ -40,13 +40,13 @@ class AvatarGridWidget extends StatelessWidget {
               child: const Text("Cancel"),
             ),
             TextButton(
-              onPressed: () {
+              onPressed: () async {
                 bool success = false;
 
                 if (currency == CurrencyType.gold) {
-                  success = xpManager.spendGold(cost);
+                  success = await xpManager.spendGold(cost);
                 } else {
-                  success = xpManager.spendGems(cost);
+                  success = await xpManager.spendGems(cost);
                 }
 
                 if (success) {

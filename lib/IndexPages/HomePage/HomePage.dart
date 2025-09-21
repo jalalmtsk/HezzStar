@@ -1,9 +1,11 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:hezzstar/ExperieneManager.dart';
+import 'package:hezzstar/tools/LanguageMenu.dart';
 import 'package:provider/provider.dart';
 
 import '../../Hezz2FinalGame/Screen/GameLauncher/CardGameLauncher.dart';
+import '../../main.dart';
 import '../../widgets/userStatut/userStatus.dart';
 import 'AvatarSelectionPopup.dart';
 
@@ -108,6 +110,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                                       ? AssetImage(xpManager.selectedAvatar!)
                                       : const AssetImage("assets/images/Skins/AvatarSkins/DefaultUser.png"),
                                 ),
+                                LanguageMenu(colorButton: Colors.white)
                               ],
                             )
 
@@ -142,7 +145,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                         xpManager.addGems(40000);
                       },
                       child: Text(
-                        "💎 Add 30k Gold",
+                        tr(context).add,
                       ),
                     ),
                   ),

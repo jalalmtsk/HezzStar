@@ -8,6 +8,7 @@ import 'package:hezzstar/tools/AudioManager/AudioManager.dart';
 import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 
+import '../../IndexPages/Settings/SettingDialog.dart';
 import '../Models/Cards.dart';
 import '../Models/Deck.dart';
 import '../Tools/BotStack.dart';
@@ -1378,9 +1379,14 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                               players: widget.botCount + 1,
                               prize: widget.selectedBet * (widget.botCount + 1),
                               onSettings: () {
-                                entry?.remove();
-                                //_openSettings();
+                                entry?.remove(); // keep your logic if you’re using OverlayEntry
+                                // ✅ Open the settings dialog
+                                showDialog(
+                                  context: context,
+                                  builder: (context) => const SettingsDialog(),
+                                );
                               },
+
                               onExit: () {
                                 entry?.remove();
                                 //_exitGame();
@@ -1407,13 +1413,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(color: Colors.white24),
                         ),
-                        child: const Text(
-                          "Game Info",
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14),
-                        ),
+                        child: const Icon(Icons.list,color: Colors.white,),
                       ),
                     );
                   },
@@ -1586,31 +1586,6 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
           ),
         );
       },
-    );
-  }
-
-  Widget _reactionButton(String emoji, String text) {
-    return GestureDetector(
-      onTap: () {
-        // Handle emoji click
-        print("Selected: $text $emoji");
-        // Optionally close the dialog:
-        // Navigator.of(context).pop();
-      },
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            emoji,
-            style: const TextStyle(fontSize: 28),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            text,
-            style: const TextStyle(color: Colors.white, fontSize: 12),
-          ),
-        ],
-      ),
     );
   }
 }

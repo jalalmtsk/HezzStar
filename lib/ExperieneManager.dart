@@ -1,7 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'Manager/UserProfileManager.dart';
 
 class ExperienceManager with ChangeNotifier {
+  late UserProfile userProfile = UserProfile();
+
   int _experience = 0;
   int _gold = 0;
   int _gems = 0;
@@ -18,6 +21,9 @@ class ExperienceManager with ChangeNotifier {
   List<String> _unlockedAvatars = [];
   String? _selectedAvatar;
 
+  // ---------------------------
+  // GETTERS
+  // ---------------------------
   int get experience => _experience;
   int get gold => _gold;
   int get gems => _gems;
@@ -28,6 +34,17 @@ class ExperienceManager with ChangeNotifier {
   List<String> get unlockedAvatars => _unlockedAvatars;
   String? get selectedAvatar => _selectedAvatar;
 
+  String get preferredLanguage => userProfile.preferredLanguage;
+
+  // ---------------------------
+  // USER PROFILE GETTERS
+  // ---------------------------
+  String get fullName => userProfile.fullName;
+  String get username => userProfile.username;
+  int get age => userProfile.age;
+  String get nationality => userProfile.nationality;
+  String get gender => userProfile.gender;
+
   ExperienceManager() {
     _loadData();
   }
@@ -37,6 +54,8 @@ class ExperienceManager with ChangeNotifier {
   // ---------------------------
   Future<void> _loadData() async {
     final prefs = await SharedPreferences.getInstance();
+
+    // Load resources
     _experience = prefs.getInt('experience') ?? 0;
     _gold = prefs.getInt('gold') ?? 0;
     _gems = prefs.getInt('gems') ?? 0;
@@ -47,59 +66,63 @@ class ExperienceManager with ChangeNotifier {
     _unlockedAvatars = prefs.getStringList('unlockedAvatars') ?? [];
     _selectedAvatar = prefs.getString('selectedAvatar');
 
+    // Load profile
+    userProfile = UserProfile.fromPrefs(prefs);
+
     notifyListeners();
   }
 
   Future<void> _saveData() async {
     final prefs = await SharedPreferences.getInstance();
+
+    // Save resources
     await prefs.setInt('experience', _experience);
     await prefs.setInt('gold', _gold);
     await prefs.setInt('gems', _gems);
     await prefs.setStringList('unlockedCards', _unlockedCards);
     await prefs.setStringList('unlockedAvatars', _unlockedAvatars);
-    if (_selectedCard != null) {
-      await prefs.setString('selectedCard', _selectedCard!);
-    }
-    if (_selectedAvatar != null) {
-      await prefs.setString('selectedAvatar', _selectedAvatar!);
-    }
+    if (_selectedCard != null) await prefs.setString('selectedCard', _selectedCard!);
+    if (_selectedAvatar != null) await prefs.setString('selectedAvatar', _selectedAvatar!);
+
+    // Save profile
+    await userProfile.saveToPrefs(prefs);
   }
 
   // ---------------------------
   // RESOURCE MANAGEMENT
   // ---------------------------
-  void addExperience(int amount) {
+  Future<void> addExperience(int amount) async {
     _experience += amount;
-    _saveData();
+    await _saveData();
     notifyListeners();
   }
 
-  void addGold(int amount) {
+  Future<void> addGold(int amount) async {
     _gold += amount;
-    _saveData();
+    await _saveData();
     notifyListeners();
   }
 
-  void addGems(int amount) {
+  Future<void> addGems(int amount) async {
     _gems += amount;
-    _saveData();
+    await _saveData();
     notifyListeners();
   }
 
-  bool spendGold(int amount) {
+  Future<bool> spendGold(int amount) async {
     if (_gold >= amount) {
       _gold -= amount;
-      _saveData();
+      await _saveData();
       notifyListeners();
       return true;
     }
     return false;
   }
 
-  bool spendGems(int amount) {
+  Future<bool> spendGems(int amount) async {
     if (_gems >= amount) {
       _gems -= amount;
-      _saveData();
+      await _saveData();
       notifyListeners();
       return true;
     }
@@ -118,18 +141,19 @@ class ExperienceManager with ChangeNotifier {
     }
   }
 
-  void resetAll() {
+  Future<void> resetAll() async {
     _experience = 0;
     _gold = 0;
     _gems = 0;
-
     _unlockedCards = [];
     _selectedCard = null;
-
     _unlockedAvatars = [];
     _selectedAvatar = null;
 
-    _saveData();
+    final prefs = await SharedPreferences.getInstance();
+    await userProfile.clearPrefs(prefs);
+
+    await _saveData();
     notifyListeners();
   }
 
@@ -144,18 +168,18 @@ class ExperienceManager with ChangeNotifier {
   // ---------------------------
   // CARD SYSTEM
   // ---------------------------
-  void unlockCard(String cardPath) {
+  Future<void> unlockCard(String cardPath) async {
     if (!_unlockedCards.contains(cardPath)) {
       _unlockedCards.add(cardPath);
-      _saveData();
+      await _saveData();
       notifyListeners();
     }
   }
 
-  void selectCard(String cardPath) {
+  Future<void> selectCard(String cardPath) async {
     if (_unlockedCards.contains(cardPath)) {
       _selectedCard = cardPath;
-      _saveData();
+      await _saveData();
       notifyListeners();
     }
   }
@@ -165,21 +189,60 @@ class ExperienceManager with ChangeNotifier {
   // ---------------------------
   // AVATAR SYSTEM
   // ---------------------------
-  void unlockAvatar(String avatarPath) {
+  Future<void> unlockAvatar(String avatarPath) async {
     if (!_unlockedAvatars.contains(avatarPath)) {
       _unlockedAvatars.add(avatarPath);
-      _saveData();
+      await _saveData();
       notifyListeners();
     }
   }
 
-  void selectAvatar(String avatarPath) {
+  Future<void> selectAvatar(String avatarPath) async {
     if (_unlockedAvatars.contains(avatarPath)) {
       _selectedAvatar = avatarPath;
-      _saveData();
+      await _saveData();
       notifyListeners();
     }
   }
 
   bool isAvatarUnlocked(String avatarPath) => _unlockedAvatars.contains(avatarPath);
+
+  // ---------------------------
+  // PROFILE SETTERS
+  // ---------------------------
+  Future<void> setFullName(String name) async {
+    userProfile.fullName = name;
+    await _saveData();
+    notifyListeners();
+  }
+
+  Future<void> setUsername(String name) async {
+    userProfile.username = name;
+    await _saveData();
+    notifyListeners();
+  }
+
+  Future<void> setAge(int age) async {
+    userProfile.age = age;
+    await _saveData();
+    notifyListeners();
+  }
+
+  Future<void> setNationality(String nationality) async {
+    userProfile.nationality = nationality;
+    await _saveData();
+    notifyListeners();
+  }
+
+  Future<void> setGender(String gender) async {
+    userProfile.gender = gender;
+    await _saveData();
+    notifyListeners();
+  }
+
+  Future<void> setPreferredLanguage(String languageCode) async {
+    userProfile.preferredLanguage = languageCode;
+    await _saveData();
+    notifyListeners();
+  }
 }
