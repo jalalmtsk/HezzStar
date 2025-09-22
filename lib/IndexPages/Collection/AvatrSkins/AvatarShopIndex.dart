@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:hezzstar/Shop/AvatrSkins/AvatarSkinTabs/CardMaster.dart';
-import 'package:hezzstar/Shop/AvatrSkins/AvatarSkinTabs/Elements.dart';
-import 'package:hezzstar/Shop/AvatrSkins/AvatarSkinTabs/Warriors.dart';
+
+import 'AvatarSkinTabs/CardMaster.dart';
+import 'AvatarSkinTabs/Elements.dart';
+import 'AvatarSkinTabs/Warriors.dart';
+
 
 class AvatarShopIndex extends StatelessWidget {
   const AvatarShopIndex({super.key});

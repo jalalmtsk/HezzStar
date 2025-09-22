@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../ExperieneManager.dart';
-import '../../tools/AudioManager/AudioManager.dart';
+import '../../../ExperieneManager.dart';
+import '../../../tools/AudioManager/AudioManager.dart';
+
 import 'CardItem.dart';
 import 'CurrencyTypeEnum.dart';
 
-class AvatarGridWidget extends StatelessWidget {
-  final List<Map<String, dynamic>> avatars;
+// Define currency types
 
-  const AvatarGridWidget({required this.avatars, super.key});
+class CardGridWidget extends StatelessWidget {
+  final List<Map<String, dynamic>> imageCards;
+
+  const CardGridWidget({required this.imageCards, super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -17,20 +20,14 @@ class AvatarGridWidget extends StatelessWidget {
     final audioManager = Provider.of<AudioManager>(context, listen: false);
 
     void showPurchaseDialog(
-        BuildContext parentContext,
-        String imagePath,
-        int cost,
-        CurrencyType currency,
-        ) {
-      String currencySymbol =
-      currency == CurrencyType.gold ? "💰 Gold" : "💎 Gems";
+        BuildContext parentContext, String imagePath, int cost, CurrencyType currency) {
+      String currencySymbol = currency == CurrencyType.gold ? "💰 Gold" : "💎 Gems";
 
       showDialog(
         context: parentContext,
         builder: (context) => AlertDialog(
           title: const Text("Confirm Purchase"),
-          content:
-          Text("Do you want to unlock this avatar for $cost $currencySymbol?"),
+          content: Text("Do you want to unlock this card for $cost $currencySymbol?"),
           actions: [
             TextButton(
               onPressed: () {
@@ -50,12 +47,12 @@ class AvatarGridWidget extends StatelessWidget {
                 }
 
                 if (success) {
-                  xpManager.unlockAvatar(imagePath);
-                  xpManager.selectAvatar(imagePath);
+                  xpManager.unlockCard(imagePath);
+                  xpManager.selectCard(imagePath);
                   audioManager.playEventSound("clickButton");
                   Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Avatar unlocked!")),
+                    const SnackBar(content: Text("Card unlocked!")),
                   );
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -63,10 +60,7 @@ class AvatarGridWidget extends StatelessWidget {
                   );
                 }
               },
-              child: const Text(
-                "Pay",
-                style: TextStyle(color: Colors.deepOrange),
-              ),
+              child: const Text("Pay", style: TextStyle(color: Colors.deepOrange)),
             ),
           ],
         ),
@@ -74,31 +68,31 @@ class AvatarGridWidget extends StatelessWidget {
     }
 
     return GridView.builder(
-      padding: const EdgeInsets.only(right: 50, left: 50, top: 10),
-      itemCount: avatars.length,
+      padding: const EdgeInsets.only(right: 10, left: 10, top: 10),
+      itemCount: imageCards.length,
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 3,
-        mainAxisSpacing: 12,
-        crossAxisSpacing: 12,
+        mainAxisSpacing: 20,
+        crossAxisSpacing: 20,
         childAspectRatio: 0.75,
       ),
       itemBuilder: (_, index) {
-        final item = avatars[index];
+        final item = imageCards[index];
         final imagePath = item['image'];
         final cost = item['cost'];
-        final currency = item['currency'] as CurrencyType; // 👈 read currency
-        final unlocked = xpManager.isAvatarUnlocked(imagePath);
-        final selected = xpManager.selectedAvatar == imagePath;
+        final currency = item['currency'] as CurrencyType; // 👈 gold or gems
+        final unlocked = xpManager.isCardUnlocked(imagePath);
+        final selected = xpManager.selectedCard == imagePath;
 
         return CardItemWidget(
           imagePath: imagePath,
           cost: cost,
-          currencyType: currency, // 👈 gold or gems
+          currencyType: currency, // 👈 pass it to widget
           unlocked: unlocked,
           selected: selected,
           userGold: xpManager.gold,
           userGems: xpManager.gems,
-          onSelect: () => xpManager.selectAvatar(imagePath),
+          onSelect: () => xpManager.selectCard(imagePath),
           onBuy: () => showPurchaseDialog(context, imagePath, cost, currency),
         );
       },

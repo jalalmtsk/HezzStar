@@ -2,9 +2,10 @@ import 'dart:math';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:hezzstar/IndexPages/Settings/SettingPage.dart';
-import 'package:hezzstar/Shop/MainShopIndex.dart';
+import 'IndexPages/Collection/MainCollectionPage.dart';
 import 'IndexPages/EventsPage/EventPage.dart';
 import 'IndexPages/HomePage/HomePage.dart';
+import 'IndexPages/ShopPage/ShopPage.dart';
 import 'main.dart';
 
 class MainScreen extends StatefulWidget {
@@ -18,8 +19,8 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   int _selectedIndex = 2;
 
   final List<Widget> _pages = [
-    const CollectionsPage(),
-    const MainCardShopPage(),
+    const ShopPage(),
+    const MainCollectionPage(),
     const HomePage(),
     const EventsPage(),
     const SettingsPage(),
@@ -66,10 +67,14 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     final tabWidth = (screenWidth - padding) / tabCount;
 
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         image: DecorationImage(
-          image: AssetImage("assets/UI/BackgroundImage/bg2.jpg"),
+          image: AssetImage("assets/UI/BackgroundImage/bg9.png"),
           fit: BoxFit.cover,
+          colorFilter: ColorFilter.mode(
+            Colors.black.withOpacity(0.5), // dark overlay on main background
+            BlendMode.darken,
+          ),
         ),
       ),
       child: Scaffold(
@@ -96,50 +101,35 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                 fit: StackFit.expand,
                 children: [
                   // Background image
-                  Image.asset(
-                    "assets/UI/BackgroundImage/bg2.jpg",
-                    fit: BoxFit.cover,
+                  Positioned.fill(
+                    child: Image.asset(
+                      "assets/UI/BackgroundImage/bg7.png",
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                  // Black shadow overlay
+                  Positioned.fill(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            Colors.black.withOpacity(0.6),
+                            Colors.black.withOpacity(0.85),
+                            Colors.black.withOpacity(0.8),
+                          ],
+                          begin: Alignment.bottomCenter,
+                          end: Alignment.topCenter,
+                        ),
+                      ),
+                    ),
                   ),
                   // Blur effect
-                  BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-                    child: Container(color: Colors.black.withOpacity(0.25)),
+                  Positioned.fill(
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
+                      child: Container(color: Colors.transparent),
+                    ),
                   ),
-
-                  // Top sliding indicator
-                  TweenAnimationBuilder<double>(
-                    tween: Tween<double>(begin: 2, end: _selectedIndex.toDouble()),
-                    duration: const Duration(milliseconds: 400),
-                    curve: Curves.easeOutBack,
-                    builder: (context, value, child) {
-                      final left = value * tabWidth;
-                      return Positioned(
-                        top: -2,
-                        left: left + tabWidth / 4,
-                        width: tabWidth / 2,
-                        child: Container(
-                          height: 6,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFF1C40F),
-                            borderRadius: BorderRadius.circular(12),
-                            boxShadow: [
-                              BoxShadow(
-                                color: const Color(0xFFF1C40F).withOpacity(0.7),
-                                blurRadius: 12,
-                                spreadRadius: 1,
-                              ),
-                              BoxShadow(
-                                color: const Color(0xFFF1C40F).withOpacity(0.3),
-                                blurRadius: 20,
-                                spreadRadius: 5,
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-
                   // BottomNavigationBar
                   BottomNavigationBar(
                     backgroundColor: Colors.transparent,
@@ -155,17 +145,18 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                       color: Color(0xFFF1C40F),
                     ),
                     items: [
+
                       _buildNavItem(
                         index: 0,
-                        label: "Collections",
-                        selectedIcon: 'assets/UI/Icons/Collection_Icon.png',
-                        unselectedIcon: 'assets/UI/Icons/Collection_Icon.png',
-                      ),
-                      _buildNavItem(
-                        index: 1,
                         label: "Shop",
                         selectedIcon: 'assets/UI/Icons/Shop_Icon.png',
                         unselectedIcon: 'assets/UI/Icons/Shop_Icon.png',
+                      ),
+                      _buildNavItem(
+                        index: 1,
+                        label: "Collections",
+                        selectedIcon: 'assets/UI/Icons/Collection_Icon.png',
+                        unselectedIcon: 'assets/UI/Icons/Collection_Icon.png',
                       ),
                       _buildNavItem(
                         index: 2,

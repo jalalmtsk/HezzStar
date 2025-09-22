@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:hezzstar/Shop/Tools/AvatarGridWidget.dart';
 
+import '../../Tools/AvatarGridWidget.dart';
 import '../../Tools/CurrencyTypeEnum.dart';
 
 class CardMaster extends StatelessWidget {

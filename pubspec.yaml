@@ -89,6 +89,8 @@ flutter:
     - assets/images/Skins/BackCard_Skins/Mythical/
     - assets/UI/Containers/
     - assets/UI/Icons/
+    - assets/UI/Icons/Gamification/
+    - assets/UI/Icons/TabBars_Icons/
     - assets/UI/Buttons/
     - assets/ImpoImages/
 
