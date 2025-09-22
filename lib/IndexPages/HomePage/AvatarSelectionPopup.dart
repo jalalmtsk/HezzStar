@@ -28,18 +28,35 @@ class AvatarDetailsPopup {
                 ),
                 const SizedBox(height: 10),
 
-                // Name & Rank
-                Text(
-                  "Player Name",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
+                // Name with Edit Icon
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      xpManager.userProfile.username ?? "UserName",
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    GestureDetector(
+                      onTap: () {
+                        _showEditUsernameDialog(context, xpManager);
+                      },
+                      child: const Icon(
+                        Icons.edit,
+                        color: Colors.amber,
+                        size: 20,
+                      ),
+                    ),
+                  ],
                 ),
+
                 Text(
                   "Rank: Diamond III",
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: Colors.amber,
                     fontSize: 16,
                   ),
@@ -50,7 +67,7 @@ class AvatarDetailsPopup {
                 GridView.count(
                   crossAxisCount: 2,
                   shrinkWrap: true,
-                  physics: NeverScrollableScrollPhysics(),
+                  physics: const NeverScrollableScrollPhysics(),
                   childAspectRatio: 3,
                   mainAxisSpacing: 8,
                   crossAxisSpacing: 8,
@@ -67,7 +84,6 @@ class AvatarDetailsPopup {
                 ),
                 const SizedBox(height: 20),
 
-                // Unlocks Section
                 Divider(color: Colors.white24),
                 const SizedBox(height: 10),
                 Row(
@@ -89,12 +105,60 @@ class AvatarDetailsPopup {
                     ),
                   ),
                   onPressed: () => Navigator.pop(context),
-                  child: Text("Close"),
+                  child: const Text("Close"),
                 ),
               ],
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  static void _showEditUsernameDialog(BuildContext context, ExperienceManager xpManager) {
+    final controller = TextEditingController(text: xpManager.userProfile.username ?? "");
+
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        backgroundColor: Colors.black87,
+        title: const Text(
+          "Edit Username",
+          style: TextStyle(color: Colors.white),
+        ),
+        content: TextField(
+          controller: controller,
+          style: const TextStyle(color: Colors.white),
+          decoration: const InputDecoration(
+            hintText: "Enter new username",
+            hintStyle: TextStyle(color: Colors.white54),
+            enabledBorder: UnderlineInputBorder(
+              borderSide: BorderSide(color: Colors.amber),
+            ),
+            focusedBorder: UnderlineInputBorder(
+              borderSide: BorderSide(color: Colors.amber, width: 2),
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Cancel", style: TextStyle(color: Colors.white70)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.amber),
+            onPressed: () async {
+              if (controller.text.trim().isNotEmpty) {
+                await xpManager.setUsername(controller.text.trim());
+              }
+              Navigator.pop(context); // close input dialog
+              Navigator.pop(context); // close avatar popup
+              show(context, xpManager); // reopen updated popup
+            },
+            child: const Text("Save", style: TextStyle(color: Colors.black)),
+          ),
+        ],
       ),
     );
   }
@@ -109,12 +173,12 @@ class AvatarDetailsPopup {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(value,
-              style: TextStyle(
+              style: const TextStyle(
                   color: Colors.white,
                   fontSize: 16,
                   fontWeight: FontWeight.bold)),
           Text(title,
-              style: TextStyle(
+              style: const TextStyle(
                 color: Colors.white70,
                 fontSize: 12,
               )),
@@ -127,12 +191,12 @@ class AvatarDetailsPopup {
     return Column(
       children: [
         Text(value,
-            style: TextStyle(
+            style: const TextStyle(
                 color: Colors.white,
                 fontSize: 18,
                 fontWeight: FontWeight.bold)),
         Text(title,
-            style: TextStyle(
+            style: const TextStyle(
               color: Colors.white70,
               fontSize: 14,
             )),

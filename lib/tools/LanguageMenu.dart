@@ -18,7 +18,7 @@ class LanguageMenu extends StatelessWidget {
     final audioManager = Provider.of<AudioManager>(context,listen: false);
     return PopupMenuButton<Locale>(
       icon: Lottie.asset(
-        'assets/animations/MessageAnimations/LaughingCat.json',
+        'assets/animations/AnimationSFX/LanguageAnimation.json',
         width: 35,
         height: 30,
         fit: BoxFit.cover,

@@ -1,10 +1,11 @@
+import 'dart:math';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:hezzstar/IndexPages/Settings/SettingPage.dart';
 import 'package:hezzstar/Shop/MainShopIndex.dart';
 import 'IndexPages/EventsPage/EventPage.dart';
 import 'IndexPages/HomePage/HomePage.dart';
 import 'main.dart';
-import 'dart:math';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -30,6 +31,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
+
     _pulseController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 700),
@@ -58,80 +60,135 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      extendBody: true,
-      body: _pages[_selectedIndex],
-      bottomNavigationBar: SafeArea(
-        minimum: const EdgeInsets.symmetric(horizontal: 25, vertical: 2),
-        child: Container(
-          height: 100,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(30),
-            gradient: const LinearGradient(
-              colors: [Color(0x9B59B6), Color(0xF1C40F)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.6),
-                blurRadius: 20,
-                offset: const Offset(0, 8),
-              ),
-            ],
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(30),
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                BottomNavigationBar(
-                  backgroundColor: Colors.transparent,
-                  elevation: 0,
-                  selectedItemColor: Colors.white,
-                  unselectedItemColor: Colors.white70,
-                  currentIndex: _selectedIndex,
-                  onTap: _onItemTapped,
-                  type: BottomNavigationBarType.fixed,
-                  showUnselectedLabels: true,
-                  selectedLabelStyle: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xF1C40F),
-                  ),
-                  items: [
-                    _buildNavItem(
-                      index: 0,
-                      label: "Collections",
-                      selectedIcon: 'assets/UI/Icons/Collection_Icon.png',
-                      unselectedIcon: 'assets/UI/Icons/Collection_Icon.png',
-                    ),
-                    _buildNavItem(
-                      index: 1,
-                      label: "Shop",
-                      selectedIcon: 'assets/UI/Icons/Shop_Icon.png',
-                      unselectedIcon: 'assets/UI/Icons/Shop_Icon.png',
-                    ),
-                    _buildNavItem(
-                      index: 2,
-                      label: "Home",
-                      selectedIcon: 'assets/UI/Icons/Home_Icon.png',
-                      unselectedIcon: 'assets/UI/Icons/Home_Icon.png',
-                    ),
-                    _buildNavItem(
-                      index: 3,
-                      label: "Events",
-                      selectedIcon: 'assets/UI/Icons/Events_Icon.png',
-                      unselectedIcon: 'assets/UI/Icons/Events_Icon.png',
-                    ),
-                    _buildNavItem(
-                      index: 4,
-                      label: "Settings",
-                      selectedIcon: 'assets/UI/Icons/Settings_Icon.png',
-                      unselectedIcon: 'assets/UI/Icons/Settings_Icon.png',
-                    ),
-                  ],
+    final screenWidth = MediaQuery.of(context).size.width;
+    final tabCount = _pages.length;
+    final padding = 50.0;
+    final tabWidth = (screenWidth - padding) / tabCount;
+
+    return Container(
+      decoration: const BoxDecoration(
+        image: DecorationImage(
+          image: AssetImage("assets/UI/BackgroundImage/bg2.jpg"),
+          fit: BoxFit.cover,
+        ),
+      ),
+      child: Scaffold(
+        extendBody: true,
+        backgroundColor: Colors.transparent,
+        body: _pages[_selectedIndex],
+        bottomNavigationBar: SafeArea(
+          minimum: const EdgeInsets.symmetric(horizontal: 25, vertical: 8),
+          child: Container(
+            height: 100,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(30),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.7),
+                  blurRadius: 20,
+                  offset: const Offset(0, 8),
                 ),
               ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(30),
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  // Background image
+                  Image.asset(
+                    "assets/UI/BackgroundImage/bg2.jpg",
+                    fit: BoxFit.cover,
+                  ),
+                  // Blur effect
+                  BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+                    child: Container(color: Colors.black.withOpacity(0.25)),
+                  ),
+
+                  // Top sliding indicator
+                  TweenAnimationBuilder<double>(
+                    tween: Tween<double>(begin: 2, end: _selectedIndex.toDouble()),
+                    duration: const Duration(milliseconds: 400),
+                    curve: Curves.easeOutBack,
+                    builder: (context, value, child) {
+                      final left = value * tabWidth;
+                      return Positioned(
+                        top: -2,
+                        left: left + tabWidth / 4,
+                        width: tabWidth / 2,
+                        child: Container(
+                          height: 6,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF1C40F),
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFFF1C40F).withOpacity(0.7),
+                                blurRadius: 12,
+                                spreadRadius: 1,
+                              ),
+                              BoxShadow(
+                                color: const Color(0xFFF1C40F).withOpacity(0.3),
+                                blurRadius: 20,
+                                spreadRadius: 5,
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+
+                  // BottomNavigationBar
+                  BottomNavigationBar(
+                    backgroundColor: Colors.transparent,
+                    elevation: 0,
+                    selectedItemColor: Colors.white,
+                    unselectedItemColor: Colors.white70,
+                    currentIndex: _selectedIndex,
+                    onTap: _onItemTapped,
+                    type: BottomNavigationBarType.fixed,
+                    showUnselectedLabels: true,
+                    selectedLabelStyle: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFFF1C40F),
+                    ),
+                    items: [
+                      _buildNavItem(
+                        index: 0,
+                        label: "Collections",
+                        selectedIcon: 'assets/UI/Icons/Collection_Icon.png',
+                        unselectedIcon: 'assets/UI/Icons/Collection_Icon.png',
+                      ),
+                      _buildNavItem(
+                        index: 1,
+                        label: "Shop",
+                        selectedIcon: 'assets/UI/Icons/Shop_Icon.png',
+                        unselectedIcon: 'assets/UI/Icons/Shop_Icon.png',
+                      ),
+                      _buildNavItem(
+                        index: 2,
+                        label: "Home",
+                        selectedIcon: 'assets/UI/Icons/Home_Icon.png',
+                        unselectedIcon: 'assets/UI/Icons/Home_Icon.png',
+                      ),
+                      _buildNavItem(
+                        index: 3,
+                        label: "Events",
+                        selectedIcon: 'assets/UI/Icons/Events_Icon.png',
+                        unselectedIcon: 'assets/UI/Icons/Events_Icon.png',
+                      ),
+                      _buildNavItem(
+                        index: 4,
+                        label: "Settings",
+                        selectedIcon: 'assets/UI/Icons/Settings_Icon.png',
+                        unselectedIcon: 'assets/UI/Icons/Settings_Icon.png',
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -150,7 +207,9 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     return BottomNavigationBarItem(
       icon: Stack(
         alignment: Alignment.center,
+        clipBehavior: Clip.none,
         children: [
+          // Pulse effect behind icon
           if (isSelected)
             AnimatedBuilder(
               animation: _pulseController,
@@ -163,18 +222,18 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       gradient: const LinearGradient(
-                        colors: [Color(0xF1C40F), Color(0x9B59B6)],
+                        colors: [Color(0xFFF1C40F), Color(0xFF9B59B6)],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: Color(0xF1C40F).withOpacity(0.8),
+                          color: Color(0xFFF1C40F).withOpacity(0.8),
                           blurRadius: 20,
                           spreadRadius: 2,
                         ),
                         BoxShadow(
-                          color: Color(0x9B59B6).withOpacity(0.6),
+                          color: Color(0xFF9B59B6).withOpacity(0.6),
                           blurRadius: 30,
                           spreadRadius: 3,
                         ),
@@ -188,6 +247,8 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                 );
               },
             ),
+
+          // Spark animation
           if (isSelected)
             AnimatedBuilder(
               animation: _sparkController,
@@ -198,6 +259,8 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                 );
               },
             ),
+
+          // Icon
           ScaleTransition(
             scale: isSelected
                 ? Tween(begin: 1.0, end: 1.2).animate(_pulseController)
@@ -214,7 +277,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   }
 }
 
-// 🔹 Spark effect painter
+// Spark effect painter
 class _SparkPainter extends CustomPainter {
   final double progress;
   final Random _random = Random();
@@ -225,7 +288,7 @@ class _SparkPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
     final paint = Paint()
-      ..color = const Color(0xF1C40F).withOpacity(0.6)
+      ..color = const Color(0xFFF1C40F).withOpacity(0.6)
       ..strokeWidth = 2
       ..strokeCap = StrokeCap.round;
 

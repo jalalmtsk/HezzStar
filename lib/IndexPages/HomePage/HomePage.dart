@@ -90,36 +90,56 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                         padding: const EdgeInsets.symmetric(horizontal: 14.0),
                         child: GestureDetector(
                           onTap: () => AvatarDetailsPopup.show(context, xpManager),
-                          child: Container(
+                          child: SizedBox(
+                            height: 160,
+                            width: 140,
                             child: Stack(
                               alignment: Alignment.center,
                               children: [
                                 // Background photo icon
                                 Image.asset(
-                                  "assets/UI/Icons/AvatarProfile_Icon.png", // replace with your background image
-                                  height: 150, // adjust size
-                                  width: 120,
+                                  "assets/UI/Icons/AvatarProfile_Icon.png",
+                                  height: 160,
+                                  width: 140,
                                   fit: BoxFit.contain,
                                 ),
 
-                                // CircleAvatar on top
+                                // Username text BEHIND avatar
+                                Positioned(
+                                  bottom: 0, // adjust to move text up/down
+                                  child: Text(
+                                    xpManager.userProfile.username ?? "Player Name",
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white.withOpacity(0.8),
+                                      shadows: [
+                                        Shadow(
+                                          color: Colors.black.withOpacity(0.6),
+                                          blurRadius: 6,
+                                          offset: const Offset(0, 2),
+                                        )
+                                      ],
+                                    ),
+                                  ),
+                                ),
+
+                                // CircleAvatar in FRONT
                                 CircleAvatar(
-                                  radius: 28,
+                                  radius: 32,
                                   backgroundColor: Colors.grey.withValues(alpha: 0.8),
                                   backgroundImage: xpManager.selectedAvatar != null
                                       ? AssetImage(xpManager.selectedAvatar!)
                                       : const AssetImage("assets/images/Skins/AvatarSkins/DefaultUser.png"),
                                 ),
-                                LanguageMenu(colorButton: Colors.white)
                               ],
-                            )
-
+                            ),
                           ),
                         ),
                       ),
+                      LanguageMenu(colorButton: Colors.white)
                     ],
                   ),
-
                   const SizedBox(height: 100,),
 
                   // 🎮 Expanded Horizontal Game Modes

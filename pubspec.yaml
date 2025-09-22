@@ -78,11 +78,13 @@ flutter:
     - assets/images/cards/
     - assets/images/CardSuits/
     - assets/UI/modes/
+    - assets/UI/BackgroundImage/
     - assets/images/Skins/BackCard_Skins/
     - assets/images/Skins/BackCard_Skins/Fantasy/
     - assets/images/Skins/AvatarSkins/
     - assets/images/Skins/AvatarSkins/Warriors/
     - assets/images/Skins/AvatarSkins/CardMaster/
+    - assets/images/Skins/AvatarSkins/Elements/
     - assets/images/Skins/TableSkins/
     - assets/images/Skins/BackCard_Skins/Mythical/
     - assets/UI/Containers/

@@ -74,12 +74,12 @@ class AvatarGridWidget extends StatelessWidget {
     }
 
     return GridView.builder(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.only(right: 50, left: 50, top: 10),
       itemCount: avatars.length,
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 4,
-        mainAxisSpacing: 18,
-        crossAxisSpacing: 18,
+        crossAxisCount: 3,
+        mainAxisSpacing: 12,
+        crossAxisSpacing: 12,
         childAspectRatio: 0.75,
       ),
       itemBuilder: (_, index) {

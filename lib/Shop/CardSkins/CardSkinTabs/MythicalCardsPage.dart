@@ -8,6 +8,8 @@ class MythicalCardsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.transparent,
+
       body: CardGridWidget(
         imageCards: [
           {"image": "assets/images/Skins/BackCard_Skins/Mythical/MythCard1.jpg",'currency': CurrencyType.gems, "cost": 10},

@@ -67,10 +67,10 @@ class CardGridWidget extends StatelessWidget {
     }
 
     return GridView.builder(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.only(right: 50, left: 50, top: 10),
       itemCount: imageCards.length,
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 4,
+        crossAxisCount: 3,
         mainAxisSpacing: 18,
         crossAxisSpacing: 18,
         childAspectRatio: 0.75,

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hezzstar/Shop/AvatrSkins/AvatarSkinTabs/CardMaster.dart';
+import 'package:hezzstar/Shop/AvatrSkins/AvatarSkinTabs/Elements.dart';
 import 'package:hezzstar/Shop/AvatrSkins/AvatarSkinTabs/Warriors.dart';
-
 
 class AvatarShopIndex extends StatelessWidget {
   const AvatarShopIndex({super.key});
@@ -11,12 +11,27 @@ class AvatarShopIndex extends StatelessWidget {
     return DefaultTabController(
       length: 3, // Number of tabs
       child: Scaffold(
+        backgroundColor: Colors.transparent, // keep body transparent
         appBar: AppBar(
-          title: const TabBar(
+          backgroundColor: Colors.transparent, // transparent AppBar
+          elevation: 0, // remove shadow
+          centerTitle: true,
+          title: const Text(
+            "Avatar Skins",
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          bottom: const TabBar(
+            indicatorColor: Colors.yellowAccent, // glowing indicator
+            labelColor: Colors.white,
+            unselectedLabelColor: Colors.white54,
+            indicatorWeight: 3,
             tabs: [
               Tab(text: "CardMaster"),
               Tab(text: "Warriors"),
-              Tab(text: "Natural"),
+              Tab(text: "Elements"),
             ],
           ),
         ),
@@ -24,7 +39,7 @@ class AvatarShopIndex extends StatelessWidget {
           children: [
             CardMaster(),
             Warriors(),
-
+            Elements()
           ],
         ),
       ),

@@ -8,6 +8,7 @@ class FantasyCardsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.transparent,
       body: CardGridWidget(
         imageCards: [
           {"image": "assets/images/Skins/BackCard_Skins/Fantasy/Crystal1.jpg", 'currency': CurrencyType.gold, "cost": 50},
