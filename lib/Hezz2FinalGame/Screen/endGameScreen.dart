@@ -1,8 +1,9 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:hezzstar/Hezz2FinalGame/Models/GameCardEnums.dart';
-import 'package:hezzstar/Hezz2FinalGame/Models/Cards.dart';
-import '../../ExperieneManager.dart';
 import 'package:provider/provider.dart';
+import '../../ExperieneManager.dart';
+import 'package:hezzstar/Hezz2FinalGame/Models/Cards.dart';
+import 'package:hezzstar/Hezz2FinalGame/Models/GameCardEnums.dart';
 
 class EndGameScreen extends StatefulWidget {
   final List<List<PlayingCard>> hands;
@@ -12,41 +13,67 @@ class EndGameScreen extends StatefulWidget {
   final int betAmount;
 
   const EndGameScreen({
+    super.key,
     required this.hands,
     required this.winnerIndex,
     required this.gameModeType,
     required this.currentRound,
     required this.betAmount,
-    super.key,
   });
 
   @override
-  State<EndGameScreen> createState() => _EndGameScreenState();
+  State<EndGameScreen> createState() => _EndGameScreenLuxState();
 }
 
-class _EndGameScreenState extends State<EndGameScreen> {
+class _EndGameScreenLuxState extends State<EndGameScreen>
+    with TickerProviderStateMixin {
   bool _rewardGiven = false;
+  late AnimationController _fadeController;
+  late Animation<double> _fadeAnim;
+
+  Color primaryAccent = Colors.orangeAccent;
+  Color secondaryAccent = Colors.deepOrange;
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
+  void initState() {
+    super.initState();
+    _fadeController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 900),
+    );
+    _fadeAnim =
+        Tween<double>(begin: 0, end: 1).animate(CurvedAnimation(parent: _fadeController, curve: Curves.easeOut));
+
+    _fadeController.forward();
+
     if (!_rewardGiven) {
-      _giveReward();
+      WidgetsBinding.instance.addPostFrameCallback((_) => _giveReward());
       _rewardGiven = true;
     }
+
+    _applyTheme();
+  }
+
+  void _applyTheme() {
+    setState(() {
+      if (widget.gameModeType == GameModeType.playToWin) {
+        primaryAccent = Colors.orangeAccent;
+        secondaryAccent = Colors.deepOrange;
+      } else {
+        primaryAccent = Colors.redAccent;
+        secondaryAccent = Colors.black87;
+      }
+    });
   }
 
   void _giveReward() {
     final xpManager = Provider.of<ExperienceManager>(context, listen: false);
-    final int playerCount = widget.hands.length;
-    final int totalPool = playerCount * widget.betAmount;
-
+    final int totalPool = widget.hands.length * widget.betAmount;
     int reward = 0;
 
     if (widget.gameModeType == GameModeType.playToWin) {
       reward = widget.winnerIndex == 0 ? totalPool : 0;
     } else {
-      // Elimination Mode with percentage split
       List<double> percentages = [0.5, 0.25, 0.15, 0.10];
       reward = (totalPool *
           (widget.winnerIndex < percentages.length
@@ -55,10 +82,13 @@ class _EndGameScreenState extends State<EndGameScreen> {
           .toInt();
     }
 
-    // Add only to winner
-    if (reward > 0) {
-      xpManager.addGold(reward);
-    }
+    if (reward > 0) xpManager.addGold(reward);
+  }
+
+  @override
+  void dispose() {
+    _fadeController.dispose();
+    super.dispose();
   }
 
   @override
@@ -67,109 +97,155 @@ class _EndGameScreenState extends State<EndGameScreen> {
     final int totalPool = playerCount * widget.betAmount;
 
     Map<int, int> prizes = {};
-
-    if (widget.gameModeType == GameModeType.playToWin) {
-      for (int i = 0; i < playerCount; i++) {
-        prizes[i] = i == widget.winnerIndex ? totalPool : 0;
-      }
-    } else {
-      List<double> percentages = [0.5, 0.25, 0.15, 0.10];
-      for (int i = 0; i < playerCount; i++) {
-        prizes[i] =
-            (totalPool * (i < percentages.length ? percentages[i] : 0)).toInt();
-      }
+    List<double> percentages = [0.5, 0.25, 0.15, 0.10];
+    for (int i = 0; i < playerCount; i++) {
+      prizes[i] = widget.gameModeType == GameModeType.playToWin
+          ? (i == widget.winnerIndex ? totalPool : 0)
+          : (totalPool * (i < percentages.length ? percentages[i] : 0)).toInt();
     }
 
     return Scaffold(
-      backgroundColor: Colors.grey[100],
-      appBar: AppBar(title: const Text('Game Over')),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            const SizedBox(height: 16),
-            Text(
-              '${widget.winnerIndex == 0 ? 'You' : 'Bot ${widget.winnerIndex}'} Wins!',
-              style: const TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.orangeAccent),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              'Game Mode: ${widget.gameModeType == GameModeType.playToWin ? 'Play To Win' : 'Elimination'}',
-              style: const TextStyle(fontSize: 18, color: Colors.black87),
-            ),
-            if (widget.gameModeType == GameModeType.elimination)
-              Text(
-                'Rounds Played: ${widget.currentRound}',
-                style: const TextStyle(fontSize: 18, color: Colors.black87),
-              ),
-            const SizedBox(height: 24),
-
-            Expanded(
-              child: ListView.builder(
-                itemCount: playerCount,
-                itemBuilder: (context, index) {
-                  final gold = prizes[index] ?? 0;
-                  final isWinner = index == widget.winnerIndex;
-
-                  return Card(
-                    elevation: 4,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12)),
-                    color: isWinner ? Colors.orangeAccent : Colors.white,
-                    margin:
-                    const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-                    child: ListTile(
-                      leading: CircleAvatar(
-                        radius: 24,
-                        backgroundColor:
-                        isWinner ? Colors.white : Colors.grey[300],
-                        child: Text(
-                          index == 0 ? 'You' : 'B$index',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color:
-                            isWinner ? Colors.orangeAccent : Colors.black87,
-                          ),
-                        ),
-                      ),
-                      title: Text(
-                        isWinner ? 'Winner' : 'No Reward',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: isWinner ? Colors.white : Colors.black87,
-                        ),
-                      ),
-                      trailing: Text(
-                        isWinner ? '+$gold Gold' : '+0 Gold',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: isWinner ? Colors.white : Colors.black54,
-                        ),
+      body: Stack(
+        children: [
+          // Background with gradient overlay
+          Positioned.fill(child: _luxBackground()),
+          SafeArea(
+            child: FadeTransition(
+              opacity: _fadeAnim,
+              child: Column(
+                children: [
+                  const SizedBox(height: 8),
+                  _luxTitle(),
+                  const SizedBox(height: 24),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: ListView.builder(
+                        itemCount: playerCount,
+                        itemBuilder: (context, index) {
+                          final gold = prizes[index] ?? 0;
+                          final isWinner = index == widget.winnerIndex;
+                          return _luxPlayerCard(index, isWinner, gold);
+                        },
                       ),
                     ),
-                  );
-                },
+                  ),
+                  const SizedBox(height: 12),
+                  _luxBackButton(),
+                  const SizedBox(height: 16),
+                ],
               ),
             ),
+          ),
+        ],
+      ),
+    );
+  }
 
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () => Navigator.of(context).pop(),
-              style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.black87,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12))),
-              child: const Text(
-                'Back to Main Menu',
-                style: TextStyle(fontSize: 18, color: Colors.white),
-              ),
-            ),
+  Widget _luxBackground() {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 600),
+      decoration: BoxDecoration(
+        image: const DecorationImage(
+          image: AssetImage('assets/images/Skins/BackCard_Skins/bgLauncher.jpg'),
+          fit: BoxFit.cover,
+        ),
+        gradient: LinearGradient(
+          colors: [
+            primaryAccent.withOpacity(0.2),
+            secondaryAccent.withOpacity(0.1),
+            Colors.black.withOpacity(0.2),
           ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: RadialGradient(
+            center: const Alignment(0, -0.6),
+            radius: 1.0,
+            colors: [Colors.transparent, Colors.black.withOpacity(0.3)],
+            stops: const [0.6, 1.0],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _luxTitle() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(28),
+          gradient: LinearGradient(colors: [primaryAccent, secondaryAccent]),
+          boxShadow: [BoxShadow(color: primaryAccent.withOpacity(0.35), blurRadius: 12, offset: const Offset(0, 4))],
+        ),
+        child: Text(
+          '${widget.winnerIndex == 0 ? "You" : "Bot ${widget.winnerIndex}"} Wins!',
+          style: const TextStyle(
+            fontSize: 28,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+            shadows: [Shadow(color: Colors.black26, blurRadius: 4, offset: Offset(1, 1))],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _luxPlayerCard(int index, bool isWinner, int gold) {
+    return Card(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      color: isWinner ? primaryAccent : Colors.white,
+      elevation: isWinner ? 8 : 3,
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      child: ListTile(
+        leading: CircleAvatar(
+          radius: 26,
+          backgroundColor: isWinner ? Colors.white : Colors.grey[300],
+          child: Text(
+            index == 0 ? 'You' : 'B$index',
+            style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: isWinner ? primaryAccent : Colors.black87),
+          ),
+        ),
+        title: Text(
+          isWinner ? 'Winner' : 'No Reward',
+          style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: isWinner ? Colors.white : Colors.black87),
+        ),
+        trailing: Text(
+          '+$gold Gold',
+          style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 18,
+              color: isWinner ? Colors.white : Colors.black54),
+        ),
+      ),
+    );
+  }
+
+  Widget _luxBackButton() {
+    return GestureDetector(
+      onTap: () => Navigator.of(context).pop(),
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 32),
+        padding: const EdgeInsets.symmetric(vertical: 14),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(colors: [primaryAccent, secondaryAccent]),
+          borderRadius: BorderRadius.circular(18),
+          boxShadow: [BoxShadow(color: primaryAccent.withOpacity(0.4), blurRadius: 12, offset: const Offset(0, 6))],
+        ),
+        child: const Center(
+          child: Text(
+            'Back to Lobby',
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
+          ),
         ),
       ),
     );

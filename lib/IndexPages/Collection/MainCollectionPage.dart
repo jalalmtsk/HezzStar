@@ -17,6 +17,8 @@ class MainCollectionPage extends StatefulWidget {
 
 class _MainCollectionPageState extends State<MainCollectionPage>
     with TickerProviderStateMixin {
+
+  final GlobalKey goldKey = GlobalKey(); // <-- add this
   late TabController _tabController;
   late AnimationController _bounceController;
 
@@ -50,9 +52,9 @@ class _MainCollectionPageState extends State<MainCollectionPage>
         child: Column(
           children: [
             // 🔹 User Status Bar
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              child: UserStatusBar(),
+             Padding(
+              padding: EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+              child: UserStatusBar(goldKey: goldKey),
             ),
 
             const SizedBox(height: 12),

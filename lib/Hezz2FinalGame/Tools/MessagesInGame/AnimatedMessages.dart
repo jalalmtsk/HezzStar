@@ -22,10 +22,10 @@ class _AnimatedLottieEmojiBubbleState extends State<AnimatedLottieEmojiBubble>
   // 🔥 Funny Lottie animations (make sure JSON files exist in your assets!)
   final List<Map<String, String>> _funnyLotties = [
     {"file": "assets/animations/MessageAnimations/LaughingCat.json"},
-    {"file": "assets/animations/emojis/clap.json"},
-    {"file": "assets/animations/emojis/angry.json"},
-    {"file": "assets/animations/emojis/party.json"},
-    {"file": "assets/animations/emojis/sad.json"},
+    {"file": "assets/animations/MessageAnimations/AngryEmoji.json"},
+    {"file": "assets/animations/MessageAnimations/CoolEmoji.json"},
+    {"file": "assets/animations/MessageAnimations/StreamOfHearts.json"},
+    {"file": "assets/animations/MessageAnimations/MoneyEmoji.json"},
   ];
 
   void _showEmojiBubble() {
@@ -43,18 +43,18 @@ class _AnimatedLottieEmojiBubbleState extends State<AnimatedLottieEmojiBubble>
     _controllers = List.generate(_funnyLotties.length, (_) {
       return AnimationController(
         vsync: this,
-        duration: const Duration(milliseconds: 200),
+        duration: const Duration(milliseconds: 300),
       );
     });
 
     _overlayEntry = OverlayEntry(
       builder: (context) => Positioned(
         top: offset.dy - 120,
-        left: offset.dx + size.width / 2 - 160,
+        left: offset.dx + size.width / 2 - 350,
         child: Material(
           color: Colors.transparent,
           child: Container(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(6),
             decoration: BoxDecoration(
               color: Colors.black.withOpacity(0.8),
               borderRadius: BorderRadius.circular(16),
@@ -71,7 +71,33 @@ class _AnimatedLottieEmojiBubbleState extends State<AnimatedLottieEmojiBubble>
               children: List.generate(_funnyLotties.length, (index) {
                 return GestureDetector(
                   onTap: () {
-                    widget.onSelected(_funnyLotties[index]["file"]!); // ✅ send file path
+                    final selectedFile = _funnyLotties[index]["file"]!;
+                    widget.onSelected(selectedFile);
+
+                    // 🎭 Show the selected emoji animation in a new overlay
+                    final emojiOverlay = OverlayEntry(
+                      builder: (context) => Positioned(
+                        bottom: 150, // adjust position
+                        left: MediaQuery.of(context).size.width / 2 - 50,
+                        child: SizedBox(
+                          width: 100,
+                          height: 100,
+                          child: Lottie.asset(
+                            selectedFile,
+                            repeat: true, // loop
+                          ),
+                        ),
+                      ),
+                    );
+
+                    Overlay.of(context)?.insert(emojiOverlay);
+
+                    // ⏳ remove after 3 seconds
+                    Future.delayed(const Duration(milliseconds: 3500), () {
+                      emojiOverlay.remove();
+                    });
+
+                    // remove the emoji bubble menu
                     _removeOverlay();
                   },
                   child: Padding(
@@ -104,12 +130,12 @@ class _AnimatedLottieEmojiBubbleState extends State<AnimatedLottieEmojiBubble>
     Overlay.of(context)?.insert(_overlayEntry!);
 
     for (int i = 0; i < _controllers.length; i++) {
-      Future.delayed(Duration(milliseconds: i * 80), () {
+      Future.delayed(Duration(milliseconds: i * 150), () {
         _controllers[i].forward();
       });
     }
 
-    _removeTimer = Timer(const Duration(seconds: 3), _removeOverlay);
+    _removeTimer = Timer(const Duration(seconds: 10), _removeOverlay);
   }
 
   void _removeOverlay() {
@@ -121,7 +147,7 @@ class _AnimatedLottieEmojiBubbleState extends State<AnimatedLottieEmojiBubble>
     }
     _isShowing = false;
 
-    Timer(const Duration(milliseconds: 1200), () {
+    Timer(const Duration(milliseconds: 3000), () {
       setState(() {
         _canClick = true;
       });
@@ -139,7 +165,7 @@ class _AnimatedLottieEmojiBubbleState extends State<AnimatedLottieEmojiBubble>
     return GestureDetector(
       onTap: _showEmojiBubble,
       child: Icon(
-        Icons.emoji_emotions_outlined,
+        Icons.bubble_chart_outlined,
         color: _canClick && !_isShowing ? Colors.orangeAccent : Colors.grey,
         size: 32,
       ),

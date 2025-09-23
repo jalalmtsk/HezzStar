@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 
 class GameInfoDialog extends StatelessWidget {
@@ -21,126 +22,170 @@ class GameInfoDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Colors.transparent,
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        width: 300,
-        decoration: BoxDecoration(
-          color: Colors.black87,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black45,
-              blurRadius: 12,
-              offset: const Offset(4, 4),
-            ),
-          ],
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // 1️⃣ Trophy + Prize Card
-            Container(
-              padding: const EdgeInsets.all(16),
+      color: Colors.black.withOpacity(0.4), // dimmed overlay
+      child: Center(
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(24),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+            child: Container(
+              padding: const EdgeInsets.all(20),
+              width: 340,
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16),
-                gradient: LinearGradient(
-                  colors: [Colors.amber.shade700, Colors.orange.shade900],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
+                color: Colors.black.withOpacity(0.6),
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(
+                  color: Colors.amber.withOpacity(0.4),
+                  width: 2,
                 ),
-                boxShadow: const [
+                boxShadow: [
                   BoxShadow(
-                    color: Colors.black38,
-                    blurRadius: 6,
-                    offset: Offset(2, 2),
+                    color: Colors.black.withOpacity(0.6),
+                    blurRadius: 20,
+                    offset: const Offset(0, 8),
                   ),
                 ],
               ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Image.asset(
-                    "assets/UI/Icons/Collection_Icon.png",
-                    width: 30,
-                    height: 30,
-                  ),
-                  const SizedBox(width: 10),
-                  Text(
-                    "Winning Gold: $prize",
-                    style: const TextStyle(
-                        fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
-                  ),
-                  const SizedBox(width: 10),
-                  Image.asset(
-                    "assets/UI/Icons/Events_Icon.png",
-                    width: 30,
-                    height: 30,
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // 2️⃣ Players Row
-            Container(
-              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-              decoration: BoxDecoration(
-                color: Colors.white10,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
+                  // 🏆 Prize Header
                   Container(
-                    padding: const EdgeInsets.all(8),
+                    padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.deepPurple,
+                      borderRadius: BorderRadius.circular(18),
+                      gradient: LinearGradient(
+                        colors: [Colors.amber.shade400, Colors.orange.shade900],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.amber.withOpacity(0.4),
+                          blurRadius: 12,
+                          offset: const Offset(0, 6),
+                        ),
+                      ],
                     ),
-                    child: const Icon(Icons.people, color: Colors.white),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Image.asset(
+                          "assets/UI/Icons/Collection_Icon.png",
+                          width: 32,
+                          height: 32,
+                        ),
+                        const SizedBox(width: 10),
+                        Text(
+                          "Winning Gold: $prize",
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                            shadows: [
+                              Shadow(
+                                color: Colors.black54,
+                                blurRadius: 6,
+                                offset: Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Image.asset(
+                          "assets/UI/Icons/Events_Icon.png",
+                          width: 32,
+                          height: 32,
+                        ),
+                      ],
+                    ),
                   ),
-                  const SizedBox(width: 10),
-                  Text(
-                    "Players: $players",
-                    style: const TextStyle(color: Colors.white70, fontWeight: FontWeight.bold),
+                  const SizedBox(height: 20),
+
+                  // 👥 Players Info
+                  Container(
+                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 18),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.08),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: Colors.white.withOpacity(0.2),
+                        width: 1,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            gradient: const LinearGradient(
+                              colors: [Colors.deepPurple, Colors.purpleAccent],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.purple.withOpacity(0.5),
+                                blurRadius: 8,
+                                offset: Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: const Icon(Icons.people, color: Colors.white, size: 26),
+                        ),
+                        const SizedBox(width: 12),
+                        Text(
+                          "Players: $players",
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // ⚙️ Buttons Row
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      _buildActionButton(
+                        icon: Icons.settings,
+                        label: "Settings",
+                        gradient: const [Colors.deepPurple, Colors.purpleAccent],
+                        onTap: onSettings,
+                      ),
+                      _buildActionButton(
+                        icon: Icons.info,
+                        label: "Instructions",
+                        gradient: const [Colors.green, Colors.teal],
+                        onTap: onInstructions,
+                      ),
+                      _buildActionButton(
+                        icon: Icons.exit_to_app,
+                        label: "Exit",
+                        gradient: const [Colors.redAccent, Colors.deepOrange],
+                        onTap: onExit,
+                      ),
+                    ],
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 16),
-
-            // 3️⃣ Icon Buttons Row
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                _buildIconButton(
-                    icon: Icons.settings,
-                    label: "Settings",
-                    color: Colors.deepPurple,
-                    onTap: onSettings),
-                _buildIconButton(
-                    icon: Icons.info,
-                    label: "Instructions",
-                    color: Colors.green,
-                    onTap: onInstructions),
-                _buildIconButton(
-                    icon: Icons.exit_to_app,
-                    label: "Exit",
-                    color: Colors.redAccent,
-                    onTap: onExit),
-              ],
-            ),
-          ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildIconButton({
+  Widget _buildActionButton({
     required IconData icon,
     required String label,
-    required Color color,
+    required List<Color> gradient,
     required VoidCallback onTap,
   }) {
     return Column(
@@ -148,25 +193,33 @@ class GameInfoDialog extends StatelessWidget {
         GestureDetector(
           onTap: onTap,
           child: Container(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(18),
             decoration: BoxDecoration(
-              color: color,
               shape: BoxShape.circle,
+              gradient: LinearGradient(
+                colors: gradient,
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
               boxShadow: [
                 BoxShadow(
-                  color: color.withOpacity(0.6),
-                  blurRadius: 6,
-                  offset: const Offset(2, 2),
+                  color: gradient.first.withOpacity(0.5),
+                  blurRadius: 10,
+                  offset: const Offset(0, 6),
                 ),
               ],
             ),
             child: Icon(icon, color: Colors.white, size: 28),
           ),
         ),
-        const SizedBox(height: 6),
+        const SizedBox(height: 8),
         Text(
           label,
-          style: const TextStyle(color: Colors.white70, fontWeight: FontWeight.bold),
+          style: const TextStyle(
+            color: Colors.white70,
+            fontWeight: FontWeight.w600,
+            fontSize: 14,
+          ),
         ),
       ],
     );

@@ -7,7 +7,7 @@ class ShopPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Text(
-        "Collection",
+        "SHOP",
         style: const TextStyle(fontSize: 24),
       ),
     );

@@ -19,6 +19,8 @@ class CardGameLauncher extends StatefulWidget {
 
 class _CardGameLauncherState extends State<CardGameLauncher>
     with TickerProviderStateMixin {
+  final GlobalKey goldKey = GlobalKey(); // <-- add this
+  
   GameModeType gameMode = GameModeType.playToWin;
   int handSize = 5;
   int selectedBetIndex = 0;
@@ -120,7 +122,7 @@ class _CardGameLauncherState extends State<CardGameLauncher>
               children: [
                 const SizedBox(height: 6),
                 // UserStatusBar (keeps its own layout) — you already have a widget for it
-                const UserStatusBar(),
+                 UserStatusBar(goldKey: goldKey,),
                 const SizedBox(height: 28),
                 _luxTitle(),
                 Expanded(

@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
@@ -12,7 +13,8 @@ class SettingsPage extends StatefulWidget {
   State<SettingsPage> createState() => _SettingsPageState();
 }
 
-class _SettingsPageState extends State<SettingsPage> {
+class _SettingsPageState extends State<SettingsPage>
+    with TickerProviderStateMixin {
   bool darkMode = false;
   bool notificationsOn = true;
   String username = "Player";
@@ -21,11 +23,29 @@ class _SettingsPageState extends State<SettingsPage> {
   String parentalPin = '';
   int screenTimeLimitMinutes = 0;
 
+  late AnimationController _pulseController;
+  late Animation<double> _pulseAnim;
+
   @override
   void initState() {
     super.initState();
     _loadSettings();
     _loadAppInfo();
+
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    )..repeat(reverse: true);
+
+    _pulseAnim = Tween<double>(begin: 1.0, end: 1.05).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _pulseController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadSettings() async {
@@ -137,17 +157,41 @@ class _SettingsPageState extends State<SettingsPage> {
     }
   }
 
-  Widget _buildSectionTitle(String title) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 20, bottom: 8),
-      child: Text(
-        title,
-        style: const TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.bold,
-          color: Colors.amber, // golden theme
-        ),
+  Widget _sectionHeader(String title, IconData icon, Color color) {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 10),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(14),
+        gradient: LinearGradient(colors: [color, color.withOpacity(0.6)]),
       ),
+      child: Row(
+        children: [
+          Icon(icon, color: Colors.white),
+          const SizedBox(width: 8),
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          )
+        ],
+      ),
+    );
+  }
+
+  Widget _glassTile({required Widget child}) {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 6),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white24),
+      ),
+      child: child,
     );
   }
 
@@ -155,170 +199,127 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget build(BuildContext context) {
     final audioManager = Provider.of<AudioManager>(context, listen: false);
 
-    return SafeArea(
-      child: Scaffold(
-        body: Container(
-          decoration: const BoxDecoration(
-            image: DecorationImage(
-              image: AssetImage("assets/UI/BackgroundImage/bg2.jpg"), // 🕌 your Moroccan bg
-              fit: BoxFit.cover,
+    return Scaffold(
+      body: Stack(
+        children: [
+          // Moroccan bg
+          Container(
+            decoration: const BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage("assets/UI/BackgroundImage/bg2.jpg"),
+                fit: BoxFit.cover,
+              ),
             ),
           ),
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.6), // overlay for readability
-            ),
+          BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
+            child: Container(color: Colors.black.withOpacity(0.6)),
+          ),
+          SafeArea(
             child: ListView(
               padding: const EdgeInsets.all(16),
               children: [
-                _buildSectionTitle("General"),
-
-                SwitchListTile(
-                  title: const Text("Dark Mode", style: TextStyle(color: Colors.white)),
-                  value: darkMode,
-                  onChanged: (val) {
-                    setState(() => darkMode = val);
-                    _savePref('darkMode', val);
-                  },
-                  activeColor: Colors.amber,
-                ),
-
-                SwitchListTile(
-                  title: const Text("Notifications", style: TextStyle(color: Colors.white)),
-                  value: notificationsOn,
-                  onChanged: (val) {
-                    setState(() => notificationsOn = val);
-                    _savePref('notificationsOn', val);
-                  },
-                  activeColor: Colors.amber,
-                ),
-
-                ListTile(
-                  title: Text("Username: $username", style: const TextStyle(color: Colors.white)),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.edit, color: Colors.amber),
-                    onPressed: () async {
-                      final name = await showDialog<String>(
-                        context: context,
-                        builder: (context) {
-                          final controller = TextEditingController(text: username);
-                          return AlertDialog(
-                            title: const Text("Change Name"),
-                            content: TextField(
-                              controller: controller,
-                              decoration: const InputDecoration(hintText: "Enter new name"),
-                            ),
-                            actions: [
-                              TextButton(
-                                child: const Text("Cancel"),
-                                onPressed: () => Navigator.pop(context),
-                              ),
-                              TextButton(
-                                child: const Text("Save"),
-                                onPressed: () => Navigator.pop(context, controller.text),
-                              ),
-                            ],
-                          );
-                        },
-                      );
-                      if (name != null) {
-                        setState(() => username = name);
-                        _savePref('username', name);
-                      }
+                _sectionHeader("General", Icons.settings, Colors.amber),
+                _glassTile(
+                  child: SwitchListTile(
+                    title: const Text("Dark Mode", style: TextStyle(color: Colors.white)),
+                    value: darkMode,
+                    onChanged: (val) {
+                      setState(() => darkMode = val);
+                      _savePref('darkMode', val);
                     },
+                    activeColor: Colors.amber,
                   ),
                 ),
-
-                _buildSectionTitle("Audio"),
-
-                ListTile(
-                  leading: const Icon(Icons.music_note, color: Colors.amber),
-                  title: const Text("Background Music", style: TextStyle(color: Colors.white)),
-                  subtitle: Slider(
-                    value: audioManager.bgVolume,
-                    onChanged: (v) {
-                      audioManager.setBgVolume(v);
-                      _savePref('musicVolume', v);
+                _glassTile(
+                  child: SwitchListTile(
+                    title: const Text("Notifications", style: TextStyle(color: Colors.white)),
+                    value: notificationsOn,
+                    onChanged: (val) {
+                      setState(() => notificationsOn = val);
+                      _savePref('notificationsOn', val);
                     },
-                    min: 0,
-                    max: 1,
+                    activeColor: Colors.amber,
                   ),
-                  trailing: IconButton(
-                    icon: Icon(
-                      audioManager.isBgMuted ? Icons.volume_off : Icons.volume_up,
-                      color: Colors.white,
+                ),
+                _glassTile(
+                  child: ListTile(
+                    title: Text("Username: $username", style: const TextStyle(color: Colors.white)),
+                    trailing: IconButton(
+                      icon: const Icon(Icons.edit, color: Colors.amber),
+                      onPressed: () async {
+                        final name = await showDialog<String>(
+                          context: context,
+                          builder: (context) {
+                            final controller = TextEditingController(text: username);
+                            return AlertDialog(
+                              title: const Text("Change Name"),
+                              content: TextField(controller: controller),
+                              actions: [
+                                TextButton(child: const Text("Cancel"), onPressed: () => Navigator.pop(context)),
+                                TextButton(child: const Text("Save"), onPressed: () => Navigator.pop(context, controller.text)),
+                              ],
+                            );
+                          },
+                        );
+                        if (name != null) {
+                          setState(() => username = name);
+                          _savePref('username', name);
+                        }
+                      },
                     ),
-                    onPressed: audioManager.toggleBgMute,
                   ),
                 ),
 
-                ListTile(
-                  leading: const Icon(Icons.speaker, color: Colors.blueAccent),
-                  title: const Text("SFX", style: TextStyle(color: Colors.white)),
-                  subtitle: Slider(
-                    value: audioManager.sfxVolume,
-                    onChanged: (v) => audioManager.setSfxVolume(v),
-                    min: 0,
-                    max: 1,
-                  ),
-                  trailing: IconButton(
-                    icon: Icon(
-                      audioManager.isSfxMuted ? Icons.volume_off : Icons.volume_up,
-                      color: Colors.white,
+                _sectionHeader("Audio", Icons.music_note, Colors.deepOrange),
+                _glassTile(
+                  child: ListTile(
+                    leading: const Icon(Icons.music_note, color: Colors.amber),
+                    title: const Text("Background Music", style: TextStyle(color: Colors.white)),
+                    subtitle: Slider(
+                      value: audioManager.bgVolume,
+                      onChanged: (v) {
+                        audioManager.setBgVolume(v);
+                        _savePref('musicVolume', v);
+                      },
+                      min: 0,
+                      max: 1,
                     ),
-                    onPressed: audioManager.toggleSfxMute,
+                    trailing: IconButton(
+                      icon: Icon(audioManager.isBgMuted ? Icons.volume_off : Icons.volume_up, color: Colors.white),
+                      onPressed: audioManager.toggleBgMute,
+                    ),
+                  ),
+                ),
+                _glassTile(
+                  child: ListTile(
+                    leading: const Icon(Icons.speaker, color: Colors.cyan),
+                    title: const Text("SFX", style: TextStyle(color: Colors.white)),
+                    subtitle: Slider(
+                      value: audioManager.sfxVolume,
+                      onChanged: (v) => audioManager.setSfxVolume(v),
+                      min: 0,
+                      max: 1,
+                    ),
+                    trailing: ScaleTransition(
+                      scale: _pulseAnim,
+                      child: IconButton(
+                        icon: Icon(audioManager.isSfxMuted ? Icons.volume_off : Icons.volume_up, color: Colors.white),
+                        onPressed: audioManager.toggleSfxMute,
+                      ),
+                    ),
                   ),
                 ),
 
-                _buildSectionTitle("Security & Parental Controls"),
-
-                SwitchListTile(
-                  title: const Text("Parental Lock", style: TextStyle(color: Colors.white)),
-                  subtitle: Text(
-                    parentalLockEnabled ? "Enabled" : "Disabled",
-                    style: const TextStyle(color: Colors.white70),
-                  ),
-                  value: parentalLockEnabled,
-                  activeColor: Colors.amber,
-                  onChanged: (val) async {
-                    if (val) {
-                      await _setParentalPin();
-                    } else {
-                      final confirmed = await showDialog<bool>(
-                        context: context,
-                        builder: (context) {
-                          final controller = TextEditingController();
-                          return AlertDialog(
-                            title: const Text("Enter PIN to disable"),
-                            content: TextField(
-                              controller: controller,
-                              decoration: const InputDecoration(hintText: "Enter PIN"),
-                              obscureText: true,
-                              keyboardType: TextInputType.number,
-                              maxLength: 6,
-                            ),
-                            actions: [
-                              TextButton(
-                                child: const Text("Cancel"),
-                                onPressed: () => Navigator.pop(context, false),
-                              ),
-                              TextButton(
-                                child: const Text("Confirm"),
-                                onPressed: () {
-                                  if (controller.text == parentalPin) {
-                                    Navigator.pop(context, true);
-                                  } else {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(content: Text("Incorrect PIN")),
-                                    );
-                                  }
-                                },
-                              ),
-                            ],
-                          );
-                        },
-                      );
-                      if (confirmed == true) {
+                _sectionHeader("Security", Icons.lock, Colors.redAccent),
+                _glassTile(
+                  child: SwitchListTile(
+                    title: const Text("Parental Lock", style: TextStyle(color: Colors.white)),
+                    value: parentalLockEnabled,
+                    onChanged: (val) async {
+                      if (val) {
+                        await _setParentalPin();
+                      } else {
                         setState(() {
                           parentalLockEnabled = false;
                           parentalPin = '';
@@ -326,55 +327,64 @@ class _SettingsPageState extends State<SettingsPage> {
                         _savePref('parentalLockEnabled', false);
                         _savePref('parentalPin', '');
                       }
-                    }
-                  },
-                ),
-
-                ListTile(
-                  title: const Text("Screen Time Limit", style: TextStyle(color: Colors.white)),
-                  subtitle: Text(
-                    screenTimeLimitMinutes == 0
-                        ? "No limit"
-                        : "$screenTimeLimitMinutes minutes",
-                    style: const TextStyle(color: Colors.white70),
-                  ),
-                  trailing: TextButton(
-                    child: const Text("Set", style: TextStyle(color: Colors.amber)),
-                    onPressed: _setScreenTimeLimit,
+                    },
+                    activeColor: Colors.redAccent,
                   ),
                 ),
+                _glassTile(
+                  child: ListTile(
+                    title: const Text("Screen Time Limit", style: TextStyle(color: Colors.white)),
+                    subtitle: Text(
+                      screenTimeLimitMinutes == 0 ? "No limit" : "$screenTimeLimitMinutes minutes",
+                      style: const TextStyle(color: Colors.white70),
+                    ),
+                    trailing: TextButton(
+                      child: const Text("Set", style: TextStyle(color: Colors.amber)),
+                      onPressed: _setScreenTimeLimit,
+                    ),
+                  ),
+                ),
 
-                _buildSectionTitle("About & Support"),
-
-                ListTile(
-                  title: const Text("About App", style: TextStyle(color: Colors.white)),
-                  subtitle: Text(appVersion, style: const TextStyle(color: Colors.white70)),
-                  leading: const Icon(Icons.info_outline, color: Colors.blueGrey),
+                _sectionHeader("About & Support", Icons.info, Colors.blue),
+                _glassTile(
+                  child: ListTile(
+                    leading: const Icon(Icons.info_outline, color: Colors.blueGrey),
+                    title: const Text("About App", style: TextStyle(color: Colors.white)),
+                    subtitle: Text(appVersion, style: const TextStyle(color: Colors.white70)),
+                  ),
                 ),
-                ListTile(
-                  title: const Text("Contact Support", style: TextStyle(color: Colors.white)),
-                  leading: const Icon(Icons.email, color: Colors.deepPurple),
-                  onTap: () => _launchURL("mailto:support@example.com"),
+                _glassTile(
+                  child: ListTile(
+                    leading: const Icon(Icons.email, color: Colors.deepPurple),
+                    title: const Text("Contact Support", style: TextStyle(color: Colors.white)),
+                    onTap: () => _launchURL("mailto:support@example.com"),
+                  ),
                 ),
-                ListTile(
-                  title: const Text("Privacy Policy", style: TextStyle(color: Colors.white)),
-                  leading: const Icon(Icons.privacy_tip_outlined, color: Colors.amber),
-                  onTap: () => _launchURL("https://example.com/privacy"),
+                _glassTile(
+                  child: ListTile(
+                    leading: const Icon(Icons.privacy_tip_outlined, color: Colors.amber),
+                    title: const Text("Privacy Policy", style: TextStyle(color: Colors.white)),
+                    onTap: () => _launchURL("https://example.com/privacy"),
+                  ),
                 ),
-                ListTile(
-                  title: const Text("Terms of Use", style: TextStyle(color: Colors.white)),
-                  leading: const Icon(Icons.gavel, color: Colors.amber),
-                  onTap: () => _launchURL("https://example.com/terms"),
+                _glassTile(
+                  child: ListTile(
+                    leading: const Icon(Icons.gavel, color: Colors.amber),
+                    title: const Text("Terms of Use", style: TextStyle(color: Colors.white)),
+                    onTap: () => _launchURL("https://example.com/terms"),
+                  ),
                 ),
-                ListTile(
-                  title: const Text("Rate App", style: TextStyle(color: Colors.white)),
-                  leading: const Icon(Icons.star_rate, color: Colors.amber),
-                  onTap: () => _launchURL("https://play.google.com/store/apps/details?id=com.example.mortaalim"),
+                _glassTile(
+                  child: ListTile(
+                    leading: const Icon(Icons.star_rate, color: Colors.amber),
+                    title: const Text("Rate App", style: TextStyle(color: Colors.white)),
+                    onTap: () => _launchURL("https://play.google.com/store/apps/details?id=com.example.mortaalim"),
+                  ),
                 ),
               ],
             ),
-          ),
-        ),
+          )
+        ],
       ),
     );
   }
