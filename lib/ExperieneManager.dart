@@ -6,13 +6,13 @@ class ExperienceManager with ChangeNotifier {
   late UserProfile userProfile = UserProfile();
 
   int _experience = 0;
-  int _gold = 0;
-  int _gems = 0;
+  int _gold = 500;
+  int _gems = 25;
 
   // ---------------------------
   // CARD SYSTEM
   // ---------------------------
-  List<String> _unlockedCards = [];
+  List<String> _unlockedCards = ["assets/images/cards/backCard.png"];
   String? _selectedCard;
 
   // ---------------------------
@@ -60,7 +60,7 @@ class ExperienceManager with ChangeNotifier {
     _gold = prefs.getInt('gold') ?? 0;
     _gems = prefs.getInt('gems') ?? 0;
 
-    _unlockedCards = prefs.getStringList('unlockedCards') ?? [];
+    _unlockedCards = prefs.getStringList('unlockedCards') ?? ["assets/images/cards/backCard.png"];
     _selectedCard = prefs.getString('selectedCard');
 
     _unlockedAvatars = prefs.getStringList('unlockedAvatars') ?? [];
@@ -143,8 +143,8 @@ class ExperienceManager with ChangeNotifier {
 
   Future<void> resetAll() async {
     _experience = 0;
-    _gold = 0;
-    _gems = 0;
+    _gold = 500;
+    _gems = 25;
     _unlockedCards = [];
     _selectedCard = null;
     _unlockedAvatars = [];

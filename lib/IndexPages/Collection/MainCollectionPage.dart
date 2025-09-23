@@ -27,7 +27,7 @@ class _MainCollectionPageState extends State<MainCollectionPage>
 
     _bounceController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 2200),
+      duration: const Duration(milliseconds: 800),
     )..repeat(reverse: true);
   }
 
@@ -97,8 +97,8 @@ class _MainCollectionPageState extends State<MainCollectionPage>
                     Tab(
                       icon: Image(
                         image: AssetImage('assets/UI/Icons/TabBars_Icons/CardSkin_Icon.png'),
-                        width: 40,
-                        height: 40,
+                        width: 55,
+                        height: 50,
                       ),
                       text: "Card Skins",
                     ),
@@ -113,8 +113,8 @@ class _MainCollectionPageState extends State<MainCollectionPage>
                     Tab(
                       icon: Image(
                         image: AssetImage('assets/UI/Icons/TabBars_Icons/AvatarSkins_Icon.png'),
-                        width: 45,
-                        height: 45,
+                        width: 46,
+                        height: 46,
                       ),
                       text: "Avatars",
                     ),
@@ -127,7 +127,7 @@ class _MainCollectionPageState extends State<MainCollectionPage>
                       [_tabController.animation!, _bounceController]),
                   builder: (context, child) {
                     double animationValue = _tabController.animation!.value;
-                    double bounceValue = _bounceController.value * 1.5;
+                    double bounceValue = _bounceController.value * 2.9;
 
                     return Positioned(
                       bottom: bounceValue,
@@ -135,7 +135,7 @@ class _MainCollectionPageState extends State<MainCollectionPage>
                       width: tabWidth,
                       child: Center(
                         child: Container(
-                          height: 6,
+                          height: 4,
                           width: tabWidth * 0.9,
                           decoration: BoxDecoration(
                             color: Colors.amber,

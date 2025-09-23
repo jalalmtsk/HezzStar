@@ -58,6 +58,7 @@ class UserStatusBar extends StatelessWidget {
                   fontSize: fontSize,
                   padding: padding,
                 ),
+
               ],
             );
           },
@@ -70,9 +71,9 @@ class UserStatusBar extends StatelessWidget {
     required String iconPath,
     int? level,
     required String value,
-    double iconSize = 60,
-    double fontSize = 16,
-    double padding = 8,
+    double iconSize = 70,
+    double fontSize = 22,
+    double padding = 10,
   }) {
     return Stack(
       clipBehavior: Clip.none,
@@ -82,7 +83,7 @@ class UserStatusBar extends StatelessWidget {
         Padding(
           padding: EdgeInsets.all(padding),
           child: Container(
-            margin: EdgeInsets.only(left: iconSize * 0.7),
+            margin: EdgeInsets.only(left: iconSize * 0.6),
             padding: EdgeInsets.symmetric(horizontal: padding, vertical: padding / 2),
             decoration: BoxDecoration(
               color: Colors.black.withOpacity(0.5),
@@ -121,12 +122,12 @@ class UserStatusBar extends StatelessWidget {
               if (level != null)
                 CircleAvatar(
                   backgroundColor: Colors.black.withOpacity(0.5),
-                  maxRadius: iconSize * 0.23,
+                  maxRadius: iconSize * 0.22,
                   child: Text(
                     "$level",
                     style: TextStyle(
                       color: Colors.yellowAccent,
-                      fontSize: fontSize * 0.75,
+                      fontSize: fontSize * 0.77,
                       fontWeight: FontWeight.bold,
                     ),
                   ),

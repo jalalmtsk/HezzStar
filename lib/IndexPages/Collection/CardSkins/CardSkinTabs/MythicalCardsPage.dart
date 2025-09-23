@@ -12,7 +12,8 @@ class MythicalCardsPage extends StatelessWidget {
 
       body: CardGridWidget(
         imageCards: [
-          {"image": "assets/images/Skins/BackCard_Skins/Mythical/MythCard1.jpg",'currency': CurrencyType.gems, "cost": 10},
+          {"image": "assets/images/cards/backCard.png",'currency': CurrencyType.gems, "cost": 0},
+          {"image": "assets/images/Skins/BackCard_Skins/Mythical/MythCard1.jpg",'currency': CurrencyType.gems, "cost": 20},
           {"image": "assets/images/Skins/BackCard_Skins/Mythical/MythCard2.jpg",'currency': CurrencyType.gems, "cost": 20},
         ],
       ),
