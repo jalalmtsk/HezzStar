@@ -6,7 +6,6 @@ import '../../tools/AudioManager/AudioManager.dart';
 
 class SettingsDialog extends StatefulWidget {
   const SettingsDialog({super.key});
-
   @override
   State<SettingsDialog> createState() => _SettingsDialogState();
 }
@@ -472,7 +471,6 @@ class _SettingsDialogState extends State<SettingsDialog>
                             ],
                           ),
                         ),
-
                         const SizedBox(height: 18),
                         Center(child: Text("Version $appVersion", style: const TextStyle(color: Colors.white54))),
                         const SizedBox(height: 18),
