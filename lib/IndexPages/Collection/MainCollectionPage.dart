@@ -19,6 +19,9 @@ class _MainCollectionPageState extends State<MainCollectionPage>
     with TickerProviderStateMixin {
 
   final GlobalKey goldKey = GlobalKey(); // <-- add this
+  final GlobalKey goldGem = GlobalKey(); // <-- add this
+  final GlobalKey xpKey = GlobalKey(); // <-- add this
+
   late TabController _tabController;
   late AnimationController _bounceController;
 
@@ -54,7 +57,7 @@ class _MainCollectionPageState extends State<MainCollectionPage>
             // 🔹 User Status Bar
              Padding(
               padding: EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-              child: UserStatusBar(goldKey: goldKey),
+              child: UserStatusBar(goldKey: goldKey, gemsKey: goldGem, xpKey: xpKey,),
             ),
 
             const SizedBox(height: 12),

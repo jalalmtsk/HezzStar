@@ -6,85 +6,32 @@ import 'package:hezzstar/tools/LanguageMenu.dart';
 import 'package:provider/provider.dart';
 
 import '../../Hezz2FinalGame/Screen/GameLauncher/CardGameLauncher.dart';
-import '../../Manager/HelperClass/FlyingGold.dart';
-import '../../main.dart';
+import '../../Manager/HelperClass/FlyingRewardManager.dart';
 import '../../tools/AdsManager/AdsGameButton.dart';
 import '../../widgets/userStatut/userStatus.dart';
 import 'AvatarSelectionPopup.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
-
   @override
   State<HomePage> createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin {
-  final GlobalKey goldKey = GlobalKey(); // Key for gold icon
   late AnimationController _bgController;
-  final List<FlyingGold> _flyingGolds = [];
 
-  String formatGold(int amount) {
-    if (amount >= 1000000) {
-      double result = amount / 1000000;
-      return result % 1 == 0 ? "${result.toInt()}M" : "${result.toStringAsFixed(1)}M";
-    } else if (amount >= 1000) {
-      double result = amount / 1000;
-      return result % 1 == 0 ? "${result.toInt()}K" : "${result.toStringAsFixed(1)}K";
-    } else {
-      return amount.toString();
-    }
-  }
-
-  void _spawnFlyingGold(int amount) {
-    final size = MediaQuery.of(context).size;
-    final start = Offset(size.width / 2 - 16, size.height / 2 - 16);
-
-    // Determine number of coins based on amount
-    int numCoins;
-    if (amount < 10) {
-      numCoins = 8;
-    } else if (amount < 100) {
-      numCoins = 14;
-    } else if (amount < 1000) {
-      numCoins = 20;
-    } else if (amount < 5000) {
-      numCoins = 25;
-    } else if (amount < 10000) {
-      numCoins = 30;
-    } else if (amount < 50000) {
-      numCoins = 35;
-    } else if (amount < 100000) {
-      numCoins = 40;
-    } else {
-      numCoins = 50;
-    }
-
-    for (int i = 0; i < numCoins; i++) {
-      Future.delayed(Duration(milliseconds: i * 50), () {
-        // schedule each coin with a small incremental delay
-        if (!mounted) return;
-        setState(() {
-          _flyingGolds.add(FlyingGold(
-            startOffset: start,
-            endKey: goldKey,
-            onCompleted: () {
-              setState(() {
-                if (_flyingGolds.isNotEmpty) _flyingGolds.removeAt(0);
-              });
-            },
-            amountText: "+${formatGold(amount)}",
-          ));
-        });
-      });
-    }
-  }
+  final GlobalKey goldKey = GlobalKey();
+  final GlobalKey gemsKey = GlobalKey();
+  final GlobalKey xpKey = GlobalKey();
 
 
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      FlyingRewardManager().init(context);
+    });
     _bgController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 25),
@@ -147,7 +94,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                   children: [
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-                      child: UserStatusBar(goldKey: goldKey),
+                      child: UserStatusBar(goldKey: goldKey, gemsKey: gemsKey, xpKey: xpKey, ),
                     ),
                     const SizedBox(height: 10),
                     Padding(
@@ -198,28 +145,37 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                               ),
                             ),
                           ),
-                          AdsGameButton(
-                            text: "",
-                            sparkleAsset: "assets/animations/AnimationSFX/RewawrdLightEffect.json",
-                            boxAsset: "assets/animations/AnimatGamification/AdsBox.json",
-                            rewardAmount: 5,
+                          Column(
+                            children: [
+                              IconButton(onPressed: (){}, icon: Icon(Icons.list_alt, color: Colors.white,)),
+                              AdsGameButton(
+                                text: "",
+                                sparkleAsset: "assets/animations/AnimationSFX/RewawrdLightEffect.json",
+                                boxAsset: "assets/animations/AnimatGamification/AdsBox.json",
+                                rewardAmount: 5,
+                              ),
+                            ],
                           ),
                         ],
                       ),
                     ),
-                    GestureDetector(
-                      child: Icon(Icons.add),
-                      onTap: () {
-                        int reward = 1000; // Example gold reward
-                        xpManager.addGold(reward);
-                        xpManager.addGems(10);
-                        _spawnFlyingGold(reward);
-                      },
+                    Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        LanguageMenu(colorButton: Colors.white),
+                        LanguageMenu(colorButton: Colors.white),
+                      ],
                     ),
-                    LanguageMenu(colorButton: Colors.white)
+                    Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        GestureDetector(onTap: (){
+                          xpManager.resetAll();
+                        },child: Icon(Icons.abc_sharp),),
+                        LanguageMenu(colorButton: Colors.white),
+                      ],
+                    )
                   ],
                 ),
-                const SizedBox(height: 100,),
+                const SizedBox(height: 10,),
 
                 // 🎮 Expanded Horizontal Game Modes
                 Expanded(
@@ -239,21 +195,35 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                 const SizedBox(height: 50,),
                 Center(
                   child: GestureDetector(
-                    child: Icon(Icons.add),
+                    child: Icon(Icons.add, color: Colors.white,),
                     onTap: () {
-                      int reward = 5000000;
-                      xpManager.addGold(reward);
-                      xpManager.addGems(40000);
-                      _spawnFlyingGold(reward);
+                      FlyingRewardManager().spawnReward(
+                        start: Offset(200, 400),
+                        endKey: goldKey,
+                        amount: 500,
+                        type: RewardType.gold,
+                        context: context,
+                      );
+                      FlyingRewardManager().spawnReward(
+                        start: Offset(200, 400),
+                        endKey: gemsKey,
+                        amount: 10,
+                        type: RewardType.gem,
+                        context: context,
+                      );
+                      FlyingRewardManager().spawnReward(
+                        start: Offset(200, 400),
+                        endKey: xpKey,
+                        amount: 10,
+                        type: RewardType.star,
+                        context: context,
+                      );
                     },
                   ),
                 ),
               ],
             ),
           ),
-
-          // Render flying gold animations
-          ..._flyingGolds,
         ],
       ),
     );

@@ -5,8 +5,10 @@ import 'package:provider/provider.dart';
 
 class UserStatusBar extends StatelessWidget {
   final GlobalKey goldKey;
+  final GlobalKey gemsKey;
+  final GlobalKey xpKey;
 
-  const UserStatusBar({super.key, required this.goldKey});
+  const UserStatusBar({super.key, required this.goldKey, required this.gemsKey, required this.xpKey});
 
   String formatNumber(int number) {
     if (number >= 1000000) {
@@ -36,8 +38,8 @@ class UserStatusBar extends StatelessWidget {
             _horizontalStat(
               iconPath: 'assets/UI/Icons/Gamification/LevelXpHolder_Icon.png',
               level: xpManager.level,
-              value:
-              "${formatNumber(xpManager.currentLevelXP)} / ${formatNumber(xpManager.requiredXPForNextLevel)}",
+              value: "${formatNumber(xpManager.currentLevelXP)} / ${formatNumber(xpManager.requiredXPForNextLevel)}",
+              keyForIcon: xpKey,
               iconSize: iconSize,
               fontSize: fontSize,
               padding: padding,
@@ -53,6 +55,7 @@ class UserStatusBar extends StatelessWidget {
             _horizontalStat(
               iconPath: 'assets/UI/Icons/Gamification/Gems_Icon.png',
               value: formatNumber(xpManager.gems),
+              keyForIcon: gemsKey,
               iconSize: iconSize,
               fontSize: fontSize,
               padding: padding,

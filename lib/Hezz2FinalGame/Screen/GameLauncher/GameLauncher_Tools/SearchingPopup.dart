@@ -12,7 +12,7 @@ class SearchingPopup {
       builder: (context) {
         void findNextPlayer(void Function(void Function()) setState) {
           if (foundPlayers >= players) {
-            Future.delayed(const Duration(seconds: 1), () {
+            Future.delayed(const Duration(milliseconds: 1500), () {
               if (Navigator.canPop(context)) Navigator.of(context).pop();
             });
             return;
@@ -20,15 +20,19 @@ class SearchingPopup {
 
           // Random delay between 1s and 3s
           final randomDelay =
-          Duration(milliseconds: 1000 + Random().nextInt(2001));
+          Duration(milliseconds: 1000 + Random().nextInt(3001));
           Future.delayed(randomDelay, () {
             if (!Navigator.canPop(context)) return;
-            setState(() {
-              foundPlayers++;
-            });
-            findNextPlayer(setState);
+
+            if (foundPlayers < players) { // ✅ extra safety check
+              setState(() {
+                foundPlayers++;
+              });
+              findNextPlayer(setState);
+            }
           });
         }
+
 
         return StatefulBuilder(
           builder: (context, setState) {
