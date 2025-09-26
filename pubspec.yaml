@@ -96,6 +96,7 @@ flutter:
 
     # AUDIO
     - assets/audios/UI/SFX/
+    - assets/audios/UI/SFX/Gamification_SFX/
 
 
     # ANIMATION

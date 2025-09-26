@@ -6,8 +6,8 @@ class GameInfoDialog extends StatelessWidget {
   final int players;
   final int prize;
   final VoidCallback onSettings;
-  final VoidCallback onExit;
   final VoidCallback onInstructions;
+  final VoidCallback onExit; // ✅ new callback
 
   const GameInfoDialog({
     super.key,
@@ -15,8 +15,8 @@ class GameInfoDialog extends StatelessWidget {
     required this.players,
     required this.prize,
     required this.onSettings,
-    required this.onExit,
     required this.onInstructions,
+    required this.onExit, // required
   });
 
   @override
@@ -154,22 +154,25 @@ class GameInfoDialog extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       _buildActionButton(
+                        context: context,
                         icon: Icons.settings,
                         label: "Settings",
                         gradient: const [Colors.deepPurple, Colors.purpleAccent],
                         onTap: onSettings,
                       ),
                       _buildActionButton(
+                        context: context,
                         icon: Icons.info,
                         label: "Instructions",
                         gradient: const [Colors.green, Colors.teal],
                         onTap: onInstructions,
                       ),
                       _buildActionButton(
+                        context: context,
                         icon: Icons.exit_to_app,
                         label: "Exit",
                         gradient: const [Colors.redAccent, Colors.deepOrange],
-                        onTap: onExit,
+                        onTap: onExit, // ✅ use callback
                       ),
                     ],
                   ),
@@ -183,6 +186,7 @@ class GameInfoDialog extends StatelessWidget {
   }
 
   Widget _buildActionButton({
+    required BuildContext context,
     required IconData icon,
     required String label,
     required List<Color> gradient,

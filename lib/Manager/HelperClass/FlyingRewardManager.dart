@@ -13,6 +13,13 @@ class FlyingRewardManager {
   FlyingRewardManager._internal();
 
   late OverlayState _overlayState;
+
+  final Map<RewardType, String> _soundAssets = {
+    RewardType.gold: 'assets/audios/UI/SFX/Gamification_SFX/WinningGold_Sound.mp3',
+    RewardType.gem: 'assets/sounds/gem.wav',
+    RewardType.star: 'assets/sounds/star.wav',
+  };
+
   void init(BuildContext context) {
     _overlayState = Overlay.of(context)!;
   }
@@ -26,14 +33,35 @@ class FlyingRewardManager {
   }) {
     if (_overlayState == null) _overlayState = Overlay.of(context)!;
 
-    // Decide number of icons based on reward type + amount
     int numIcons = _getNumIconsForReward(type, amount);
-
-    // Split amount per icon (ensures sum == total)
     List<int> amounts = _splitAmount(amount, numIcons);
 
+    final audioManager = Provider.of<AudioManager>(context, listen: false);
+    final xpManager = Provider.of<ExperienceManager>(context, listen: false);
+
+    // ✅ Give full reward immediately (logic safe)
+    switch (type) {
+      case RewardType.gold:
+        xpManager.addGold(amount);
+        break;
+      case RewardType.gem:
+        xpManager.addGems(amount);
+        break;
+      case RewardType.star:
+        xpManager.addExperience(amount);
+        break;
+    }
+
+    // 🎵 Play sounds
+    if (type == RewardType.gold) {
+      audioManager.playSfxLoop(_soundAssets[type]!);
+    } else {
+      _playSound(context, type);
+    }
+
+    // ✨ Spawn purely cosmetic animations
     for (int i = 0; i < numIcons; i++) {
-      Future.delayed(Duration(milliseconds: i * 150), () {
+      Future.delayed(Duration(milliseconds: i * _getSpawnDelay(type)), () {
         OverlayEntry? entry;
         entry = OverlayEntry(
           builder: (context) => FlyingRewardWidget(
@@ -43,29 +71,29 @@ class FlyingRewardManager {
             type: type,
             onCompleted: () {
               entry?.remove();
+
+              // Stop looping gold sound after last coin
+              if (type == RewardType.gold && i == numIcons - 1) {
+                audioManager.stopSfxLoop();
+              }
             },
           ),
         );
 
         _overlayState.insert(entry);
-
-        // Play sound
-        _playSound(type);
-
-        // Update ExperienceManager when each icon completes
-        final xpManager = Provider.of<ExperienceManager>(context, listen: false);
-        switch (type) {
-          case RewardType.gold:
-            xpManager.addGold(amounts[i]);
-            break;
-          case RewardType.gem:
-            xpManager.addGems(amounts[i]);
-            break;
-          case RewardType.star:
-            xpManager.addExperience(amounts[i]);
-            break;
-        }
       });
+    }
+  }
+
+
+  int _getSpawnDelay(RewardType type) {
+    switch (type) {
+      case RewardType.gold:
+        return 80;
+      case RewardType.gem:
+        return 120;
+      case RewardType.star:
+        return 100;
     }
   }
 
@@ -98,22 +126,17 @@ class FlyingRewardManager {
     return result;
   }
 
-  void _playSound(RewardType type) {
-    String asset;
-    switch (type) {
-      case RewardType.gold:
-        asset = 'assets/sounds/gold.wav';
-        break;
-      case RewardType.gem:
-        asset = 'assets/sounds/gem.wav';
-        break;
-      case RewardType.star:
-        asset = 'assets/sounds/star.wav';
-        break;
-    }
+  void _playSound(BuildContext context, RewardType type) {
+    final audioManager = Provider.of<AudioManager>(context, listen: false);
+    final asset = _soundAssets[type]!;
+    audioManager.playSfx(asset);
+  }
 
-    // Uncomment once AudioManager is set up
-    // final audioManager = Provider.of<AudioManager>(context, listen: false);
-    // audioManager.playSfx(asset);
+  void preloadSounds(BuildContext context) {
+    final audioManager = Provider.of<AudioManager>(context, listen: false);
+    _soundAssets.values.forEach((asset) {
+      // Optional: preload if AudioManager supports it
+      // audioManager.preloadSfx(asset);
+    });
   }
 }

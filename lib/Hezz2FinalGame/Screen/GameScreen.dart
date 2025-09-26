@@ -4,6 +4,10 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:hezzstar/ExperieneManager.dart';
 import 'package:hezzstar/Hezz2FinalGame/Models/GameCardEnums.dart';
+import 'package:hezzstar/Hezz2FinalGame/Screen/GameLauncher/CardGameLauncher.dart';
+import 'package:hezzstar/Hezz2FinalGame/Tools/Dialog/InstructionDialog.dart';
+import 'package:hezzstar/IndexPages/HomePage/HomePage.dart';
+import 'package:hezzstar/MainScreenIndex.dart';
 import 'package:hezzstar/tools/AudioManager/AudioManager.dart';
 import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
@@ -1371,7 +1375,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                         OverlayEntry? entry;
 
                         entry = OverlayEntry(
-                          builder: (context) => Positioned(
+                          builder: (_) => Positioned(
                             left: offset.dx,
                             top: offset.dy + size.height + 4,
                             child: GameInfoDialog(
@@ -1379,26 +1383,66 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                               players: widget.botCount + 1,
                               prize: widget.selectedBet * (widget.botCount + 1),
                               onSettings: () {
-                                entry?.remove(); // keep your logic if you’re using OverlayEntry
-                                // ✅ Open the settings dialog
-                                showDialog(
-                                  context: context,
-                                  builder: (context) => const SettingsDialog(),
-                                );
-                              },
-
-                              onExit: () {
                                 entry?.remove();
-                                //_exitGame();
+                                showDialog(
+                                  context: context, // use original context
+                                  builder: (_) => const SettingsDialog(),
+                                );
                               },
                               onInstructions: () {
                                 entry?.remove();
-                                //_showInstructions();
+                                showDialog(
+                                  context: context, // use original context
+                                  builder: (_) => const InstructionsDialog(),
+                                );
+                              },
+                              onExit: () async {
+                                entry?.remove();
+
+                                final shouldExit = await showDialog<bool>(
+                                  context: context, // use original context
+                                  barrierDismissible: false,
+                                  builder: (ctx) => AlertDialog(
+                                    backgroundColor: Colors.black87,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    title: const Text(
+                                      "Exit Game?",
+                                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                                    ),
+                                    content: const Text(
+                                      "Are you sure you want to exit and return to the launcher?",
+                                      style: TextStyle(color: Colors.white70),
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () => Navigator.of(ctx).pop(false),
+                                        child: const Text("Cancel", style: TextStyle(color: Colors.white)),
+                                      ),
+                                      ElevatedButton(
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.redAccent,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(12),
+                                          ),
+                                        ),
+                                        onPressed: () => Navigator.of(ctx).pop(true),
+                                        child: const Text("Exit"),
+                                      ),
+                                    ],
+                                  ),
+                                );
+
+                                if (shouldExit == true) {
+                                  Navigator.of(context).pushReplacement(
+                                    MaterialPageRoute(builder: (_) => MainScreen()),
+                                  );
+                                }
                               },
                             ),
                           ),
                         );
-
                         overlay.insert(entry);
 
                         // Auto remove after 5 seconds

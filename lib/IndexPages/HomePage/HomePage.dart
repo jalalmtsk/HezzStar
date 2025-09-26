@@ -1,4 +1,3 @@
-import 'dart:math';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:hezzstar/ExperieneManager.dart';
@@ -147,7 +146,10 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                           ),
                           Column(
                             children: [
-                              IconButton(onPressed: (){}, icon: Icon(Icons.list_alt, color: Colors.white,)),
+                              IconButton(onPressed: (){}, icon: Image.asset(
+                                  height: 60,
+                                  width: 60,
+                                  "assets/UI/Icons/Locked_Icon.png")),
                               AdsGameButton(
                                 text: "",
                                 sparkleAsset: "assets/animations/AnimationSFX/RewawrdLightEffect.json",
@@ -161,8 +163,9 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                     ),
                     Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        LanguageMenu(colorButton: Colors.white),
-                        LanguageMenu(colorButton: Colors.white),
+                        LanguageMenu(colorButton: Colors.transparent,),
+                        LanguageMenu(colorButton: Colors.transparent,),
+
                       ],
                     ),
                     Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -170,7 +173,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                         GestureDetector(onTap: (){
                           xpManager.resetAll();
                         },child: Icon(Icons.abc_sharp),),
-                        LanguageMenu(colorButton: Colors.white),
+
                       ],
                     )
                   ],
@@ -197,10 +200,11 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                   child: GestureDetector(
                     child: Icon(Icons.add, color: Colors.white,),
                     onTap: () {
+                      xpManager.addGold(50);
                       FlyingRewardManager().spawnReward(
                         start: Offset(200, 400),
                         endKey: goldKey,
-                        amount: 500,
+                        amount: 50,
                         type: RewardType.gold,
                         context: context,
                       );

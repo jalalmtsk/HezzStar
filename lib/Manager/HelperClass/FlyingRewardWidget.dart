@@ -29,11 +29,17 @@ class _FlyingRewardWidgetState extends State<FlyingRewardWidget>
   late Offset _randomOffset;
 
   Offset _getEndOffset() {
-    final renderBox = widget.endKey.currentContext!.findRenderObject() as RenderBox;
+    final context = widget.endKey.currentContext;
+    if (context == null) {
+      // Target widget is gone, return a fallback position
+      return Offset(-50, -50); // Offscreen to avoid crash
+    }
+    final renderBox = context.findRenderObject() as RenderBox;
     final position = renderBox.localToGlobal(Offset.zero);
     final size = renderBox.size;
     return position + Offset(size.width / 2 - 16, size.height / 2 - 16);
   }
+
 
   @override
   void initState() {
@@ -77,9 +83,20 @@ class _FlyingRewardWidgetState extends State<FlyingRewardWidget>
       case RewardType.gem:
         return 'assets/UI/Icons/Gamification/Gems_Icon.png';
       case RewardType.star:
-        return 'assets/UI/Icons/Gamification/Gems_Icon.png';
+        return 'assets/UI/Icons/Gamification/Xp_Icon.png';
     }
   }
+
+  @override
+  void dispose() {
+    // Ensure completion if disposed mid-animation
+    if (_controller.isAnimating) {
+      widget.onCompleted();
+    }
+    _controller.dispose();
+    super.dispose();
+  }
+
 
   @override
   Widget build(BuildContext context) {

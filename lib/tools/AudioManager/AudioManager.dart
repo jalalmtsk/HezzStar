@@ -211,6 +211,31 @@ class AudioManager extends ChangeNotifier with WidgetsBindingObserver{
     }
   }
 
+  // Dedicated player for looping SFX (like gold coins)
+  AudioPlayer? _loopingPlayer;
+
+  Future<void> playSfxLoop(String assetPath) async {
+    try {
+      _loopingPlayer ??= AudioPlayer();
+      await _loopingPlayer!.setAsset(assetPath);
+      await _loopingPlayer!.setLoopMode(LoopMode.one);
+      await _loopingPlayer!.setVolume(_isSfxMuted ? 0 : _sfxVolume);
+      await _loopingPlayer!.play();
+    } catch (e) {
+      if (kDebugMode) print('Error playing SFX loop: $e');
+    }
+  }
+
+  Future<void> stopSfxLoop() async {
+    if (_loopingPlayer != null) {
+      await _loopingPlayer!.stop();
+      await _loopingPlayer!.dispose();
+      _loopingPlayer = null;
+    }
+  }
+
+
+
   Future<void> toggleSfxMute() async {
     _isSfxMuted = !_isSfxMuted;
     await _saveSetting(_prefIsSfxMutedKey, _isSfxMuted);
