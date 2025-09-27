@@ -188,6 +188,10 @@ class CardGridWidget extends StatelessWidget {
         final cost = item['cost'];
         final currency = item['currency'] as CurrencyType;
         final unlocked = xpManager.isCardUnlocked(imagePath);
+        // ✅ If no card selected, pick the first unlocked card as default
+        if (xpManager.selectedCard == null && unlocked) {
+          xpManager.selectCard(imagePath);
+        }
         final selected = xpManager.selectedCard == imagePath;
 
         return CardItemWidget(

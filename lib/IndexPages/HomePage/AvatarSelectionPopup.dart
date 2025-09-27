@@ -4,149 +4,159 @@ import 'package:hezzstar/ExperieneManager.dart';
 
 class AvatarDetailsPopup {
   static void show(BuildContext context, ExperienceManager xpManager) {
-    final media = MediaQuery.of(context).size;
-    final width = media.width * 0.85;
-    final height = media.height * 0.75;
-
     showDialog(
       context: context,
       builder: (_) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
-        backgroundColor: Colors.black87,
-        child: Container(
-          width: width,
-          height: height,
-          padding: EdgeInsets.all(width * 0.05),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Colors.black87, Colors.grey[900]!],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: BorderRadius.circular(25),
-            border: Border.all(color: Colors.amberAccent, width: 2),
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              // Avatar with sparkling Lottie behind
-              Stack(
-                alignment: Alignment.center,
-                children: [
-                  SizedBox(
-                    width: width * 0.4,
-                    height: width * 0.4,
-                    child: Lottie.asset(
-                      'assets/animations/AnimationSFX/RewawrdLightEffect.json',
-                      repeat: true,
-                      fit: BoxFit.cover,
+        insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 80),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        backgroundColor: Colors.transparent,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            // base scale depending on shortest side
+            final base = constraints.biggest.shortestSide;
+            final scale = base / 400.0; // 400 = reference size (medium phone)
+
+            return ConstrainedBox(
+              constraints: BoxConstraints(
+                maxHeight: constraints.maxHeight * 0.8,
+                maxWidth: constraints.maxWidth * 0.95,
+              ),
+              child: SingleChildScrollView(
+                child: Container(
+                  padding: EdgeInsets.all(12 * scale),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Colors.black87, Colors.grey[900]!],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
                     ),
+                    borderRadius: BorderRadius.circular(20 * scale),
+                    border: Border.all(color: Colors.amberAccent, width: 1.5 * scale),
                   ),
-                  Container(
-                    width: width * 0.3,
-                    height: width * 0.3,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: RadialGradient(
-                        colors: [Colors.amberAccent.withOpacity(0.8), Colors.transparent],
-                        radius: 0.9,
-                        center: Alignment.center,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Avatar with sparkling Lottie behind
+                      Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          SizedBox(
+                            width: 120 * scale,
+                            height: 120 * scale,
+                            child: Lottie.asset(
+                              'assets/animations/AnimationSFX/RewawrdLightEffect.json',
+                              repeat: true,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                          Container(
+                            width: 90 * scale,
+                            height: 90 * scale,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              gradient: RadialGradient(
+                                colors: [Colors.amberAccent.withOpacity(0.8), Colors.transparent],
+                                radius: 0.9,
+                                center: Alignment.center,
+                              ),
+                              border: Border.all(color: Colors.amber, width: 2 * scale),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.amberAccent.withOpacity(0.6),
+                                  blurRadius: 8 * scale,
+                                  spreadRadius: 1,
+                                ),
+                              ],
+                            ),
+                            child: CircleAvatar(
+                              backgroundColor: Colors.grey.withOpacity(0.3),
+                              backgroundImage: xpManager.selectedAvatar != null
+                                  ? AssetImage(xpManager.selectedAvatar!)
+                                  : const AssetImage("assets/images/Skins/AvatarSkins/DefaultUser.png"),
+                            ),
+                          ),
+                        ],
                       ),
-                      border: Border.all(color: Colors.amber, width: 2),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.amberAccent.withOpacity(0.6),
-                          blurRadius: 12,
-                          spreadRadius: 1,
+                      SizedBox(height: 10 * scale),
+
+                      // Name + Edit
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Flexible(
+                            child: Text(
+                              xpManager.userProfile.username ?? "UserName",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 18 * scale,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          SizedBox(width: 6 * scale),
+                          GestureDetector(
+                            onTap: () => _showEditUsernameDialog(context, xpManager),
+                            child: Icon(Icons.edit, color: Colors.amber, size: 18 * scale),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 4 * scale),
+                      Text(
+                        "Rank: (UnRanked)",
+                        style: TextStyle(color: Colors.amber, fontSize: 14 * scale),
+                      ),
+                      SizedBox(height: 8 * scale),
+
+                      // Stats using Wrap (auto-wrap to avoid overflow)
+                      Wrap(
+                        spacing: 6 * scale,
+                        runSpacing: 6 * scale,
+                        alignment: WrapAlignment.center,
+                        children: [
+                          _buildStat("Level", xpManager.level.toString(), scale),
+                          _buildStat("Total Earnings", "12,450", scale),
+                          _buildStat("Gold", xpManager.gold.toString(), scale),
+                          _buildStat("Wins 1v1", "85", scale),
+                          _buildStat("Wins 2 Players", "40", scale),
+                          _buildStat("Wins 3 Players", "22", scale),
+                          _buildStat("Wins 4 Players", "18", scale),
+                          _buildStat("Wins 5 Players", "10", scale),
+                        ],
+                      ),
+
+                      SizedBox(height: 10 * scale),
+                      Divider(color: Colors.white24),
+                      SizedBox(height: 10 * scale),
+
+                      // Unlocks Row
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          Expanded(child: _buildUnlock("Skins", xpManager.unlockedCards.length.toString(), scale)),
+                          Expanded(child: _buildUnlock("Tables", xpManager.unlockedTableSkins.length.toString(), scale)),
+                          Expanded(child: _buildUnlock("Avatars", xpManager.unlockedAvatars.length.toString(), scale)),
+                        ],
+                      ),
+                      SizedBox(height: 14 * scale),
+
+                      // Close Button
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.amber,
+                          foregroundColor: Colors.black,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10 * scale)),
+                          padding: EdgeInsets.symmetric(vertical: 10 * scale, horizontal: 20 * scale),
                         ),
-                      ],
-                    ),
-                    child: CircleAvatar(
-                      backgroundColor: Colors.grey.withOpacity(0.3),
-                      backgroundImage: xpManager.selectedAvatar != null
-                          ? AssetImage(xpManager.selectedAvatar!)
-                          : const AssetImage(
-                          "assets/images/Skins/AvatarSkins/DefaultUser.png"),
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(height: height * 0.02),
-
-              // Name + Edit
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Flexible(
-                    child: Text(
-                      xpManager.userProfile.username ?? "UserName",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: width * 0.06,
-                        fontWeight: FontWeight.bold,
+                        onPressed: () => Navigator.pop(context),
+                        child: Text("Close", style: TextStyle(fontSize: 14 * scale)),
                       ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
+                    ],
                   ),
-                  SizedBox(width: width * 0.007),
-                  GestureDetector(
-                    onTap: () => _showEditUsernameDialog(context, xpManager),
-                    child: Icon(Icons.edit, color: Colors.amber, size: width * 0.06),
-                  ),
-                ],
-              ),
-              SizedBox(height: height * 0.007),
-              Text(
-                "Rank: (UnRanked)",
-                style: TextStyle(color: Colors.amber, fontSize: width * 0.045),
-              ),
-              SizedBox(height: height * 0.007),
-
-              // Stats using Wrap (no scroll, auto-wrap)
-              Wrap(
-                spacing: width * 0.02,
-                runSpacing: height * 0.015,
-                alignment: WrapAlignment.center,
-                children: [
-                  _buildStat("Level", xpManager.level.toString(), width),
-                  _buildStat("Total Earnings", "12,450", width),
-                  _buildStat("Gold", xpManager.gold.toString(), width),
-                  _buildStat("Wins 1v1", "85", width),
-                  _buildStat("Wins 2 Players", "40", width),
-                  _buildStat("Wins 3 Players", "22", width),
-                  _buildStat("Wins 4 Players", "18", width),
-                  _buildStat("Wins 5 Players", "10", width),
-                ],
-              ),
-
-              SizedBox(height: height * 0.007),
-              Divider(color: Colors.white24),
-              SizedBox(height: height * 0.015),
-
-              // Unlocks Row
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  Expanded(child: _buildUnlock("Skins", xpManager.unlockedCards.length.toString(), width)),
-                  Expanded(child: _buildUnlock("Tables", xpManager.unlockedTableSkins.length.toString(), width)),
-                  Expanded(child: _buildUnlock("Avatars", xpManager.unlockedAvatars.length.toString(), width)),
-                ],
-              ),
-              SizedBox(height: height * 0.02),
-
-              // Close Button
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.amber,
-                  foregroundColor: Colors.black,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  padding: EdgeInsets.symmetric(vertical: height * 0.015, horizontal: width * 0.1),
                 ),
-                onPressed: () => Navigator.pop(context),
-                child: Text("Close", style: TextStyle(fontSize: width * 0.045)),
               ),
-            ],
-          ),
+            );
+          },
         ),
       ),
     );
@@ -192,46 +202,34 @@ class AvatarDetailsPopup {
     );
   }
 
-  static Widget _buildStat(String title, String value, double width) {
+  static Widget _buildStat(String title, String value, double scale) {
     return Container(
-      width: width * 0.4, // each stat takes 40% width
-      padding: EdgeInsets.symmetric(horizontal: width * 0.02, vertical: width * 0.025),
+      width: 140 * scale,
+      padding: EdgeInsets.symmetric(horizontal: 6 * scale, vertical: 8 * scale),
       decoration: BoxDecoration(
         color: Colors.white10,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.amber.withOpacity(0.5), width: 1),
+        borderRadius: BorderRadius.circular(12 * scale),
+        border: Border.all(color: Colors.amber.withOpacity(0.5), width: 1 * scale),
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            child: Text(value,
-                style: TextStyle(color: Colors.white, fontSize: width * 0.045, fontWeight: FontWeight.bold)),
-          ),
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            child: Text(title, style: TextStyle(color: Colors.white70, fontSize: width * 0.035)),
-          ),
+          Text(value,
+              style: TextStyle(color: Colors.white, fontSize: 14 * scale, fontWeight: FontWeight.bold)),
+          Text(title, style: TextStyle(color: Colors.white70, fontSize: 12 * scale)),
         ],
       ),
     );
   }
 
-  static Widget _buildUnlock(String title, String value, double width) {
+  static Widget _buildUnlock(String title, String value, double scale) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        FittedBox(
-          fit: BoxFit.scaleDown,
-          child: Text(value,
-              style: TextStyle(color: Colors.white, fontSize: width * 0.05, fontWeight: FontWeight.bold)),
-        ),
-        SizedBox(height: width * 0.01),
-        FittedBox(
-          fit: BoxFit.scaleDown,
-          child: Text(title, style: TextStyle(color: Colors.white70, fontSize: width * 0.04)),
-        ),
+        Text(value,
+            style: TextStyle(color: Colors.white, fontSize: 16 * scale, fontWeight: FontWeight.bold)),
+        SizedBox(height: 4 * scale),
+        Text(title, style: TextStyle(color: Colors.white70, fontSize: 13 * scale)),
       ],
     );
   }

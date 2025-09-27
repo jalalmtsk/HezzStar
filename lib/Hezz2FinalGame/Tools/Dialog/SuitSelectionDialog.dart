@@ -50,113 +50,134 @@ class _SuitSelectionDialogState extends State<SuitSelectionDialog> {
   Widget build(BuildContext context) {
     return Dialog(
       backgroundColor: Colors.transparent,
-      insetPadding: const EdgeInsets.symmetric(horizontal: 70, vertical: 120),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.9),
-          borderRadius: BorderRadius.circular(24),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.4),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-            )
-          ],
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Circular countdown timer
-
-            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  "Choose a Suit",
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                SizedBox(
-                  width: 70,
-                  height: 70,
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      CircularProgressIndicator(
-                        value: _timeLeft / 7, // fraction of time left
-                        strokeWidth: 5,
-                        backgroundColor: Colors.grey.shade300,
-                        color: Colors.redAccent,
-                      ),
-                      Text(
-                        '$_timeLeft',
-                        style: const TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.redAccent,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+      insetPadding: const EdgeInsets.all(16), // smaller padding for small screens
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          return ConstrainedBox(
+            constraints: BoxConstraints(
+              maxHeight: constraints.maxHeight * 0.9,
+              maxWidth: constraints.maxWidth * 0.95,
             ),
-            const SizedBox(height: 20),
-            GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: suits.length,
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
-                childAspectRatio: 1,
-              ),
-              itemBuilder: (context, index) {
-                final suit = suits[index];
-                return GestureDetector(
-                  onTap: () {
-                    _timer.cancel();
-                    Navigator.of(context).pop(suit["name"]);
-                  },
-                  child: Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(18),
-                      color: Colors.grey.shade100,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black12,
-                          blurRadius: 8,
-                          offset: const Offset(2, 2),
-                        )
-                      ],
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
+            child: SingleChildScrollView(
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.95),
+                  borderRadius: BorderRadius.circular(24),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.4),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    )
+                  ],
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Title + countdown
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Image.asset(
-                          suit["asset"]!,
-                          height: 75,
-                          fit: BoxFit.contain,
+                        const Flexible(
+                          child: Text(
+                            "Choose a Suit",
+                            style: TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
-                        const SizedBox(height: 10),
-                        Text(
-                          suit["name"]!,
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
+                        SizedBox(
+                          width: 60,
+                          height: 60,
+                          child: Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              CircularProgressIndicator(
+                                value: _timeLeft / 7,
+                                strokeWidth: 5,
+                                backgroundColor: Colors.grey.shade300,
+                                color: Colors.redAccent,
+                              ),
+                              Text(
+                                '$_timeLeft',
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.redAccent,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ],
                     ),
-                  ),
-                );
-              },
+                    const SizedBox(height: 20),
+
+                    // Responsive Grid
+                    GridView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: suits.length,
+                      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                        maxCrossAxisExtent: 180, // flexible per screen
+                        crossAxisSpacing: 16,
+                        mainAxisSpacing: 16,
+                        childAspectRatio: 0.9,
+                      ),
+                      itemBuilder: (context, index) {
+                        final suit = suits[index];
+                        return GestureDetector(
+                          onTap: () {
+                            _timer.cancel();
+                            Navigator.of(context).pop(suit["name"]);
+                          },
+                          child: Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(18),
+                              color: Colors.grey.shade100,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black12,
+                                  blurRadius: 8,
+                                  offset: const Offset(2, 2),
+                                )
+                              ],
+                            ),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Flexible(
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Image.asset(
+                                      suit["asset"]!,
+                                      fit: BoxFit.contain,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  suit["name"]!,
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
             ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }

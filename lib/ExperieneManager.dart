@@ -40,7 +40,7 @@ class ExperienceManager with ChangeNotifier {
   List<String> get unlockedTableSkins => _unlockedTableSkins;
   String? get selectedTableSkin => _selectedTableSkin;
 
-  List<String> _unlockedTableSkins = [];
+  List<String> _unlockedTableSkins = ["assets/images/Skins/TableSkins/table1.jpg"];
   String? _selectedTableSkin;
 
   String get preferredLanguage => userProfile.preferredLanguage;
@@ -75,7 +75,7 @@ class ExperienceManager with ChangeNotifier {
     _unlockedAvatars = prefs.getStringList('unlockedAvatars') ?? [];
     _selectedAvatar = prefs.getString('selectedAvatar');
 
-    _unlockedTableSkins = prefs.getStringList('unlockedTableSkins') ?? [];
+    _unlockedTableSkins = prefs.getStringList('unlockedTableSkins') ?? ["assets/images/Skins/TableSkins/table1.jpg"];
     _selectedTableSkin = prefs.getString('selectedTableSkin');
 
     // Load profile
@@ -182,11 +182,11 @@ class ExperienceManager with ChangeNotifier {
     _experience = 0;
     _gold = 500;
     _gems = 25;
-    _unlockedCards = [];
+    _unlockedCards = ["assets/images/cards/backCard.png"];
     _selectedCard = null;
     _unlockedAvatars = [];
     _selectedAvatar = null;
-    _unlockedTableSkins = [];
+    _unlockedTableSkins = ["assets/images/Skins/TableSkins/table1.jpg"];
     _selectedTableSkin = null;
 
 

@@ -21,6 +21,7 @@ import '../Tools/MessagesInGame/AnimatedMessages.dart';
 import '../Tools/MessagesInGame/EmojiesBubble.dart';
 import '../Tools/TextUI/CardReamingTextUi.dart';
 import '../Tools/TextUI/MinimalBageText.dart';
+import 'GameScreen/GameScreen__Tools/TableBackground.dart';
 import 'endGameScreen.dart';
 
 
@@ -870,76 +871,6 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     );
   }
 
-  @override
-  void dispose() {
-    super.dispose();
-  }
-
-  void showGameSummaryDialog(BuildContext context,
-      List<Map<String, dynamic>> players, int totalPool) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20)),
-          title: const Text(
-            "Game Summary",
-            textAlign: TextAlign.center,
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
-          ),
-          content: SizedBox(
-            width: MediaQuery
-                .of(context)
-                .size
-                .width * 0.8,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text("Total Pool: $totalPool DH",
-                    style: const TextStyle(
-                        fontSize: 18, fontWeight: FontWeight.w600)),
-                const SizedBox(height: 15),
-                ...players.map((player) {
-                  return ListTile(
-                    title: Text(player["name"],
-                        style: const TextStyle(fontWeight: FontWeight.bold)),
-                    subtitle: Text("Bet: ${player["bet"]} DH"),
-                    trailing: Text(
-                      player["isWinner"]
-                          ? "+${totalPool} DH"
-                          : "0 DH",
-                      style: TextStyle(
-                        color: player["isWinner"] ? Colors.green : Colors.red,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
-                  );
-                }).toList(),
-              ],
-            ),
-          ),
-          actions: [
-            Center(
-              child: ElevatedButton(
-                onPressed: () => Navigator.pop(context),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blueAccent,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 30, vertical: 12),
-                ),
-                child: const Text("Close",
-                    style: TextStyle(color: Colors.white, fontSize: 16)),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
   String? _shownEmoji;
   @override
   Widget build(BuildContext context) {
@@ -957,8 +888,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       body: SafeArea(
         child: Stack(
           children: [
-            _buildTableBackground(),
-
+            TableBackground(),
             if (isBetweenRounds)
               Positioned.fill(
                 child: Container(
@@ -977,7 +907,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                           'Qualified: ${qualifiedPlayers.map((p) =>
                           p == 0
                               ? "You"
-                              : "Bot $p").join(", ")}',
+                              : "Player $p").join(", ")}',
                           style: const TextStyle(fontSize: 24, color: Colors
                               .white),
                         ),
@@ -1013,7 +943,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                           eliminatedPlayers, // list of eliminated flags
                           qualifiedPlayers, // list of qualified players
                           currentPlayer, // current player index
-                        ),                        child: PlayerCard(
+                        ),
+                        child: PlayerCard(
                           bot: 2,
                           vertical: false,
                           isEliminated: eliminatedPlayers[2],
@@ -1498,69 +1429,6 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
             ]
           ],
         ),
-      ),
-    );
-  }
-
-
-
-
-  Widget _buildTableBackground() {
-    final xpManager = Provider.of<ExperienceManager>(context,listen: false);
-
-    return Positioned.fill(
-      child: Stack(
-        children: [
-          // Background Image
-          Container(
-            decoration: BoxDecoration(
-              image: DecorationImage(
-                image: xpManager.selectedTableSkin != null
-                    ? AssetImage(xpManager.selectedTableSkin!)
-                    : const AssetImage("assets/images/Skins/TableSkins/table1.jpg"),
-                fit: BoxFit.cover,
-              ),
-            ),
-          ),
-
-          // Gradient Overlay (darkens edges, focus on center)
-          Container(
-            decoration: BoxDecoration(
-              gradient: RadialGradient(
-                center: Alignment.center,
-                radius: 1.0,
-                colors: [
-                  Colors.black.withOpacity(0.2), // center focus
-                  Colors.black.withOpacity(0.7), // edges darker
-                ],
-                stops: [0.6, 1],
-              ),
-            ),
-          ),
-
-          // Extra Top/Bottom Overlay for cinematic effect
-          Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Colors.black.withOpacity(0.4),
-                  Colors.transparent,
-                  Colors.transparent,
-                  Colors.black.withOpacity(0.4),
-                ],
-                stops: [0.0, 0.25, 0.75, 1.0],
-              ),
-            ),
-          ),
-
-          // Subtle Blur Overlay (gives depth)
-          BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 2.5, sigmaY: 1.5),
-            child: Container(color: Colors.black.withOpacity(0.1)),
-          ),
-        ],
       ),
     );
   }

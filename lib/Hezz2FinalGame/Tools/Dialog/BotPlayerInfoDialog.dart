@@ -53,11 +53,6 @@ class BotDetailsPopup {
     final width = media.width * 0.85;
     final height = media.height * 0.6;
 
-    final isEliminated = eliminatedPlayers[bot];
-    final isQualified = qualifiedPlayers.contains(bot);
-    final isTurn = currentPlayer == bot;
-    final cardCount = hands[bot].length;
-
     showDialog(
       context: context,
       builder: (_) => Dialog(
@@ -82,8 +77,8 @@ class BotDetailsPopup {
                 alignment: Alignment.center,
                 children: [
                   SizedBox(
-                    width: width * 0.3,
-                    height: width * 0.3,
+                    width: width * 0.30,
+                    height: width * 0.30,
                     child: Lottie.asset(
                       'assets/animations/AnimationSFX/RewawrdLightEffect.json',
                       repeat: true,
@@ -97,7 +92,7 @@ class BotDetailsPopup {
                   ),
                 ],
               ),
-              SizedBox(height: height * 0.02),
+              SizedBox(height: height * 0.01),
               Text(
                 info.name,
                 style: TextStyle(
@@ -106,27 +101,7 @@ class BotDetailsPopup {
                   color: Colors.amberAccent,
                 ),
               ),
-              SizedBox(height: height * 0.01),
-              Text(
-                isEliminated
-                    ? "Eliminated"
-                    : isQualified
-                    ? "Qualified"
-                    : isTurn
-                    ? "Current Turn"
-                    : "In Game",
-                style: TextStyle(
-                  fontSize: width * 0.05,
-                  fontWeight: FontWeight.bold,
-                  color: isEliminated
-                      ? Colors.redAccent
-                      : isQualified
-                      ? Colors.blueAccent
-                      : isTurn
-                      ? Colors.greenAccent
-                      : Colors.white,
-                ),
-              ),
+
               SizedBox(height: height * 0.015),
               Wrap(
                 spacing: width * 0.03,
