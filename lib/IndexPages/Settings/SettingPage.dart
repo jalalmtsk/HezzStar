@@ -1,10 +1,14 @@
+// file: settings_page.dart
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:url_launcher/url_launcher.dart';
+import '../../ExperieneManager.dart';
+import '../../main.dart';
 import '../../tools/AudioManager/AudioManager.dart';
+import '../../widgets/AboutAndSupportPages/AboutApp/AboutApp.dart';
+import '../../widgets/AboutAndSupportPages/Credits/CreditPage.dart';
+import '../../widgets/AboutAndSupportPages/PrivacyPolicy/PrivacyPolicy.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -15,57 +19,45 @@ class SettingsPage extends StatefulWidget {
 
 class _SettingsPageState extends State<SettingsPage>
     with TickerProviderStateMixin {
+
+  String selectedLanguage = "English"; // Default language
+
   bool darkMode = false;
   bool notificationsOn = true;
   String username = "Player";
   String appVersion = "Loading...";
-  bool parentalLockEnabled = false;
-  String parentalPin = '';
-  int screenTimeLimitMinutes = 0;
+
+  bool _generalOpen = true;
+  bool _bgOpen = false;
+  bool _sfxOpen = false;
 
   late AnimationController _pulseController;
   late Animation<double> _pulseAnim;
 
+  Color primaryAccent = Colors.orangeAccent;
+  Color secondaryAccent = Colors.deepOrange;
+
   @override
   void initState() {
     super.initState();
-    _loadSettings();
     _loadAppInfo();
+    _loadSavedLanguage(); // 👈 add this
 
     _pulseController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1200),
+      duration: const Duration(milliseconds: 1100),
     )..repeat(reverse: true);
 
-    _pulseAnim = Tween<double>(begin: 1.0, end: 1.05).animate(
+    _pulseAnim = Tween<double>(begin: 1.0, end: 1.06).animate(
       CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
     );
   }
-
-  @override
-  void dispose() {
-    _pulseController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _loadSettings() async {
-    final prefs = await SharedPreferences.getInstance();
+  void _loadSavedLanguage() {
+    final exp = Provider.of<ExperienceManager>(context, listen: false);
+    final savedCode = exp.preferredLanguage; // your saved lang code
     setState(() {
-      darkMode = prefs.getBool('darkMode') ?? false;
-      notificationsOn = prefs.getBool('notificationsOn') ?? true;
-      username = prefs.getString('username') ?? 'Player';
-      parentalLockEnabled = prefs.getBool('parentalLockEnabled') ?? false;
-      parentalPin = prefs.getString('parentalPin') ?? '';
-      screenTimeLimitMinutes = prefs.getInt('screenTimeLimitMinutes') ?? 0;
+      selectedLanguage = _mapCodeToLang(savedCode);
     });
-  }
-
-  Future<void> _savePref(String key, dynamic value) async {
-    final prefs = await SharedPreferences.getInstance();
-    if (value is bool) await prefs.setBool(key, value);
-    if (value is double) await prefs.setDouble(key, value);
-    if (value is int) await prefs.setInt(key, value);
-    if (value is String) await prefs.setString(key, value);
   }
 
   Future<void> _loadAppInfo() async {
@@ -75,134 +67,208 @@ class _SettingsPageState extends State<SettingsPage>
     });
   }
 
-  Future<void> _launchURL(String url) async {
-    if (await canLaunchUrl(Uri.parse(url))) {
-      await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Unable to open link.")),
-      );
-    }
+  @override
+  void dispose() {
+    _pulseController.dispose();
+    super.dispose();
   }
 
-  Future<void> _setParentalPin() async {
-    final pin = await showDialog<String>(
-      context: context,
-      builder: (context) {
-        final controller = TextEditingController(text: parentalPin);
-        return AlertDialog(
-          title: const Text("Set Parental PIN"),
-          content: TextField(
-            controller: controller,
-            decoration: const InputDecoration(hintText: "Enter PIN"),
-            obscureText: true,
-            keyboardType: TextInputType.number,
-            maxLength: 6,
-          ),
-          actions: [
-            TextButton(
-              child: const Text("Cancel"),
-              onPressed: () => Navigator.pop(context),
-            ),
-            TextButton(
-              child: const Text("Save"),
-              onPressed: () => Navigator.pop(context, controller.text),
+  void _togglePanel(String key) {
+    setState(() {
+      switch (key) {
+        case 'general':
+          _generalOpen = !_generalOpen;
+          break;
+        case 'bg':
+          _bgOpen = !_bgOpen;
+          break;
+        case 'sfx':
+          _sfxOpen = !_sfxOpen;
+          break;
+      }
+    });
+  }
+
+  Widget _luxHeader() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 18),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(28),
+          gradient: LinearGradient(colors: [primaryAccent, secondaryAccent]),
+          boxShadow: [
+            BoxShadow(
+              color: primaryAccent.withOpacity(0.32),
+              blurRadius: 12,
+              offset: const Offset(0, 6),
             ),
           ],
-        );
-      },
-    );
-    if (pin != null && pin.isNotEmpty) {
-      setState(() {
-        parentalPin = pin;
-        parentalLockEnabled = true;
-      });
-      await _savePref('parentalPin', pin);
-      await _savePref('parentalLockEnabled', true);
-    }
-  }
-
-  Future<void> _setScreenTimeLimit() async {
-    final input = await showDialog<String>(
-      context: context,
-      builder: (context) {
-        final controller = TextEditingController(
-          text: screenTimeLimitMinutes == 0 ? '' : screenTimeLimitMinutes.toString(),
-        );
-        return AlertDialog(
-          title: const Text("Set Screen Limit"),
-          content: TextField(
-            controller: controller,
-            decoration: const InputDecoration(hintText: "Enter Minutes"),
-            keyboardType: TextInputType.number,
-          ),
-          actions: [
-            TextButton(
-              child: const Text("Cancel"),
-              onPressed: () => Navigator.pop(context),
+        ),
+        child: Row(
+          children: [
+            const Text(
+              "⚙️ Settings",
+              style: TextStyle(
+                  fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
             ),
-            TextButton(
-              child: const Text("Save"),
-              onPressed: () => Navigator.pop(context, controller.text),
+            const Spacer(),
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.25),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.white24),
+              ),
+              child: Text(
+                appVersion,
+                style: const TextStyle(
+                    color: Colors.white70, fontWeight: FontWeight.w600),
+              ),
             ),
           ],
-        );
-      },
+        ),
+      ),
     );
-
-    if (input != null) {
-      final minutes = int.tryParse(input) ?? 0;
-      setState(() => screenTimeLimitMinutes = minutes);
-      await _savePref('screenTimeLimitMinutes', minutes);
-    }
   }
 
-  Widget _sectionHeader(String title, IconData icon, Color color) {
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 10),
+  Widget _buildPanel({
+    required String id,
+    required IconData icon,
+    required String title,
+    required Color accent,
+    required bool open,
+    required Widget child,
+  }) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 360),
+      margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(14),
-        gradient: LinearGradient(colors: [color, color.withOpacity(0.6)]),
+        color: Colors.white.withOpacity(0.06),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: open ? accent.withOpacity(0.75) : Colors.white12,
+          width: open ? 2.2 : 1.0,
+        ),
+        boxShadow: open
+            ? [
+          BoxShadow(
+            color: accent.withOpacity(0.22),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
+          ),
+        ]
+            : [
+          BoxShadow(
+            color: Colors.black26,
+            blurRadius: 6,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
-      child: Row(
+      child: Column(
         children: [
-          Icon(icon, color: Colors.white),
-          const SizedBox(width: 8),
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
+          Row(
+            children: [
+              CircleAvatar(
+                radius: 20,
+                backgroundColor: accent.withAlpha(40),
+                child: Icon(icon, color: accent),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(title,
+                    style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white)),
+              ),
+              GestureDetector(
+                onTap: () => _togglePanel(id),
+                child: AnimatedRotation(
+                  turns: open ? 0.5 : 0.0,
+                  duration: const Duration(milliseconds: 300),
+                  child: const Icon(Icons.keyboard_arrow_down,
+                      color: Colors.white70),
+                ),
+              ),
+            ],
+          ),
+          AnimatedCrossFade(
+            firstChild: const SizedBox.shrink(),
+            secondChild: Padding(
+              padding: const EdgeInsets.only(top: 12),
+              child: child,
             ),
-          )
+            crossFadeState:
+            open ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+            duration: const Duration(milliseconds: 350),
+          ),
         ],
       ),
     );
   }
 
-  Widget _glassTile({required Widget child}) {
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 6),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.08),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white24),
-      ),
-      child: child,
+  Widget _sliderRow({
+    required double value,
+    required ValueChanged<double> onChanged,
+    required Color accent,
+    required bool enabled,
+    required VoidCallback onToggleMute,
+    required bool isMuted,
+  }) {
+    return Row(
+      children: [
+        Icon(Icons.volume_down, color: enabled ? accent : Colors.grey),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Slider(
+            value: value,
+            min: 0,
+            max: 1,
+            divisions: 10,
+            onChanged: enabled ? onChanged : null,
+            activeColor: accent,
+            inactiveColor: Colors.white12,
+          ),
+        ),
+        const SizedBox(width: 8),
+        Text("${(value * 100).round()}%",
+            style: TextStyle(
+                color: enabled ? accent : Colors.grey,
+                fontWeight: FontWeight.w600)),
+        const SizedBox(width: 8),
+        ScaleTransition(
+          scale: _pulseAnim,
+          child: InkWell(
+            onTap: onToggleMute,
+            borderRadius: BorderRadius.circular(12),
+            child: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: accent.withOpacity(0.18),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(
+                isMuted ? Icons.volume_off : Icons.volume_up,
+                size: 18,
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final audioManager = Provider.of<AudioManager>(context, listen: false);
+    final audioManager = Provider.of<AudioManager>(context);
 
     return Scaffold(
       body: Stack(
         children: [
-          // Moroccan bg
           Container(
             decoration: const BoxDecoration(
               image: DecorationImage(
@@ -212,180 +278,314 @@ class _SettingsPageState extends State<SettingsPage>
             ),
           ),
           BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
-            child: Container(color: Colors.black.withOpacity(0.6)),
-          ),
+              filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
+              child: Container(color: Colors.black.withOpacity(0.6))),
           SafeArea(
-            child: ListView(
-              padding: const EdgeInsets.all(16),
+            child: Column(
               children: [
-                _sectionHeader("General", Icons.settings, Colors.amber),
-                _glassTile(
-                  child: SwitchListTile(
-                    title: const Text("Dark Mode", style: TextStyle(color: Colors.white)),
-                    value: darkMode,
-                    onChanged: (val) {
-                      setState(() => darkMode = val);
-                      _savePref('darkMode', val);
-                    },
-                    activeColor: Colors.amber,
-                  ),
-                ),
-                _glassTile(
-                  child: SwitchListTile(
-                    title: const Text("Notifications", style: TextStyle(color: Colors.white)),
-                    value: notificationsOn,
-                    onChanged: (val) {
-                      setState(() => notificationsOn = val);
-                      _savePref('notificationsOn', val);
-                    },
-                    activeColor: Colors.amber,
-                  ),
-                ),
-                _glassTile(
-                  child: ListTile(
-                    title: Text("Username: $username", style: const TextStyle(color: Colors.white)),
-                    trailing: IconButton(
-                      icon: const Icon(Icons.edit, color: Colors.amber),
-                      onPressed: () async {
-                        final name = await showDialog<String>(
-                          context: context,
-                          builder: (context) {
-                            final controller = TextEditingController(text: username);
-                            return AlertDialog(
-                              title: const Text("Change Name"),
-                              content: TextField(controller: controller),
-                              actions: [
-                                TextButton(child: const Text("Cancel"), onPressed: () => Navigator.pop(context)),
-                                TextButton(child: const Text("Save"), onPressed: () => Navigator.pop(context, controller.text)),
-                              ],
-                            );
-                          },
-                        );
-                        if (name != null) {
-                          setState(() => username = name);
-                          _savePref('username', name);
-                        }
-                      },
-                    ),
-                  ),
-                ),
+                _luxHeader(),
+                Expanded(
+                  child: ListView(
+                    padding: const EdgeInsets.only(bottom: 20),
+                    children: [
+                      // General Panel
+                      _buildPanel(
+                        id: "general",
+                        icon: Icons.settings,
+                        title: "General",
+                        accent: Colors.amber,
+                        open: _generalOpen,
+                        child: Column(
+                          children: [
+                            SwitchListTile(
+                              value: darkMode,
+                              onChanged: (v) => setState(() => darkMode = v),
+                              title: const Text("Dark Mode",
+                                  style: TextStyle(color: Colors.white)),
+                              activeColor: Colors.amber,
+                            ),
+                            ListTile(
+                              title:  Text("Language ${tr(context).add}", style: TextStyle(color: Colors.white)),
+                              trailing: Text(
+                                selectedLanguage,
+                                style: const TextStyle(color: Colors.white70, fontWeight: FontWeight.w600),
+                              ),
+                              onTap: () async {
+                                final chosenLang = await showDialog<String>(
+                                  context: context,
+                                  builder: (context) {
+                                    return AlertDialog(
+                                      title: const Text("Select Language"),
+                                      content: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          _langOption(context, "English", "en", "🇺🇸"),
+                                          _langOption(context, "العربية", "ar", "🇸🇦"),
+                                          _langOption(context, "ⵜⴰⵎⴰⵣⵉⵖⵜ", "zgh", "🇲🇦"),
+                                          _langOption(context, "Français", "fr", "🇫🇷"),
+                                          _langOption(context, "Español", "es", "🇪🇸"),
+                                        ],
+                                      ),
+                                    );
+                                  },
+                                );
 
-                _sectionHeader("Audio", Icons.music_note, Colors.deepOrange),
-                _glassTile(
-                  child: ListTile(
-                    leading: const Icon(Icons.music_note, color: Colors.amber),
-                    title: const Text("Background Music", style: TextStyle(color: Colors.white)),
-                    subtitle: Slider(
-                      value: audioManager.bgVolume,
-                      onChanged: (v) {
-                        audioManager.setBgVolume(v);
-                        _savePref('musicVolume', v);
-                      },
-                      min: 0,
-                      max: 1,
-                    ),
-                    trailing: IconButton(
-                      icon: Icon(audioManager.isBgMuted ? Icons.volume_off : Icons.volume_up, color: Colors.white),
-                      onPressed: audioManager.toggleBgMute,
-                    ),
-                  ),
-                ),
-                _glassTile(
-                  child: ListTile(
-                    leading: const Icon(Icons.speaker, color: Colors.cyan),
-                    title: const Text("SFX", style: TextStyle(color: Colors.white)),
-                    subtitle: Slider(
-                      value: audioManager.sfxVolume,
-                      onChanged: (v) => audioManager.setSfxVolume(v),
-                      min: 0,
-                      max: 1,
-                    ),
-                    trailing: ScaleTransition(
-                      scale: _pulseAnim,
-                      child: IconButton(
-                        icon: Icon(audioManager.isSfxMuted ? Icons.volume_off : Icons.volume_up, color: Colors.white),
-                        onPressed: audioManager.toggleSfxMute,
+                                if (chosenLang != null) {
+                                  setState(() => selectedLanguage = chosenLang);
+
+                                  // Save language to ExperienceManager
+                                  Provider.of<ExperienceManager>(context, listen: false)
+                                      .setPreferredLanguage(_mapLangToCode(chosenLang));
+                                }
+                              },
+                            ),
+                            SwitchListTile(
+                              value: notificationsOn,
+                              onChanged: (v) =>
+                                  setState(() => notificationsOn = v),
+                              title: const Text("Notifications",
+                                  style: TextStyle(color: Colors.white)),
+                              activeColor: Colors.amber,
+                            ),
+                            ListTile(
+                              title: Text("Username: $username",
+                                  style: const TextStyle(color: Colors.white)),
+                              trailing: IconButton(
+                                icon:
+                                const Icon(Icons.edit, color: Colors.amber),
+                                onPressed: () async {
+                                  final name = await showDialog<String>(
+                                    context: context,
+                                    builder: (_) {
+                                      final c =
+                                      TextEditingController(text: username);
+                                      return AlertDialog(
+                                        title: const Text("Change Name"),
+                                        content: TextField(controller: c),
+                                        actions: [
+                                          TextButton(
+                                              onPressed: () =>
+                                                  Navigator.pop(context),
+                                              child: const Text("Cancel")),
+                                          TextButton(
+                                              onPressed: () =>
+                                                  Navigator.pop(context, c.text),
+                                              child: const Text("Save")),
+                                        ],
+                                      );
+                                    },
+                                  );
+                                  if (name != null && name.isNotEmpty) {
+                                    setState(() => username = name);
+                                  }
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                  ),
-                ),
 
-                _sectionHeader("Security", Icons.lock, Colors.redAccent),
-                _glassTile(
-                  child: SwitchListTile(
-                    title: const Text("Parental Lock", style: TextStyle(color: Colors.white)),
-                    value: parentalLockEnabled,
-                    onChanged: (val) async {
-                      if (val) {
-                        await _setParentalPin();
-                      } else {
-                        setState(() {
-                          parentalLockEnabled = false;
-                          parentalPin = '';
-                        });
-                        _savePref('parentalLockEnabled', false);
-                        _savePref('parentalPin', '');
-                      }
-                    },
-                    activeColor: Colors.redAccent,
-                  ),
-                ),
-                _glassTile(
-                  child: ListTile(
-                    title: const Text("Screen Time Limit", style: TextStyle(color: Colors.white)),
-                    subtitle: Text(
-                      screenTimeLimitMinutes == 0 ? "No limit" : "$screenTimeLimitMinutes minutes",
-                      style: const TextStyle(color: Colors.white70),
-                    ),
-                    trailing: TextButton(
-                      child: const Text("Set", style: TextStyle(color: Colors.amber)),
-                      onPressed: _setScreenTimeLimit,
-                    ),
-                  ),
-                ),
+                      // Background Music
+                      _buildPanel(
+                        id: "bg",
+                        icon: Icons.music_note,
+                        title: "Background Music",
+                        accent: Colors.deepOrange,
+                        open: _bgOpen,
+                        child: _sliderRow(
+                          value: audioManager.bgVolume,
+                          onChanged: (v) => audioManager.setBgVolume(v),
+                          accent: Colors.deepOrange,
+                          enabled: true,
+                          onToggleMute: () async {
+                            await audioManager.toggleBgMute();
+                            setState(() {}); // refresh UI
+                          },
+                          isMuted: audioManager.isBgMuted,
+                        ),
+                      ),
 
-                _sectionHeader("About & Support", Icons.info, Colors.blue),
-                _glassTile(
-                  child: ListTile(
-                    leading: const Icon(Icons.info_outline, color: Colors.blueGrey),
-                    title: const Text("About App", style: TextStyle(color: Colors.white)),
-                    subtitle: Text(appVersion, style: const TextStyle(color: Colors.white70)),
+                      // SFX
+                      _buildPanel(
+                        id: "sfx",
+                        icon: Icons.speaker,
+                        title: "Sound Effects",
+                        accent: Colors.cyan,
+                        open: _sfxOpen,
+                        child: _sliderRow(
+                          value: audioManager.sfxVolume,
+                          onChanged: (v) => audioManager.setSfxVolume(v),
+                          accent: Colors.cyan,
+                          enabled: true,
+                          onToggleMute: () async {
+                            await audioManager.toggleSfxMute();
+                            setState(() {}); // refresh UI
+                          },
+
+                          isMuted: audioManager.isSfxMuted,
+                        ),
+                      ),
+
+                      // About Section
+                      _buildPanel(
+                        id: "about",
+                        icon: Icons.info_outline,
+                        title: "About & Support",
+                        accent: Colors.blue,
+                        open: true,
+                        child: Column(
+                          children: [
+                            ListTile(
+                              leading:
+                              const Icon(Icons.info, color: Colors.blue),
+                              title: const Text("About App",
+                                  style: TextStyle(color: Colors.white)),
+                              subtitle: Text(appVersion,
+                                  style:
+                                  const TextStyle(color: Colors.white70)),
+                              onTap: () {
+                                // TODO: Show about dialog
+                                showDialog(
+                                  context: context,
+                                  builder: (_) => const AboutDialogHezz2Star(),
+                                );
+                              },
+                            ),
+                            ListTile(
+                              leading: const Icon(Icons.email,
+                                  color: Colors.deepPurple),
+                              title: const Text("Contact Support",
+                                  style: TextStyle(color: Colors.white)),
+                              onTap: () {
+                                // TODO: Open email launcher
+                                debugPrint("Contact Support tapped");
+                              },
+                            ),
+                            ListTile(
+                              leading: const Icon(Icons.privacy_tip_outlined,
+                                  color: Colors.amber),
+                              title: const Text("Privacy Policy",
+                                  style: TextStyle(color: Colors.white)),
+                              onTap: () {
+                                // TODO: Navigate to Privacy Policy
+                                showDialog(
+                                  context: context,
+                                  builder: (_) => const PrivacyPolicyDialog(),
+                                );
+                              },
+                            ),
+                            ListTile(
+                              leading:
+                              const Icon(Icons.gavel, color: Colors.amber),
+                              title: const Text("Credits",
+                                  style: TextStyle(color: Colors.white)),
+                              onTap: () {
+                                // TODO: Navigate to Terms of Use
+                                showDialog(
+                                  context: context,
+                                  builder: (_) => const CreditsDialog(),
+                                );
+                              },
+                            ),
+                            ListTile(
+                              leading:
+                              const Icon(Icons.star_rate, color: Colors.amber),
+                              title: const Text("Rate App",
+                                  style: TextStyle(color: Colors.white)),
+                              onTap: () {
+                                // TODO: Open app store rating
+                                debugPrint("Rate App tapped");
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-                _glassTile(
-                  child: ListTile(
-                    leading: const Icon(Icons.email, color: Colors.deepPurple),
-                    title: const Text("Contact Support", style: TextStyle(color: Colors.white)),
-                    onTap: () => _launchURL("mailto:support@example.com"),
-                  ),
-                ),
-                _glassTile(
-                  child: ListTile(
-                    leading: const Icon(Icons.privacy_tip_outlined, color: Colors.amber),
-                    title: const Text("Privacy Policy", style: TextStyle(color: Colors.white)),
-                    onTap: () => _launchURL("https://example.com/privacy"),
-                  ),
-                ),
-                _glassTile(
-                  child: ListTile(
-                    leading: const Icon(Icons.gavel, color: Colors.amber),
-                    title: const Text("Terms of Use", style: TextStyle(color: Colors.white)),
-                    onTap: () => _launchURL("https://example.com/terms"),
-                  ),
-                ),
-                _glassTile(
-                  child: ListTile(
-                    leading: const Icon(Icons.star_rate, color: Colors.amber),
-                    title: const Text("Rate App", style: TextStyle(color: Colors.white)),
-                    onTap: () => _launchURL("https://play.google.com/store/apps/details?id=com.example.mortaalim"),
-                  ),
-                ),
+                )
               ],
             ),
-          )
+          ),
         ],
       ),
     );
   }
+
+  Widget _langOption(BuildContext context, String label, String code, String flag) {
+    final isSelected = selectedLanguage == label;
+
+    return InkWell(
+      onTap: () => Navigator.pop(context, label),
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 6),
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.amber.withOpacity(0.15) : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected ? Colors.amber : Colors.grey.withOpacity(0.3),
+            width: isSelected ? 2 : 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            Text(flag, style: const TextStyle(fontSize: 22)),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                label,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                  color: isSelected ? Colors.amber.shade700 : Colors.black87,
+                ),
+              ),
+            ),
+            if (isSelected)
+              const Icon(Icons.check_circle, color: Colors.green, size: 22),
+          ],
+        ),
+      ),
+    );
+  }
+
+
+
+
+  String _mapCodeToLang(String code) {
+    switch (code) {
+      case "en":
+        return "English";
+      case "ar":
+        return "العربية";
+      case "zgh":
+        return "ⵜⴰⵎⴰⵣⵉⵖⵜ";
+      case "fr":
+        return "Français";
+      case "es":
+        return "Español";
+      default:
+        return "English";
+    }
+  }
+
+
+  String _mapLangToCode(String lang) {
+    switch (lang) {
+      case "English":
+        return "en";
+      case "العربية":
+        return "ar";
+      case "ⵜⴰⵎⴰⵣⵉⵖⵜ":
+        return "zgh";
+      case "Français":
+        return "fr";
+      case "Español":
+        return "es";
+      default:
+        return "en";
+    }
+  }
+
 }

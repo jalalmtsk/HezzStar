@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:lottie/lottie.dart';
+import '../../Manager/HelperClass/FlyingRewardManager.dart';
+import '../../Manager/HelperClass/RewardDimScreen.dart';
 import 'AdsManager.dart';
 import '../../ExperieneManager.dart';
 
@@ -9,20 +11,28 @@ class AdsGameButton extends StatelessWidget {
   final String sparkleAsset; // ✨ Sparkles animation
   final String boxAsset; // 📦 Box/button animation
   final int rewardAmount;
+  final GlobalKey gemsKey;
 
-  const AdsGameButton({
+   AdsGameButton({
     super.key,
     required this.text,
     required this.sparkleAsset,
     required this.boxAsset,
-    this.rewardAmount = 1,
+     required this.gemsKey,  // 👈 Now injected from outside
+     this.rewardAmount = 1,
   });
 
   void _handleAdReward(BuildContext context) async {
     bool earned = await AdHelper.showRewardedAd(context);
     final xpManager = Provider.of<ExperienceManager>(context, listen: false);
     if (earned) {
-      xpManager.addGems(rewardAmount);
+      RewardDimScreen.show(
+        context,
+        start: const Offset(200, 400),
+        endKey: gemsKey,
+        amount: rewardAmount,
+        type: RewardType.gem,
+      );
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("🎉 You earned $rewardAmount Gem${rewardAmount > 1 ? 's' : ''}!")),
       );

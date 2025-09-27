@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 
 import '../../Hezz2FinalGame/Screen/GameLauncher/CardGameLauncher.dart';
 import '../../Manager/HelperClass/FlyingRewardManager.dart';
+import '../../Manager/HelperClass/RewardDimScreen.dart';
 import '../../tools/AdsManager/AdsGameButton.dart';
 import '../../widgets/userStatut/userStatus.dart';
 import 'AvatarSelectionPopup.dart';
@@ -22,7 +23,6 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   final GlobalKey goldKey = GlobalKey();
   final GlobalKey gemsKey = GlobalKey();
   final GlobalKey xpKey = GlobalKey();
-
 
 
   @override
@@ -146,7 +146,13 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                           ),
                           Column(
                             children: [
-                              IconButton(onPressed: (){}, icon: Image.asset(
+                              IconButton(onPressed: (){
+                                xpManager.addExperience(
+                                  10,              // XP amount
+                                  context: context, // needed for dimmed reward screen
+                                  gemsKey: gemsKey, // where the flying gems fly to
+                                );
+                              }, icon: Image.asset(
                                   height: 60,
                                   width: 60,
                                   "assets/UI/Icons/Locked_Icon.png")),
@@ -155,6 +161,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                                 sparkleAsset: "assets/animations/AnimationSFX/RewawrdLightEffect.json",
                                 boxAsset: "assets/animations/AnimatGamification/AdsBox.json",
                                 rewardAmount: 5,
+                                gemsKey: gemsKey,
                               ),
                             ],
                           ),
@@ -200,7 +207,20 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                   child: GestureDetector(
                     child: Icon(Icons.add, color: Colors.white,),
                     onTap: () {
-                      xpManager.addGold(50);
+                      RewardDimScreen.show(
+                        context,
+                        start: const Offset(200, 400),
+                        endKey: goldKey,
+                        amount: 50,
+                        type: RewardType.gold,
+                      );
+                      RewardDimScreen.show(
+                        context,
+                        start: const Offset(200, 400),
+                        endKey: gemsKey,
+                        amount: 50,
+                        type: RewardType.gem,
+                      );
                       FlyingRewardManager().spawnReward(
                         start: Offset(200, 400),
                         endKey: goldKey,
@@ -213,13 +233,6 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                         endKey: gemsKey,
                         amount: 10,
                         type: RewardType.gem,
-                        context: context,
-                      );
-                      FlyingRewardManager().spawnReward(
-                        start: Offset(200, 400),
-                        endKey: xpKey,
-                        amount: 10,
-                        type: RewardType.star,
                         context: context,
                       );
                     },

@@ -11,6 +11,8 @@ class EndGameScreen extends StatefulWidget {
   final GameModeType gameModeType;
   final int currentRound;
   final int betAmount;
+  final String winnerName;
+  final String winnerAvatar;
 
   const EndGameScreen({
     super.key,
@@ -19,6 +21,8 @@ class EndGameScreen extends StatefulWidget {
     required this.gameModeType,
     required this.currentRound,
     required this.betAmount,
+    required this.winnerName,
+    required this.winnerAvatar,
   });
 
   @override
@@ -41,9 +45,9 @@ class _EndGameScreenLuxState extends State<EndGameScreen>
       vsync: this,
       duration: const Duration(milliseconds: 900),
     );
-    _fadeAnim =
-        Tween<double>(begin: 0, end: 1).animate(CurvedAnimation(parent: _fadeController, curve: Curves.easeOut));
-
+    _fadeAnim = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(parent: _fadeController, curve: Curves.easeOut),
+    );
     _fadeController.forward();
 
     if (!_rewardGiven) {
@@ -107,7 +111,6 @@ class _EndGameScreenLuxState extends State<EndGameScreen>
     return Scaffold(
       body: Stack(
         children: [
-          // Background with gradient overlay
           Positioned.fill(child: _luxBackground()),
           SafeArea(
             child: FadeTransition(
@@ -181,10 +184,16 @@ class _EndGameScreenLuxState extends State<EndGameScreen>
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(28),
           gradient: LinearGradient(colors: [primaryAccent, secondaryAccent]),
-          boxShadow: [BoxShadow(color: primaryAccent.withOpacity(0.35), blurRadius: 12, offset: const Offset(0, 4))],
+          boxShadow: [
+            BoxShadow(
+              color: primaryAccent.withOpacity(0.35),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            )
+          ],
         ),
         child: Text(
-          '${widget.winnerIndex == 0 ? "You" : "Bot ${widget.winnerIndex}"} Wins!',
+          '${widget.winnerIndex == 0 ? "You" : widget.winnerName} Wins!',
           style: const TextStyle(
             fontSize: 28,
             fontWeight: FontWeight.bold,
@@ -197,6 +206,10 @@ class _EndGameScreenLuxState extends State<EndGameScreen>
   }
 
   Widget _luxPlayerCard(int index, bool isWinner, int gold) {
+    final String avatarPath = index == widget.winnerIndex
+        ? widget.winnerAvatar
+        : 'assets/images/Skins/AvatarSkins/CardMaster/CardMaster${index % 6 + 1}.png';
+
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       color: isWinner ? primaryAccent : Colors.white,
@@ -206,12 +219,7 @@ class _EndGameScreenLuxState extends State<EndGameScreen>
         leading: CircleAvatar(
           radius: 26,
           backgroundColor: isWinner ? Colors.white : Colors.grey[300],
-          child: Text(
-            index == 0 ? 'You' : 'B$index',
-            style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: isWinner ? primaryAccent : Colors.black87),
-          ),
+          backgroundImage: AssetImage(avatarPath),
         ),
         title: Text(
           isWinner ? 'Winner' : 'No Reward',

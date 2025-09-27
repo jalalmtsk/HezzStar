@@ -109,19 +109,19 @@ class _MainCollectionPageState extends State<MainCollectionPage>
                     ),
                     Tab(
                       icon: Image(
-                        image: AssetImage('assets/UI/Icons/TabBars_Icons/TableSkin_Icon.png'),
-                        width: 45,
-                        height: 45,
-                      ),
-                      text: "Table Skins",
-                    ),
-                    Tab(
-                      icon: Image(
                         image: AssetImage('assets/UI/Icons/TabBars_Icons/AvatarSkins_Icon.png'),
                         width: 46,
                         height: 46,
                       ),
                       text: "Avatars",
+                    ),
+                    Tab(
+                      icon: Image(
+                        image: AssetImage('assets/UI/Icons/TabBars_Icons/TableSkin_Icon.png'),
+                        width: 45,
+                        height: 45,
+                      ),
+                      text: "Table Skins",
                     ),
                   ],
                 ),
@@ -174,8 +174,8 @@ class _MainCollectionPageState extends State<MainCollectionPage>
                 controller: _tabController,
                 children: const [
                   CardSkinsIndexPage(),
-                  TableSkin(),
                   AvatarShopIndex(),
+                  TableSkin(),
                 ],
               ),
             ),

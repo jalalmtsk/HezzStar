@@ -88,7 +88,7 @@ class UserStatusBar extends StatelessWidget {
                   margin: EdgeInsets.only(left: iconSize * 0.6),
                   padding: EdgeInsets.symmetric(horizontal: padding, vertical: padding / 2),
                   decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.5),
+                    color: Colors.black.withOpacity(0.6),
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: ConstrainedBox(

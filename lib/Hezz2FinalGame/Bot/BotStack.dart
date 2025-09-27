@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 
-// A widget that shows one player in the game
+import '../Tools/Dialog/BotPlayerInfoDialog.dart';
+import 'BotInfoModel.dart';
+
+// ================= PLAYER CARD =================
 class PlayerCard extends StatelessWidget {
   final int bot;
   final bool vertical;
@@ -25,7 +28,9 @@ class PlayerCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Decide colors/text based on status
+    // Lazily get bot info
+    final info = BotDetailsPopup.getBotInfo(bot);
+
     Color borderColor = Colors.white70;
     Color statusColor = Colors.white;
     String statusText = '';
@@ -63,12 +68,7 @@ class PlayerCard extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          _PlayerHeader(
-            bot: bot,
-            statusColor: statusColor,
-            statusText: statusText,
-            isTurn: isTurn,
-          ),
+          _PlayerHeader(info: info, statusColor: statusColor, statusText: statusText, isTurn: isTurn),
           const SizedBox(height: 8),
           _CardPreview(hand: hand, vertical: vertical),
           const SizedBox(height: 6),
@@ -79,15 +79,14 @@ class PlayerCard extends StatelessWidget {
   }
 }
 
-// Header row with avatar, player name, and status + circular timer
 class _PlayerHeader extends StatelessWidget {
-  final int bot;
+  final BotInfo info;
   final Color statusColor;
   final String statusText;
   final bool isTurn;
 
   const _PlayerHeader({
-    required this.bot,
+    required this.info,
     required this.statusColor,
     required this.statusText,
     this.isTurn = false,
@@ -101,7 +100,6 @@ class _PlayerHeader extends StatelessWidget {
         Stack(
           alignment: Alignment.center,
           children: [
-            // Circular turn timer
             if (isTurn)
               SizedBox(
                 width: 38,
@@ -122,18 +120,13 @@ class _PlayerHeader extends StatelessWidget {
             CircleAvatar(
               radius: 16,
               backgroundColor: statusColor.withOpacity(0.15),
-              backgroundImage: AssetImage(
-                "assets/images/Skins/AvatarSkins/CardMaster/CardMaster$bot.png",
-
-              ),
-              // OR for network image:
-              // backgroundImage: NetworkImage("https://example.com/avatar_$bot.png"),
+              backgroundImage: AssetImage(info.avatarPath),
             ),
           ],
         ),
         const SizedBox(width: 8),
         Text(
-          "P$bot",
+          info.name,
           style: TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 14,
@@ -170,9 +163,8 @@ class _PlayerHeader extends StatelessWidget {
   }
 }
 
-// Shows the preview of cards
 class _CardPreview extends StatelessWidget {
-  final List<dynamic> hand; // Replace with your Card type
+  final List<dynamic> hand;
   final bool vertical;
 
   const _CardPreview({required this.hand, required this.vertical});
@@ -203,7 +195,6 @@ class _CardPreview extends StatelessWidget {
   }
 }
 
-// Shows the number of cards
 class _CardCount extends StatelessWidget {
   final int count;
   const _CardCount({required this.count});

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hezzstar/IndexPages/Collection/Tools/TableItems.dart';
 import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 
@@ -7,10 +8,10 @@ import '../../../tools/AudioManager/AudioManager.dart';
 import 'CardItem.dart';
 import 'CurrencyTypeEnum.dart';
 
-class AvatarGridWidget extends StatelessWidget {
-  final List<Map<String, dynamic>> avatars;
+class TableSkinGridWidget extends StatelessWidget {
+  final List<Map<String, dynamic>> tableSkins;
 
-  const AvatarGridWidget({required this.avatars, super.key});
+  const TableSkinGridWidget({required this.tableSkins, super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -51,13 +52,13 @@ class AvatarGridWidget extends StatelessWidget {
                         ),
                         ClipRRect(
                           borderRadius: BorderRadius.circular(16),
-                          child: Image.asset(imagePath, width: 150, height: 200),
+                          child: Image.asset(imagePath, width: 150, height: 100),
                         ),
                       ],
                     ),
                     const SizedBox(height: 20),
                     const Text(
-                      "Avatar Unlocked!",
+                      "Table Skin Unlocked!",
                       style: TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
@@ -105,7 +106,7 @@ class AvatarGridWidget extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text("Unlock Avatar",
+                Text("Unlock Table Skin",
                     style: Theme.of(context)
                         .textTheme
                         .titleLarge
@@ -113,10 +114,10 @@ class AvatarGridWidget extends StatelessWidget {
                 const SizedBox(height: 16),
                 ClipRRect(
                   borderRadius: BorderRadius.circular(12),
-                  child: Image.asset(imagePath, width: 120, height: 160),
+                  child: Image.asset(imagePath, width: 120, height: 80),
                 ),
                 const SizedBox(height: 16),
-                Text("Do you want to unlock this avatar for $cost $currencySymbol?",
+                Text("Do you want to unlock this table skin for $cost $currencySymbol?",
                     textAlign: TextAlign.center),
                 const SizedBox(height: 20),
                 Row(
@@ -142,18 +143,15 @@ class AvatarGridWidget extends StatelessWidget {
                         }
 
                         if (success) {
-                          xpManager.unlockAvatar(imagePath);
-                          xpManager.selectAvatar(imagePath);
+                          xpManager.unlockTableSkin(imagePath);
+                          xpManager.selectTableSkin(imagePath);
                           audioManager.playEventSound("clickButton");
 
-                          // 🔹 Pop purchase dialog first
                           Navigator.pop(context);
 
-                          // 🔹 Delay to ensure UI updates before showing unlock popup
                           Future.delayed(const Duration(milliseconds: 100), () {
                             showUnlockPopup(parentContext, imagePath);
                           });
-
                         } else {
                           Navigator.pop(context);
                           ScaffoldMessenger.of(context).showSnackBar(
@@ -173,23 +171,23 @@ class AvatarGridWidget extends StatelessWidget {
     }
 
     return GridView.builder(
-      padding: const EdgeInsets.only(right: 10, left: 10, top: 10),
-      itemCount: avatars.length,
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+      itemCount: tableSkins.length,
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 3,
-        mainAxisSpacing: 12,
-        crossAxisSpacing: 12,
-        childAspectRatio: 0.75,
+        crossAxisCount: 1, // 👈 Only one item per row
+        mainAxisSpacing: 16,
+        crossAxisSpacing: 0,
+        childAspectRatio: 2.5, // 👈 Make it wide and table-like
       ),
       itemBuilder: (_, index) {
-        final item = avatars[index];
+        final item = tableSkins[index];
         final imagePath = item['image'];
         final cost = item['cost'];
         final currency = item['currency'] as CurrencyType;
-        final unlocked = xpManager.isAvatarUnlocked(imagePath);
-        final selected = xpManager.selectedAvatar == imagePath;
+        final unlocked = xpManager.isTableSkinUnlocked(imagePath);
+        final selected = xpManager.selectedTableSkin == imagePath;
 
-        return CardItemWidget(
+        return TableSkinItemWidget(
           imagePath: imagePath,
           cost: cost,
           currencyType: currency,
@@ -197,7 +195,7 @@ class AvatarGridWidget extends StatelessWidget {
           selected: selected,
           userGold: xpManager.gold,
           userGems: xpManager.gems,
-          onSelect: () => xpManager.selectAvatar(imagePath),
+          onSelect: () => xpManager.selectTableSkin(imagePath),
           onBuy: () => showPurchaseDialog(context, imagePath, cost, currency),
         );
       },

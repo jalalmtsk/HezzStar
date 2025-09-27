@@ -39,16 +39,6 @@ class _EventsPageState extends State<EventsPage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const SizedBox(height: 100),
-                  Container(
-                    padding: const EdgeInsets.all(20),
-                    child: Lottie.asset(
-                      "assets/animations/AnimationSFX/LoadingMotion.json",
-                      width: 200,
-                      height: 200,
-                      repeat: true,
-                    ),
-                  ),
-                  const SizedBox(height: 30),
                   Text(
                     "No Available Events",
                     style: TextStyle(

@@ -1,5 +1,8 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'Manager/HelperClass/FlyingRewardManager.dart';
+import 'Manager/HelperClass/RewardDimScreen.dart';
 import 'Manager/UserProfileManager.dart';
 
 class ExperienceManager with ChangeNotifier {
@@ -34,6 +37,12 @@ class ExperienceManager with ChangeNotifier {
   List<String> get unlockedAvatars => _unlockedAvatars;
   String? get selectedAvatar => _selectedAvatar;
 
+  List<String> get unlockedTableSkins => _unlockedTableSkins;
+  String? get selectedTableSkin => _selectedTableSkin;
+
+  List<String> _unlockedTableSkins = [];
+  String? _selectedTableSkin;
+
   String get preferredLanguage => userProfile.preferredLanguage;
 
   // ---------------------------
@@ -66,6 +75,9 @@ class ExperienceManager with ChangeNotifier {
     _unlockedAvatars = prefs.getStringList('unlockedAvatars') ?? [];
     _selectedAvatar = prefs.getString('selectedAvatar');
 
+    _unlockedTableSkins = prefs.getStringList('unlockedTableSkins') ?? [];
+    _selectedTableSkin = prefs.getString('selectedTableSkin');
+
     // Load profile
     userProfile = UserProfile.fromPrefs(prefs);
 
@@ -81,6 +93,8 @@ class ExperienceManager with ChangeNotifier {
     await prefs.setInt('gems', _gems);
     await prefs.setStringList('unlockedCards', _unlockedCards);
     await prefs.setStringList('unlockedAvatars', _unlockedAvatars);
+    await prefs.setStringList('unlockedTableSkins', _unlockedTableSkins);
+    if (_selectedTableSkin != null) await prefs.setString('selectedTableSkin', _selectedTableSkin!);
     if (_selectedCard != null) await prefs.setString('selectedCard', _selectedCard!);
     if (_selectedAvatar != null) await prefs.setString('selectedAvatar', _selectedAvatar!);
 
@@ -91,11 +105,34 @@ class ExperienceManager with ChangeNotifier {
   // ---------------------------
   // RESOURCE MANAGEMENT
   // ---------------------------
-  Future<void> addExperience(int amount) async {
+
+  Future<void> addExperience(int amount, {BuildContext? context, GlobalKey? gemsKey}) async {
+    int oldLevel = level; // before adding XP
     _experience += amount;
+    int newLevel = level; // after adding XP
+
+    if (newLevel > oldLevel) {
+      int levelsGained = newLevel - oldLevel;
+      int gemsReward = 5 * levelsGained; // 5 gems per level
+
+      _gems += gemsReward;
+
+      // Show reward animation if context & key are provided
+      if (context != null && gemsKey != null) {
+        RewardDimScreen.show(
+          context,
+          start: const Offset(200, 400), // optionally adjust start position
+          endKey: gemsKey,
+          amount: gemsReward,
+          type: RewardType.gem,
+        );
+      }
+    }
+
     await _saveData();
     notifyListeners();
   }
+
 
   Future<void> addGold(int amount) async {
     _gold += amount;
@@ -149,6 +186,9 @@ class ExperienceManager with ChangeNotifier {
     _selectedCard = null;
     _unlockedAvatars = [];
     _selectedAvatar = null;
+    _unlockedTableSkins = [];
+    _selectedTableSkin = null;
+
 
     final prefs = await SharedPreferences.getInstance();
     await userProfile.clearPrefs(prefs);
@@ -185,6 +225,28 @@ class ExperienceManager with ChangeNotifier {
   }
 
   bool isCardUnlocked(String cardPath) => _unlockedCards.contains(cardPath);
+
+// ---------------------------
+// TABLE SKIN MANAGEMENT
+// ---------------------------
+  Future<void> unlockTableSkin(String skinPath) async {
+    if (!_unlockedTableSkins.contains(skinPath)) {
+      _unlockedTableSkins.add(skinPath);
+      await _saveData();
+      notifyListeners();
+    }
+  }
+
+  Future<void> selectTableSkin(String skinPath) async {
+    if (_unlockedTableSkins.contains(skinPath)) {
+      _selectedTableSkin = skinPath;
+      await _saveData();
+      notifyListeners();
+    }
+  }
+
+  bool isTableSkinUnlocked(String skinPath) => _unlockedTableSkins.contains(skinPath);
+
 
   // ---------------------------
   // AVATAR SYSTEM
