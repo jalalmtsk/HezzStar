@@ -5,6 +5,7 @@ class GameInfoDialog extends StatelessWidget {
   final String mode;
   final int players;
   final int prize;
+  final int currentPlayer;
   final VoidCallback onSettings;
   final VoidCallback onInstructions;
   final VoidCallback onExit; // ✅ new callback
@@ -14,6 +15,7 @@ class GameInfoDialog extends StatelessWidget {
     required this.mode,
     required this.players,
     required this.prize,
+    required this.currentPlayer,
     required this.onSettings,
     required this.onInstructions,
     required this.onExit, // required
@@ -171,7 +173,7 @@ class GameInfoDialog extends StatelessWidget {
                         context: context,
                         icon: Icons.exit_to_app,
                         label: "Exit",
-                        gradient: const [Colors.redAccent, Colors.deepOrange],
+                        gradient: currentPlayer == 0 ? const [Colors.redAccent, Colors.deepOrange] : const [Colors.grey, Colors.black12],
                         onTap: onExit, // ✅ use callback
                       ),
                     ],

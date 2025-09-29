@@ -677,8 +677,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     _advanceTurn();
   }
 
-  Future<void> _animateMoveFaceDownToFaceUp(PlayingCard card, Offset from,
-      Offset to) async {
+  Future<void> _animateMoveFaceDownToFaceUp(
+      PlayingCard card, Offset from, Offset to) async {
     final overlay = Overlay.of(context);
     if (overlay == null) return;
 
@@ -686,22 +686,29 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
         vsync: this, duration: const Duration(milliseconds: 600));
     final curve = CurvedAnimation(parent: ctrl, curve: Curves.easeInOutCubic);
 
-    OverlayEntry? entry;
-    entry = OverlayEntry(builder: (_) {
+    final entry = OverlayEntry(builder: (_) {
       return AnimatedBuilder(
         animation: curve,
         builder: (_, __) {
           final pos = Offset.lerp(from, to, curve.value)!;
-          final flip = curve.value < 0.5 ? pi * curve.value : pi *
-              (1 - curve.value);
-          final showFront = curve.value > 0.5;
+
+          // Flip progress 0 → 1
+          final flipProgress = curve.value;
+          final showFront = flipProgress > 0.5;
+
+          // Rotation angle
+          final angle = flipProgress * pi;
+          // Slight scale effect for more dynamic feeling
+          final scale = 1.0 + 0.05 * sin(angle);
 
           return Positioned(
             left: pos.dx - 43,
             top: pos.dy - 60,
             child: Transform(
               alignment: Alignment.center,
-              transform: Matrix4.rotationY(flip),
+              transform: Matrix4.identity()
+                ..scale(scale, 1.0)
+                ..rotateY(angle),
               child: SizedBox(
                 width: 70,
                 height: 110,
@@ -709,13 +716,13 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                   showFront ? card.assetName : card.backAsset(context),
                   fit: BoxFit.cover,
                 ),
-
               ),
             ),
           );
         },
       );
     });
+
     overlay.insert(entry);
 
     if (!mounted) {
@@ -726,8 +733,9 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
 
     await ctrl.forward();
     entry.remove();
-    ctrl.dispose(); // dispose immediately
+    ctrl.dispose();
   }
+
 
   void _checkWin(int p) {
     if (hands[p].isEmpty) {
@@ -1079,11 +1087,13 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                       children: [
                         Expanded(
                           flex: 2,
-                          child: MenuOverlayButton(
+                          child: handDealt ? MenuOverlayButton(
                             gameModeName: widget.gameModeType.name,
                             botCount: widget.botCount,
                             selectedBet: widget.selectedBet,
-                          ),
+                            currentPlayer: currentPlayer,
+                          ):
+                            SizedBox.shrink(),
                         ),
                         Expanded(
                           flex: 3,

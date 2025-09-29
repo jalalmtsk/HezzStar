@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hezzstar/widgets/LoadingScreen/LoadinScreenDim.dart';
 import '../../../IndexPages/Settings/SettingDialog.dart';
 import '../../../MainScreenIndex.dart';
 import 'GameInfoDialog.dart';
@@ -8,12 +9,15 @@ class MenuOverlayButton extends StatefulWidget {
   final String gameModeName;
   final int botCount;
   final int selectedBet;
+  final int currentPlayer;
+  
 
   const MenuOverlayButton({
     super.key,
     required this.gameModeName,
     required this.botCount,
     required this.selectedBet,
+    required this.currentPlayer,
   });
 
   @override
@@ -58,10 +62,36 @@ class _MenuOverlayButtonState extends State<MenuOverlayButton> {
                     showDialog(context: context, builder: (_) => const InstructionsDialog());
                   },
                   onExit: () async {
-                    // Wait for overlay closing animation
-                    await _closeOverlay(); // make sure _closeOverlay returns Future
+                     _closeOverlay();
+                    if (widget.currentPlayer != 0) {
+                      // Show "Wait your turn" dialog
+                      showDialog(
+                        context: context,
+                        builder: (ctx) => AlertDialog(
+                          backgroundColor: Colors.black87,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          title: const Text(
+                            "Wait Your Turn",
+                            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                          ),
+                          content: const Text(
+                            "You cannot exit now. Please wait for your turn.",
+                            style: TextStyle(color: Colors.white70),
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.of(ctx).pop(),
+                              child: const Text("OK", style: TextStyle(color: Colors.amber)),
+                            ),
+                          ],
+                        ),
+                      );
+                      return;
+                    }
 
-                    // Show exit confirmation dialog
+                    // If it's the current player's turn, proceed with normal exit
+                    await _closeOverlay();
+
                     final shouldExit = await showDialog<bool>(
                       context: context,
                       barrierDismissible: false,
@@ -84,9 +114,20 @@ class _MenuOverlayButtonState extends State<MenuOverlayButton> {
                           ElevatedButton(
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.redAccent,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
                             ),
-                            onPressed: () => Navigator.of(ctx).pop(true),
+                            onPressed: () {
+                              LoadingScreenDim.show(
+                                ctx,
+                                seconds: 2,
+                                lottieAsset: 'assets/animations/AnimationSFX/HezzFinal.json',
+                                onComplete: () {
+                                  Navigator.of(ctx).pop(true);
+                                },
+                              );
+                            },
                             child: const Text("Exit"),
                           ),
                         ],
@@ -94,14 +135,13 @@ class _MenuOverlayButtonState extends State<MenuOverlayButton> {
                     );
 
                     if (shouldExit == true) {
-                      // Optional: small delay to ensure any final animations finish
                       await Future.delayed(const Duration(milliseconds: 200));
-
                       Navigator.of(context).pushReplacement(
                         MaterialPageRoute(builder: (_) => MainScreen()),
                       );
                     }
                   },
+                  currentPlayer: widget.currentPlayer,
                 ),
               ),
             ),
@@ -115,7 +155,7 @@ class _MenuOverlayButtonState extends State<MenuOverlayButton> {
     setState(() {});
 
     // auto-close optional
-    Future.delayed(const Duration(seconds: 5), () {
+    Future.delayed(const Duration(seconds: 6), () {
       if (_isOpen) _closeOverlay();
     });
   }
@@ -126,7 +166,7 @@ class _MenuOverlayButtonState extends State<MenuOverlayButton> {
     setState(() {});
 
     // Wait for the AnimatedContainer to finish its 200ms animation
-    await Future.delayed(const Duration(milliseconds: 200));
+    await Future.delayed(const Duration(milliseconds: 150));
 
     _overlayEntry?.remove();
     _overlayEntry = null;
@@ -138,7 +178,7 @@ class _MenuOverlayButtonState extends State<MenuOverlayButton> {
     return GestureDetector(
       onTap: _toggleOverlay,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
+        duration: const Duration(milliseconds: 900),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
           color: _isOpen ? Colors.red : Colors.black54,
