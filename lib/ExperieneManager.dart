@@ -21,7 +21,7 @@ class ExperienceManager with ChangeNotifier {
   // ---------------------------
   // AVATAR SYSTEM
   // ---------------------------
-  List<String> _unlockedAvatars = [];
+  List<String> _unlockedAvatars = ["assets/images/Skins/AvatarSkins/DefaultUser.png"];
   String? _selectedAvatar;
 
   // ---------------------------
@@ -66,23 +66,24 @@ class ExperienceManager with ChangeNotifier {
 
     // Load resources
     _experience = prefs.getInt('experience') ?? 0;
-    _gold = prefs.getInt('gold') ?? 0;
-    _gems = prefs.getInt('gems') ?? 0;
+    _gold = prefs.getInt('gold') ?? 500;
+    _gems = prefs.getInt('gems') ?? 25;
 
     _unlockedCards = prefs.getStringList('unlockedCards') ?? ["assets/images/cards/backCard.png"];
-    _selectedCard = prefs.getString('selectedCard');
+    _selectedCard = prefs.getString('selectedCard') ?? _unlockedCards.first;
 
-    _unlockedAvatars = prefs.getStringList('unlockedAvatars') ?? [];
-    _selectedAvatar = prefs.getString('selectedAvatar');
+    _unlockedAvatars = prefs.getStringList('unlockedAvatars') ?? ["assets/images/Skins/AvatarSkins/DefaultUser.png"];
+    _selectedAvatar = prefs.getString('selectedAvatar') ?? _unlockedAvatars.first;
 
     _unlockedTableSkins = prefs.getStringList('unlockedTableSkins') ?? ["assets/images/Skins/TableSkins/table1.jpg"];
-    _selectedTableSkin = prefs.getString('selectedTableSkin');
+    _selectedTableSkin = prefs.getString('selectedTableSkin') ?? _unlockedTableSkins.first;
 
     // Load profile
     userProfile = UserProfile.fromPrefs(prefs);
 
     notifyListeners();
   }
+
 
   Future<void> _saveData() async {
     final prefs = await SharedPreferences.getInstance();
@@ -184,7 +185,7 @@ class ExperienceManager with ChangeNotifier {
     _gems = 25;
     _unlockedCards = ["assets/images/cards/backCard.png"];
     _selectedCard = null;
-    _unlockedAvatars = [];
+    _unlockedAvatars = ["assets/images/Skins/AvatarSkins/DefaultUser.png"];
     _selectedAvatar = null;
     _unlockedTableSkins = ["assets/images/Skins/TableSkins/table1.jpg"];
     _selectedTableSkin = null;

@@ -50,6 +50,8 @@ dependencies:
   flutter_localization: ^0.3.3
   connectivity_plus: ^7.0.0
   font_awesome_flutter: ^10.9.1
+  marquee: ^2.3.0
+  in_app_purchase: ^3.2.3
 
 dev_dependencies:
   flutter_test:

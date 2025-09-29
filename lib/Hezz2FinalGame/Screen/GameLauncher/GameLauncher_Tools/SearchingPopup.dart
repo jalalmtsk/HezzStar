@@ -13,18 +13,20 @@ class SearchingPopup {
         void findNextPlayer(void Function(void Function()) setState) {
           if (foundPlayers >= players) {
             Future.delayed(const Duration(milliseconds: 1500), () {
-              if (Navigator.canPop(context)) Navigator.of(context).pop();
+              if (context.mounted) {
+                Navigator.of(context).pop();
+              }
             });
             return;
           }
 
           // Random delay between 1s and 3s
           final randomDelay =
-          Duration(milliseconds: 1000 + Random().nextInt(3001));
+          Duration(milliseconds: 1000 + Random().nextInt(2000));
           Future.delayed(randomDelay, () {
-            if (!Navigator.canPop(context)) return;
+            if (!context.mounted) return;
 
-            if (foundPlayers < players) { // ✅ extra safety check
+            if (foundPlayers < players) {
               setState(() {
                 foundPlayers++;
               });
@@ -33,7 +35,6 @@ class SearchingPopup {
           });
         }
 
-
         return StatefulBuilder(
           builder: (context, setState) {
             if (foundPlayers == 0) {
@@ -41,7 +42,8 @@ class SearchingPopup {
             }
 
             return Dialog(
-              insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+              insetPadding:
+              const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
               backgroundColor: Colors.transparent,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
@@ -53,7 +55,7 @@ class SearchingPopup {
                   ClipRRect(
                     borderRadius: BorderRadius.circular(20),
                     child: Lottie.asset(
-                      'assets/animations/AnimationSFX/World.json', // your animation file
+                      'assets/animations/AnimationSFX/World.json',
                       fit: BoxFit.cover,
                       repeat: true,
                     ),
@@ -65,16 +67,17 @@ class SearchingPopup {
                     decoration: BoxDecoration(
                       color: Colors.black.withOpacity(0.6),
                       borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: Colors.yellowAccent.withOpacity(0.4), width: 2),
+                      border: Border.all(
+                          color: Colors.yellowAccent.withOpacity(0.4), width: 2),
                     ),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        SizedBox(
-                            child:
-                            Lottie.asset(
-                                height: 200,
-                                "assets/animations/AnimationSFX/HezzFinal.json", repeat: true)),
+                        Lottie.asset(
+                          "assets/animations/AnimationSFX/HezzFinal.json",
+                          height: 200,
+                          repeat: true,
+                        ),
                         Text(
                           "$foundPlayers/$players",
                           style: const TextStyle(
@@ -103,7 +106,8 @@ class SearchingPopup {
                             bool isActive = index < foundPlayers;
                             return AnimatedContainer(
                               duration: const Duration(milliseconds: 400),
-                              margin: const EdgeInsets.symmetric(horizontal: 6),
+                              margin:
+                              const EdgeInsets.symmetric(horizontal: 6),
                               width: 30,
                               height: 30,
                               decoration: BoxDecoration(
@@ -114,7 +118,8 @@ class SearchingPopup {
                                 boxShadow: isActive
                                     ? [
                                   BoxShadow(
-                                    color: Colors.yellowAccent.withOpacity(0.8),
+                                    color: Colors.yellowAccent
+                                        .withOpacity(0.8),
                                     blurRadius: 12,
                                     spreadRadius: 2,
                                   )

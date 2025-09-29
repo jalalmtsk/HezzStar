@@ -72,14 +72,14 @@ class MyApp extends StatelessWidget {
           ],
 
           localeResolutionCallback: (locale, supportedLocales) {
-            if (locale == null) return const Locale('en');
+            if (locale == null) return const Locale('fr');
 
             for (var supportedLocale in supportedLocales) {
               if (supportedLocale.languageCode == locale.languageCode) {
                 return supportedLocale;
               }
             }
-            return const Locale('en'); // fallback
+            return const Locale('fr'); // fallback
           },
         );
       },

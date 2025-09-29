@@ -45,12 +45,12 @@ class UserProfile {
 
   factory UserProfile.fromPrefs(SharedPreferences prefs) {
     return UserProfile(
-      fullName: prefs.getString('fullName') ?? '',
-      username: prefs.getString('username') ?? '',
+      fullName: prefs.getString('fullName') ?? 'User',
+      username: prefs.getString('username') ?? 'Player',
       age: prefs.getInt('age') ?? 0,
-      nationality: prefs.getString('nationality') ?? '',
-      gender: prefs.getString('gender') ?? '',
-      preferredLanguage: prefs.getString('preferredLanguage') ?? 'en',
+      nationality: prefs.getString('nationality') ?? 'none',
+      gender: prefs.getString('gender') ?? 'none',
+      preferredLanguage: prefs.getString('preferredLanguage') ?? 'fr',
     );
   }
 

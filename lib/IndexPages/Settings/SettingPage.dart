@@ -297,13 +297,7 @@ class _SettingsPageState extends State<SettingsPage>
                         open: _generalOpen,
                         child: Column(
                           children: [
-                            SwitchListTile(
-                              value: darkMode,
-                              onChanged: (v) => setState(() => darkMode = v),
-                              title: const Text("Dark Mode",
-                                  style: TextStyle(color: Colors.white)),
-                              activeColor: Colors.amber,
-                            ),
+
                             ListTile(
                               title:  Text("Language ${tr(context).add}", style: TextStyle(color: Colors.white)),
                               trailing: Text(
@@ -338,48 +332,6 @@ class _SettingsPageState extends State<SettingsPage>
                                       .setPreferredLanguage(_mapLangToCode(chosenLang));
                                 }
                               },
-                            ),
-                            SwitchListTile(
-                              value: notificationsOn,
-                              onChanged: (v) =>
-                                  setState(() => notificationsOn = v),
-                              title: const Text("Notifications",
-                                  style: TextStyle(color: Colors.white)),
-                              activeColor: Colors.amber,
-                            ),
-                            ListTile(
-                              title: Text("Username: $username",
-                                  style: const TextStyle(color: Colors.white)),
-                              trailing: IconButton(
-                                icon:
-                                const Icon(Icons.edit, color: Colors.amber),
-                                onPressed: () async {
-                                  final name = await showDialog<String>(
-                                    context: context,
-                                    builder: (_) {
-                                      final c =
-                                      TextEditingController(text: username);
-                                      return AlertDialog(
-                                        title: const Text("Change Name"),
-                                        content: TextField(controller: c),
-                                        actions: [
-                                          TextButton(
-                                              onPressed: () =>
-                                                  Navigator.pop(context),
-                                              child: const Text("Cancel")),
-                                          TextButton(
-                                              onPressed: () =>
-                                                  Navigator.pop(context, c.text),
-                                              child: const Text("Save")),
-                                        ],
-                                      );
-                                    },
-                                  );
-                                  if (name != null && name.isNotEmpty) {
-                                    setState(() => username = name);
-                                  }
-                                },
-                              ),
                             ),
                           ],
                         ),

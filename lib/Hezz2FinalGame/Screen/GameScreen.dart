@@ -1,29 +1,32 @@
+import 'dart:async';
 import 'dart:math';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:hezzstar/ExperieneManager.dart';
 import 'package:hezzstar/Hezz2FinalGame/Models/GameCardEnums.dart';
-import 'package:hezzstar/Hezz2FinalGame/Tools/Dialog/InstructionDialog.dart';
-import 'package:hezzstar/MainScreenIndex.dart';
+import 'package:hezzstar/Hezz2FinalGame/Tools/Banner/CenterdLottieAnimation.dart';
+import 'package:hezzstar/Hezz2FinalGame/Tools/Banner/CenteredImageEffect.dart';
+
 import 'package:hezzstar/tools/AudioManager/AudioManager.dart';
-import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 
-import '../../IndexPages/Settings/SettingDialog.dart';
+import '../../widgets/userStatut/userStatus.dart';
 import '../Models/Cards.dart';
 import '../Models/Deck.dart';
 import '../Bot/BotStack.dart';
+import '../Tools/Banner/CenterBanner.dart';
 import '../Tools/Dialog/BotPlayerInfoDialog.dart';
-import '../Tools/Dialog/GameInfoDialog.dart';
+import '../Tools/Dialog/MenuOverlayButton.dart';
+import '../Tools/Dialog/PlayerSelectorAnimation.dart';
 import '../Tools/Dialog/SuitSelectionDialog.dart';
-import '../Tools/MessagesInGame/AnimatedMessages.dart';
-import '../Tools/MessagesInGame/EmojiesBubble.dart';
-import '../Tools/TextUI/CardReamingTextUi.dart';
-import '../Tools/TextUI/MinimalBageText.dart';
+
+
+import 'GameScreen/GameScreen__Tools/DeckCenteredPanel.dart';
+import 'GameScreen/GameScreen__Tools/PlayerActionPanel.dart';
+import 'GameScreen/GameScreen__Tools/RoundCompleteOverlay_Elimination.dart';
 import 'GameScreen/GameScreen__Tools/TableBackground.dart';
 import 'endGameScreen.dart';
-
 
 class GameScreen extends StatefulWidget {
   final int startHandSize;
@@ -46,6 +49,10 @@ class GameScreen extends StatefulWidget {
 }
 
 class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
+  final GlobalKey goldKey = GlobalKey();
+  final GlobalKey gemsKey = GlobalKey();
+  final GlobalKey xpKey = GlobalKey();
+
   late Deck deck;
   final ScrollController handScrollController = ScrollController();
   final botKeys = List.generate(5, (_) => GlobalKey());
@@ -58,10 +65,12 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   bool isAnimating = false;
   OverlayEntry? moving;
   bool handDealt = false;
+  bool playerSelected = false;
 
   int pendingDraw = 0;
   bool skipNext = false;
   bool gameOver = false;
+  bool _isPageActive = true;
   String winner = '';
 
   final GlobalKey deckKey = GlobalKey();
@@ -99,8 +108,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     deck = Deck();
     deck.shuffle();
     BotDetailsPopup.resetBotInfos();
-    for (var h in hands)
-      h.clear();
+    for (var h in hands) h.clear();
     discard.clear();
     currentPlayer = 0;
     pendingDraw = 0;
@@ -115,14 +123,31 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       isBetweenRounds = false;
     }
 
+    // pick a random starting player (must be within 0..botCount)
+    currentPlayer = Random().nextInt(widget.botCount + 1);
+
+    final selector = PlayerSelector(
+      context: context,
+      botCount: widget.botCount,
+      eliminatedPlayers: eliminatedPlayers,
+      onPlayerSelected: (selectedPlayer) {
+        setState(() {
+          currentPlayer = selectedPlayer; // update your current player
+        });
+      },
+    );
+
+    await selector.animateSelection();
     await _precacheAssets(context);
 
     final toDeal = widget.startHandSize;
 
+    // Deal starting from currentPlayer and rotate around (so starter isn't always player 0)
     for (int round = 0; round < toDeal; round++) {
-      for (int p = 0; p <= widget.botCount; p++) {
-        if (eliminatedPlayers[p]) continue;
+      for (int i = 0; i <= widget.botCount; i++) {
+        final p = (currentPlayer + i) % (widget.botCount + 1);
 
+        if (eliminatedPlayers[p]) continue;
         if (deck.isEmpty) _recycle();
         if (deck.isEmpty) break;
 
@@ -131,25 +156,24 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
 
         final start = _rectFor(deckKey)?.center;
         Offset? end;
+
         if (p == 0) {
           final idx = hands[0].length - 1;
           if (idx < playerCardKeys.length) {
             end = _rectFor(playerCardKeys[idx])?.center;
           }
-          end ??= Offset(MediaQuery
-              .of(context)
-              .size
-              .width / 2, MediaQuery
-              .of(context)
-              .size
-              .height - 90);
-          if (start != null && end != null) await _animateMoveFaceDown(
-              c, start, end);
+          end ??= Offset(
+            MediaQuery.of(context).size.width / 2,
+            MediaQuery.of(context).size.height - 90,
+          );
+
+          if (start != null && end != null) {
+            await _animateMoveFaceDown(c, start, end);
+          }
         } else {
           final botPos = _cardStartForPlayer(p, hands[p].length - 1);
           if (start != null && botPos != null) {
-            await _animateMoveFaceDown(
-              c, start, botPos);
+            await _animateMoveFaceDown(c, start, botPos);
           }
         }
 
@@ -159,16 +183,23 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     }
 
     if (deck.isEmpty) _recycle();
+
     topCard = deck.draw();
     discard.add(topCard!);
-    setState(() {});
 
-    await Future.delayed(const Duration(milliseconds: 400));
+    setState(() {});
+    await Future.delayed(const Duration(milliseconds: 600));
+
     isAnimating = false;
-    handDealt = true;  // ✅ Turn timer can start now
+    handDealt = true;
+
+    // ✅ Turn timer can start now
+    playerSelected = true;
+
     setState(() {});
     _maybeAutoPlay();
   }
+
 
   Future<void> _precacheAssets(BuildContext ctx) async {
     try {
@@ -240,10 +271,18 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       });
     });
     overlay.insert(moving!);
+
+    if (!mounted) {
+      ctrl.dispose();
+      moving?.remove();
+      moving = null;
+      return;
+    }
+
     await ctrl.forward();
     moving?.remove();
     moving = null;
-    ctrl.dispose();
+    ctrl.dispose(); // dispose immediately
   }
 
   Future<void> _playCardByHuman(int idx) async {
@@ -298,10 +337,13 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   Future<void> _handleSpecial(int player, PlayingCard card) async {
     if (card.rank == 2) {
       pendingDraw += 2;
-      _showCenterBanner('+2', Colors.redAccent);
+      CenterBanner(context: context,centerKey:centerKey).show("+2", Colors.orangeAccent);
+      final myImage = AssetImage('assets/UI/Containers/Hezz2_Effect.png'); // or NetworkImage
+      CenterImageEffect(context: context).show(myImage,size: 200);
     } else if (card.rank == 1) {
       skipNext = true;
-      _showCenterBanner('Skip', Colors.orangeAccent);
+      CenterBanner(context: context,centerKey:centerKey).show("Skip", Colors.orangeAccent);
+      CenterLottieEffect(context: context).show("assets/animations/AnimationSFX/StopPlaying.json",size: 300, duration: const Duration(milliseconds:900 ));
     } else if (card.rank == 7) {
       if (player == 0) {
         // get the current suit of the top card before change
@@ -322,11 +364,11 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
             discard.add(topCard!);
           });
 
-          _showCenterBanner('Suit: $choice', Colors.blueAccent);
+          CenterBanner(context: context,centerKey:centerKey).show('Suit: $choice', Colors.orangeAccent);
         }
       } else {
         final suit = _botPickSuit(player);
-        _showCenterBanner('Suit: $suit', Colors.blueAccent);
+        CenterBanner(context: context,centerKey:centerKey).show('Suit: $suit', Colors.orangeAccent);
         await Future.delayed(const Duration(milliseconds: 600));
 
         setState(() {
@@ -352,8 +394,9 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
 
   String _botPickSuit(int bot) {
     final counts = {'Coins': 0, 'Cups': 0, 'Swords': 0, 'Clubs': 0};
-    for (final c in hands[bot])
+    for (final c in hands[bot]) {
       counts[c.suit] = counts[c.suit]! + 1;
+    }
     var best = 'Coins';
     var b = -1;
     counts.forEach((k, v) {
@@ -365,40 +408,6 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     return best;
   }
 
-  void _showCenterBanner(String text, Color col) {
-    final overlay = Overlay.of(context);
-    if (overlay == null) return;
-    final entry = OverlayEntry(builder: (_) {
-      final c = _rectFor(centerKey)?.center ?? Offset(MediaQuery
-          .of(context)
-          .size
-          .width / 2, MediaQuery
-          .of(context)
-          .size
-          .height * 0.35);
-      return Positioned(
-          left: c.dx - 70,
-          top: c.dy - 120,
-          child: Material(
-              color: Colors.transparent,
-              child: Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                      color: col.withOpacity(0.9),
-                      borderRadius: BorderRadius.circular(8)
-                  ),
-                  child: Text(
-                      text,
-                      style: const TextStyle(
-                          color: Colors.white, fontWeight: FontWeight.bold)
-                  )
-              )
-          )
-      );
-    });
-    overlay.insert(entry);
-    Future.delayed(const Duration(milliseconds: 800), () => entry.remove());
-  }
 
   void _showSnack(String t) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -465,6 +474,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   }
 
   Future<void> _botTurn(int bot) async {
+    if (!mounted) return;
+
     // Skip if bot is eliminated or qualified in elimination mode
     if (eliminatedPlayers[bot] ||
         (widget.gameModeType == GameModeType.elimination &&
@@ -491,11 +502,13 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
           hands[bot].add(d);
           final start = _rectFor(deckKey)?.center;
           final botPos = _cardStartForPlayer(bot, hands[bot].length - 1);
-          if (start != null && botPos != null) await _animateMoveFaceDown(
+          if (start != null && botPos != null) {
+            await _animateMoveFaceDown(
               d, start, botPos);
+          }
           await Future.delayed(const Duration(milliseconds: 90));
         }
-        _showCenterBanner('Drew $pendingDraw cards', Colors.purpleAccent);
+        CenterBanner(context: context,centerKey:centerKey).show('Drew $pendingDraw cards', Colors.purpleAccent);
         pendingDraw = 0;
         await Future.delayed(const Duration(milliseconds: 300));
         _advanceTurn();
@@ -518,10 +531,12 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       hands[bot].add(d);
       final start = _rectFor(deckKey)?.center;
       final botPos = _cardStartForPlayer(bot, hands[bot].length - 1);
-      if (start != null && botPos != null) await _animateMoveFaceDown(
+      if (start != null && botPos != null) {
+        await _animateMoveFaceDown(
           d, start, botPos);
+      }
 
-      _showCenterBanner('Drew & skipped', Colors.purpleAccent);
+      CenterBanner(context: context,centerKey:centerKey).show('Drew & skipped', Colors.purpleAccent);
       await Future.delayed(const Duration(milliseconds: 300));
       _advanceTurn();
       return;
@@ -536,7 +551,9 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       }
     }
 
-    await Future.delayed(Duration(milliseconds: 350 + Random().nextInt(450)));
+    int minDelay = 300; // minimum milliseconds
+    int maxDelay = 2000; // maximum milliseconds
+    await Future.delayed(Duration(milliseconds: minDelay + Random().nextInt(maxDelay - minDelay)));
     await _playCard(bot, choice);
   }
 
@@ -564,9 +581,16 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       );
     });
     overlay.insert(movingEntry);
+
+    if (!mounted) {
+      ctrl.dispose();
+      movingEntry.remove();
+      return;
+    }
+
     await ctrl.forward();
     movingEntry.remove();
-    ctrl.dispose();
+    ctrl.dispose(); // dispose right after animation completes
   }
 
   Future<void> _playerDraw() async {
@@ -693,9 +717,16 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       );
     });
     overlay.insert(entry);
+
+    if (!mounted) {
+      ctrl.dispose();
+      entry.remove();
+      return;
+    }
+
     await ctrl.forward();
     entry.remove();
-    ctrl.dispose();
+    ctrl.dispose(); // dispose immediately
   }
 
   void _checkWin(int p) {
@@ -727,10 +758,10 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
           // If only one player remains who hasn't qualified, eliminate them
           if (activePlayers == 1) {
             eliminatedPlayers[lastActivePlayer] = true;
-            _showCenterBanner('Player ${lastActivePlayer == 0
+
+          CenterBanner(context: context,centerKey:centerKey).show('Player ${lastActivePlayer == 0
                 ? "You"
                 : "Bot $lastActivePlayer"} eliminated!', Colors.red);
-
             // Check if the eliminated player is the current player
             // If so, advance the turn immediately
             if (currentPlayer == lastActivePlayer) {
@@ -763,7 +794,6 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       }
     }
   }
-
 
   bool isSpectating = false;
 
@@ -820,11 +850,15 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
         skipNext = false;
         qualifiedPlayers.clear();
 
-        // Set current player to first non-eliminated
-        currentPlayer = 0;
-        while (eliminatedPlayers[currentPlayer]) {
-          currentPlayer = (currentPlayer + 1) % (widget.botCount + 1);
+        // Pick a random non-eliminated starter for the round
+        int candidate = Random().nextInt(widget.botCount + 1);
+        int attempts = 0;
+        while (eliminatedPlayers[candidate] && attempts < widget.botCount + 1) {
+          candidate = (candidate + 1) % (widget.botCount + 1);
+          attempts++;
         }
+        // If somehow all are eliminated (shouldn't happen), fallback to 0
+        currentPlayer = (attempts <= widget.botCount) ? candidate : 0;
       });
 
       // 🔑 Kick the bots after UI updates
@@ -871,564 +905,205 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     );
   }
 
+  @override
+  void dispose() {
+     _isPageActive = false;
+    handScrollController.dispose(); // your scroll controller
+    super.dispose();
+  }
+
+
   String? _shownEmoji;
   @override
   Widget build(BuildContext context) {
     final xpManager = Provider.of<ExperienceManager>(context,listen: false);
 
-    final w = MediaQuery
-        .of(context)
-        .size
-        .width;
-    final h = MediaQuery
-        .of(context)
-        .size
-        .height;
+    final w = MediaQuery.of(context).size.width;
+    final h = MediaQuery.of(context).size.height;
     return Scaffold(
-      body: SafeArea(
-        child: Stack(
-          children: [
-            TableBackground(),
-            if (isBetweenRounds)
-              Positioned.fill(
-                child: Container(
-                  color: Colors.black54,
-                  child: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          'Round $currentRound Complete!',
-                          style: const TextStyle(fontSize: 32, color: Colors
-                              .white, fontWeight: FontWeight.bold),
-                        ),
-                        const SizedBox(height: 20),
-                        Text(
-                          'Qualified: ${qualifiedPlayers.map((p) =>
-                          p == 0
-                              ? "You"
-                              : "Player $p").join(", ")}',
-                          style: const TextStyle(fontSize: 24, color: Colors
-                              .white),
-                        ),
-                        const SizedBox(height: 30),
-                        const CircularProgressIndicator(
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                                Colors.white)),
-                        const SizedBox(height: 20),
-                        const Text(
-                          'Preparing next round...',
-                          style: TextStyle(fontSize: 18, color: Colors.white),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
+      body: Stack(
+        children: [
+          // Full-screen background
+          Positioned.fill(child: TableBackground()),
 
-            if (!isBetweenRounds) ...[
-              Positioned(
-                top: 70,
-                left: 0,
-                right: 0,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    if (widget.botCount >= 2)
-                      GestureDetector(
+          // Optional overlay between rounds
+          if (isBetweenRounds)
+            Positioned.fill(
+              child: RoundCompleteOverlay(
+                currentRound: currentRound,
+                qualifiedPlayers: qualifiedPlayers,
+              ),
+            ),
+
+          // Main game UI
+          if (!isBetweenRounds)
+            SafeArea(
+              child: Stack(
+                children: [
+                  // Top row of horizontal bots
+                  if (widget.botCount >= 2 || widget.botCount >= 3)
+                    Positioned(
+                      top: 110,
+                      left: 0,
+                      right: 0,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: [
+                          if (widget.botCount >= 2)
+                            GestureDetector(
+                              onTap: () => BotDetailsPopup.show(
+                                context, 2, hands, eliminatedPlayers, qualifiedPlayers, currentPlayer,
+                              ),
+                              child: PlayerCard(
+                                bot: 2,
+                                vertical: false,
+                                isEliminated: eliminatedPlayers[2],
+                                isQualified: qualifiedPlayers.contains(2),
+                                isTurn: currentPlayer == 2,
+                                cardCount: hands[2].length,
+                                hand: hands[2],
+                                playerKey: botKeys[2],
+                                handDealt: handDealt,
+                              ),
+                            ),
+                          if (widget.botCount >= 3)
+                            GestureDetector(
+                              onTap: () => BotDetailsPopup.show(
+                                context, 3, hands, eliminatedPlayers, qualifiedPlayers, currentPlayer,
+                              ),
+                              child: PlayerCard(
+                                bot: 3,
+                                vertical: false,
+                                isEliminated: eliminatedPlayers[3],
+                                isQualified: qualifiedPlayers.contains(3),
+                                isTurn: currentPlayer == 3,
+                                cardCount: hands[3].length,
+                                hand: hands[3],
+                                playerKey: botKeys[3],
+                                handDealt: handDealt,
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+
+                  // Side bots
+                  if (widget.botCount >= 1)
+                    Positioned(
+                      left: 2,
+                      top: MediaQuery.of(context).size.height * 0.42,
+                      child: GestureDetector(
                         onTap: () => BotDetailsPopup.show(
-                          context,
-                          2, // bot index
-                          hands, // list of hands for all players
-                          eliminatedPlayers, // list of eliminated flags
-                          qualifiedPlayers, // list of qualified players
-                          currentPlayer, // current player index
+                          context, 1, hands, eliminatedPlayers, qualifiedPlayers, currentPlayer,
                         ),
                         child: PlayerCard(
-                          bot: 2,
-                          vertical: false,
-                          isEliminated: eliminatedPlayers[2],
-                          isQualified: qualifiedPlayers.contains(2),
-                          isTurn: currentPlayer == 2,
-                          cardCount: hands[2].length,
-                          hand: hands[2],
-                          playerKey: botKeys[2],
+                          bot: 1,
+                          vertical: true,
+                          isEliminated: eliminatedPlayers[1],
+                          isQualified: qualifiedPlayers.contains(1),
+                          isTurn: currentPlayer == 1,
+                          cardCount: hands[1].length,
+                          hand: hands[1],
+                          playerKey: botKeys[1],
+                          handDealt: handDealt,
                         ),
                       ),
-
-                    if (widget.botCount >= 3)
-                      GestureDetector(
+                    ),
+                  if (widget.botCount >= 4)
+                    Positioned(
+                      right: 2,
+                      top: MediaQuery.of(context).size.height * 0.42,
+                      child: GestureDetector(
                         onTap: () => BotDetailsPopup.show(
-                          context,
-                          3, // bot index
-                          hands, // list of hands for all players
-                          eliminatedPlayers, // list of eliminated flags
-                          qualifiedPlayers, // list of qualified players
-                          currentPlayer, // current player index
-                        ),                        child: PlayerCard(
-                          bot: 3,
-                          vertical: false,
-                          isEliminated: eliminatedPlayers[3],
-                          isQualified: qualifiedPlayers.contains(3),
-                          isTurn: currentPlayer == 3,
-                          cardCount: hands[3].length,
-                          hand: hands[3],
-                          playerKey: botKeys[3],
+                          context, 4, hands, eliminatedPlayers, qualifiedPlayers, currentPlayer,
                         ),
-                      ),],
-                ),
-              ),
-
-              if (widget.botCount >= 1)
-                Positioned(
-                  left: 12,
-                  top: h * 0.35,
-                  child: GestureDetector(
-                    onTap: () => BotDetailsPopup.show(
-                      context,
-                      1, // bot index
-                      hands, // list of hands for all players
-                      eliminatedPlayers, // list of eliminated flags
-                      qualifiedPlayers, // list of qualified players
-                      currentPlayer, // current player index
-                    ),                    child: PlayerCard(
-                      bot: 1,
-                      vertical: true,
-                      isEliminated: eliminatedPlayers[1],
-                      isQualified: qualifiedPlayers.contains(1),
-                      isTurn: currentPlayer == 1,
-                      cardCount: hands[1].length,
-                      hand: hands[1],
-                      playerKey: botKeys[1],
+                        child: PlayerCard(
+                          bot: 4,
+                          vertical: true,
+                          isEliminated: eliminatedPlayers[4],
+                          isQualified: qualifiedPlayers.contains(4),
+                          isTurn: currentPlayer == 4,
+                          cardCount: hands[4].length,
+                          hand: hands[4],
+                          playerKey: botKeys[4],
+                          handDealt: handDealt,
+                        ),
+                      ),
                     ),
+
+                  // Center deck
+                  DeckCenterPanel(
+                    top: MediaQuery.of(context).size.height * 0.36,
+                    left: MediaQuery.of(context).size.width * 0.18,
+                    right: MediaQuery.of(context).size.width * 0.18,
+                    onDraw: _playerDraw,
+                    deck: deck,
+                    topCard: topCard,
+                    discard: discard,
+                    deckKey: deckKey,
+                    centerKey: centerKey,
                   ),
-                ),
-              if (widget.botCount >= 4)
-                Positioned(
-                  right: 12,
-                  top: h * 0.35,
-                  child: GestureDetector(
-                    onTap: () => BotDetailsPopup.show(
-                      context,
-                      4, // bot index
-                      hands, // list of hands for all players
-                      eliminatedPlayers, // list of eliminated flags
-                      qualifiedPlayers, // list of qualified players
-                      currentPlayer, // current player index
-                    ),
-                    child: PlayerCard(
-                      bot: 4,
-                      vertical: true,
-                      isEliminated: eliminatedPlayers[4],
-                      isQualified: qualifiedPlayers.contains(4),
-                      isTurn: currentPlayer == 4,
-                      cardCount: hands[4].length,
-                      hand: hands[4],
-                      playerKey: botKeys[4],
-                    ),
+
+                  // Player action panel
+                  PlayerActionPanel(
+                    eliminated: eliminatedPlayers[0],
+                    isSpectating: isSpectating,
+                    isAnimating: isAnimating,
+                    handDealt: handDealt,
+                    currentPlayer: currentPlayer,
+                    hand: hands[0],
+                    selectedAvatar: xpManager.selectedAvatar,
+                    username: xpManager.username,
+                    onDraw: _playerDraw,
+                    handKey: handKey,
+                    handScrollController: handScrollController,
+                    playerCardKeys: playerCardKeys,
+                    onPlayCard: _playCardByHuman,
+                    gameModeType: widget.gameModeType,
+                    onLeaveGame: () => Navigator.of(context).pop(),
+                    onEmojiSelected: (filePath) {
+                      setState(() => _shownEmoji = filePath);
+                      Future.delayed(const Duration(seconds: 2), () {
+                        setState(() => _shownEmoji = null);
+                      });
+                    },
                   ),
-                ),
 
-              Positioned(
-                  top: h * 0.30,
-                  left: w * 0.18,
-                  right: w * 0.18,
-                  child: Column(
-                      children: [
-                        Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              GestureDetector(
-                                  onTap: _playerDraw,
-                                  child: Column(
-                                    children: [
-                                      MinimalBadgeText(label: "Draw Pile", fontSize: 14,),
-                                      const SizedBox(height: 4),
-                                      SizedBox(
-                                          key: deckKey,
-                                          width: 70,
-                                          height: 110,
-                                          child: deck.isEmpty
-                                              ? Container(
-                                              decoration: BoxDecoration(
-                                                  borderRadius: BorderRadius
-                                                      .circular(8),
-                                                  color: Colors.white70
-                                              ),
-                                              child: const Center(
-                                                  child: Text('Empty'))
-                                          )
-                                              : Image.asset(
-                                              deck.cards.last.backAsset(
-                                                  context), fit: BoxFit.cover)
-                                      ),
-                                      const SizedBox(height: 4,),
-                                      CardCountBadge(remaining: deck.length,)
-                                    ],
-                                  )
-                              ),
-                              const SizedBox(width: 20),
-                              Column(
-                                  children: [
-                                    MinimalBadgeText(label: "Top Card"),
-                                    const SizedBox(height: 4),
-                                    SizedBox(
-                                        key: centerKey,
-                                        width: 70,
-                                        height: 110,
-                                        child: topCard == null
-                                            ? Container()
-                                            : Image.asset(topCard!.assetName,
-                                            fit: BoxFit.cover)
-                                    ),
-                                    const SizedBox(height: 4,),
-                                    CardCountBadge(remaining: discard.length,)
-
-                                  ]
-                              )
-                            ]
-                        )
-                      ]
-                  )
-              ),
-
-              Positioned(
-                bottom: 12,
-                left: 0,
-                right: 0,
-                child: Column(
-                  children: [
-                    // Top Row: Player info + avatar + timer
-                    Row(
+                  // Top AppBar
+                  Positioned(
+                    top: 8,
+                    left: 8,
+                    right: 8,
+                    child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        // Player status text
                         Expanded(
-                          child: Text(
-                            eliminatedPlayers[0]
-                                ? 'Eliminated'
-                                : isSpectating
-                                ? 'Spectating'
-                                : 'Your Hand${currentPlayer == 0 && !isSpectating ? ' (Your turn)' : ''}',
-                            style: TextStyle(
-                              fontWeight: FontWeight.w600,
-                              color: eliminatedPlayers[0]
-                                  ? Colors.red
-                                  : (isSpectating ? Colors.grey : Colors.white),
-                            ),
+                          flex: 2,
+                          child: MenuOverlayButton(
+                            gameModeName: widget.gameModeType.name,
+                            botCount: widget.botCount,
+                            selectedBet: widget.selectedBet,
                           ),
                         ),
-
-                        const SizedBox(width: 8),
-
-                        // Avatar + emoji/lottie overlay
-                        Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            // Circular turn timer
-                            if (currentPlayer == 0 &&
-                                !eliminatedPlayers[0] &&
-                                !isSpectating &&
-                                handDealt)
-                              SizedBox(
-                                width: 55,
-                                height: 55,
-                                child: TweenAnimationBuilder<double>(
-                                  tween: Tween(begin: 1, end: 0),
-                                  duration: const Duration(seconds: 15),
-                                  builder: (context, value, child) {
-                                    if (value == 0) {
-                                      WidgetsBinding.instance.addPostFrameCallback((_) async {
-                                        await _playerDraw();
-                                      });
-                                    }
-                                    return CircularProgressIndicator(
-                                      value: value,
-                                      strokeWidth: 3,
-                                      backgroundColor: Colors.grey.withOpacity(0.3),
-                                      color: Colors.greenAccent,
-                                    );
-                                  },
-                                ),
-                              ),
-
-                            // Player avatar
-                            CircleAvatar(
-                              radius: 25,
-                              backgroundColor: Colors.deepPurple,
-                              backgroundImage: xpManager.selectedAvatar != null
-                                  ? AssetImage(xpManager.selectedAvatar!)
-                                  : const AssetImage("assets/images/Skins/AvatarSkins/DefaultUser.png"),
+                        Expanded(
+                          flex: 3,
+                          child: Padding(
+                            padding: const EdgeInsets.only(left: 8.0),
+                            child: UserStatusBar(
+                              goldKey: goldKey,
+                              gemsKey: gemsKey,
+                              xpKey: xpKey,
+                              showXP: false,
                             ),
-
-                            // ✅ Show emoji OR lottie animation
-                            if (_shownEmoji != null && !_shownEmoji!.endsWith(".json"))
-                              Positioned(
-                                top: 10,
-                                child: Text(
-                                  _shownEmoji!,
-                                  style: const TextStyle(fontSize: 25, color: Colors.white),
-                                ),
-                              ),
-                            if (_shownEmoji != null && _shownEmoji!.endsWith(".json"))
-                              Positioned(
-                                top: -20,
-                                child: SizedBox(
-                                  width: 70,
-                                  height: 70,
-                                  child: Lottie.asset(
-                                    _shownEmoji!, // plays the lottie instead of showing text
-                                    repeat: false,
-                                  ),
-                                ),
-                              ),
-                          ],
-                        ),
-                        const SizedBox(width: 8),
-
-                        // Emoji bubble button
-                        AnimatedEmojiBubble(
-                          onSelected: (emoji) {
-                            setState(() {
-                              _shownEmoji = emoji;
-                            });
-                            Future.delayed(const Duration(milliseconds: 1600), () {
-                              setState(() {
-                                _shownEmoji = null;
-                              });
-                            });
-                          },
-                        ),
-
-                        // Lottie animation bubble button
-                        AnimatedLottieEmojiBubble(
-                          onSelected: (filePath) {
-                            setState(() {
-                              _shownEmoji = filePath; // ✅ Play animation directly
-                            });
-                            Future.delayed(const Duration(milliseconds: 2000), () {
-                              setState(() {
-                                _shownEmoji = null;
-                              });
-                            });
-                          },
+                          ),
                         ),
                       ],
                     ),
-                    // Action buttons
-                    Row(
-                      children: [
-                        if (!eliminatedPlayers[0] && !isSpectating)
-                          ElevatedButton(
-                            onPressed: (!isAnimating && currentPlayer == 0)
-                                ? () => _playerDraw()
-                                : null,
-                            child: const Text('Draw'),
-                          ),
-                        CardCountBadge(remaining:hands[0].length, fontSize: 14,),
-                        const SizedBox(width: 6),
-                        if (widget.gameModeType == GameModeType.elimination)
-                          if (eliminatedPlayers[0])
-                            ElevatedButton(
-                              onPressed: () => Navigator.of(context).pop(),
-                              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                              child: const Text('Leave Game'),
-                            )
-                          else if (!qualifiedPlayers.contains(0))
-                            ElevatedButton(
-                              onPressed: _toggleSpectate,
-                              child: Text(isSpectating ? 'Join Game' : 'Spectate'),
-                            ),
-                      ],
-                    ),
-                    // Cards or eliminated/spectating messages
-                    if (eliminatedPlayers[0])
-                      Container(
-                        height: 135,
-                        alignment: Alignment.center,
-                        child: const Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.block, color: Colors.red, size: 40),
-                            Text(
-                              'You have been eliminated.',
-                              style: TextStyle(fontSize: 16, color: Colors.red),
-                            ),
-                            Text(
-                              'Press "Leave Game" to exit.',
-                              style: TextStyle(fontSize: 14, color: Colors.grey),
-                            ),
-                          ],
-                        ),
-                      )
-                    else if (!isSpectating)
-                      SizedBox(
-                        key: handKey,
-                        height: 135,
-                        child: SingleChildScrollView(
-                          controller: handScrollController,
-                          scrollDirection: Axis.horizontal,
-                          physics: const BouncingScrollPhysics(),
-                          child: Row(
-                            children: List.generate(hands[0].length, (i) {
-                              if (i >= playerCardKeys.length) playerCardKeys.add(GlobalKey());
-                              return Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 6.0),
-                                child: GestureDetector(
-                                  onTap: () => _playCardByHuman(i),
-                                  child: AnimatedContainer(
-                                    key: playerCardKeys[i],
-                                    duration: const Duration(milliseconds: 250),
-                                    width: currentPlayer == 0 ? 70 : 69,
-                                    height: currentPlayer == 0 ? 114 : 113,
-                                    decoration: BoxDecoration(
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.black.withOpacity(0.8),
-                                          blurRadius: 8,
-                                          offset: const Offset(0, 4),
-                                        )
-                                      ],
-                                      borderRadius: BorderRadius.circular(2),
-                                      border: currentPlayer == 0
-                                          ? Border.all(color: Colors.black.withOpacity(0.8), width: 0.6)
-                                          : Border.all(color: Colors.white, width: 2),
-                                    ),
-                                    child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(4),
-                                      child: Image.asset(
-                                        hands[0][i].assetName,
-                                        fit: BoxFit.cover,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              );
-                            }),
-                          ),
-                        ),
-                      )
-                    else
-                      Container(
-                        height: 135,
-                        alignment: Alignment.center,
-                        child: const Text(
-                          'You are spectating. Press "Join Game" to play again.',
-                          style: TextStyle(fontSize: 16, color: Colors.grey),
-                        ),
-                      ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-
-
-              // TOP APPBAR
-              Positioned(
-                top: 8,
-                left: 8,
-                child: Builder(
-                  builder: (context) {
-                    return GestureDetector(
-                      onTap: () {
-                        final renderBox = context.findRenderObject() as RenderBox;
-                        final offset = renderBox.localToGlobal(Offset.zero);
-                        final size = renderBox.size;
-
-                        final overlay = Overlay.of(context);
-                        OverlayEntry? entry;
-
-                        entry = OverlayEntry(
-                          builder: (_) => Positioned(
-                            left: offset.dx,
-                            top: offset.dy + size.height + 4,
-                            child: GameInfoDialog(
-                              mode: widget.gameModeType.name,
-                              players: widget.botCount + 1,
-                              prize: widget.selectedBet * (widget.botCount + 1),
-                              onSettings: () {
-                                entry?.remove();
-                                showDialog(
-                                  context: context, // use original context
-                                  builder: (_) => const SettingsDialog(),
-                                );
-                              },
-                              onInstructions: () {
-                                entry?.remove();
-                                showDialog(
-                                  context: context, // use original context
-                                  builder: (_) => const InstructionsDialog(),
-                                );
-                              },
-                              onExit: () async {
-                                entry?.remove();
-
-                                final shouldExit = await showDialog<bool>(
-                                  context: context, // use original context
-                                  barrierDismissible: false,
-                                  builder: (ctx) => AlertDialog(
-                                    backgroundColor: Colors.black87,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(20),
-                                    ),
-                                    title: const Text(
-                                      "Exit Game?",
-                                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                                    ),
-                                    content: const Text(
-                                      "Are you sure you want to exit and return to the launcher?",
-                                      style: TextStyle(color: Colors.white70),
-                                    ),
-                                    actions: [
-                                      TextButton(
-                                        onPressed: () => Navigator.of(ctx).pop(false),
-                                        child: const Text("Cancel", style: TextStyle(color: Colors.white)),
-                                      ),
-                                      ElevatedButton(
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: Colors.redAccent,
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(12),
-                                          ),
-                                        ),
-                                        onPressed: () => Navigator.of(ctx).pop(true),
-                                        child: const Text("Exit"),
-                                      ),
-                                    ],
-                                  ),
-                                );
-
-                                if (shouldExit == true) {
-                                  Navigator.of(context).pushReplacement(
-                                    MaterialPageRoute(builder: (_) => MainScreen()),
-                                  );
-                                }
-                              },
-                            ),
-                          ),
-                        );
-                        overlay.insert(entry);
-
-                        // Auto remove after 5 seconds
-                        Future.delayed(const Duration(seconds: 5), () {
-                          entry?.remove();
-                        });
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: Colors.black54,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.white24),
-                        ),
-                        child: const Icon(Icons.list,color: Colors.white,),
-                      ),
-                    );
-                  },
-                ),
-              )
-            ]
-          ],
-        ),
+            ),
+        ],
       ),
     );
   }

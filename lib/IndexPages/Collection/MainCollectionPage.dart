@@ -64,7 +64,7 @@ class _MainCollectionPageState extends State<MainCollectionPage>
 
             // 🔹 Shop Title
             const Text(
-              "Shop",
+              "Collection",
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 24,
@@ -79,7 +79,7 @@ class _MainCollectionPageState extends State<MainCollectionPage>
               ),
             ),
 
-            const SizedBox(height: 10),
+            const SizedBox(height: 6),
 
             // 🔹 TabBar with blur background
             Stack(
@@ -88,7 +88,7 @@ class _MainCollectionPageState extends State<MainCollectionPage>
                   child: BackdropFilter(
                     filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
                     child: Container(
-                      height: 72,
+                      height: 80,
                       color: Colors.black.withOpacity(0.5),
                     ),
                   ),
@@ -102,7 +102,7 @@ class _MainCollectionPageState extends State<MainCollectionPage>
                     Tab(
                       icon: Image(
                         image: AssetImage('assets/UI/Icons/TabBars_Icons/CardSkin_Icon.png'),
-                        width: 55,
+                        width: 50,
                         height: 50,
                       ),
                       text: "Card Skins",
@@ -132,10 +132,10 @@ class _MainCollectionPageState extends State<MainCollectionPage>
                       [_tabController.animation!, _bounceController]),
                   builder: (context, child) {
                     double animationValue = _tabController.animation!.value;
-                    double bounceValue = _bounceController.value * 2.9;
+                    double bounceValue = _bounceController.value * 0.9;
 
                     return Positioned(
-                      bottom: bounceValue,
+                      bottom: bounceValue * 2.9,
                       left: animationValue * tabWidth,
                       width: tabWidth,
                       child: Center(

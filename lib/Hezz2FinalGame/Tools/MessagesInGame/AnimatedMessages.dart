@@ -1,45 +1,50 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
-import 'dart:async';
 
 class AnimatedLottieEmojiBubble extends StatefulWidget {
-  final Function(String) onSelected; // callback with animation file path
+  final Function(String) onSelected;
   const AnimatedLottieEmojiBubble({super.key, required this.onSelected});
 
   @override
-  State<AnimatedLottieEmojiBubble> createState() => _AnimatedLottieEmojiBubbleState();
+  State<AnimatedLottieEmojiBubble> createState() =>
+      _AnimatedLottieEmojiBubbleState();
 }
 
 class _AnimatedLottieEmojiBubbleState extends State<AnimatedLottieEmojiBubble>
     with TickerProviderStateMixin {
   OverlayEntry? _overlayEntry;
-  late List<AnimationController> _controllers;
+  List<AnimationController> _controllers = [];
   Timer? _removeTimer;
 
   bool _isShowing = false;
   bool _canClick = true;
 
-  // 🔥 Funny Lottie animations (make sure JSON files exist in your assets!)
   final List<Map<String, String>> _funnyLotties = [
     {"file": "assets/animations/MessageAnimations/LaughingCat.json"},
     {"file": "assets/animations/MessageAnimations/AngryEmoji.json"},
     {"file": "assets/animations/MessageAnimations/CoolEmoji.json"},
-    {"file": "assets/animations/MessageAnimations/StreamOfHearts.json"},
     {"file": "assets/animations/MessageAnimations/MoneyEmoji.json"},
+    {"file": "assets/animations/MessageAnimations/StreamOfHearts.json"},
   ];
 
   void _showEmojiBubble() {
-    if (!_canClick) return;
+    if (!_canClick || !mounted) return;
 
     setState(() {
       _canClick = false;
       _isShowing = true;
     });
 
-    final renderBox = context.findRenderObject() as RenderBox;
+    final renderBox = context.findRenderObject() as RenderBox?;
+    if (renderBox == null) return; // ⛔ safety
     final size = renderBox.size;
     final offset = renderBox.localToGlobal(Offset.zero);
 
+    // dispose old controllers
+    for (final c in _controllers) {
+      c.dispose();
+    }
     _controllers = List.generate(_funnyLotties.length, (_) {
       return AnimationController(
         vsync: this,
@@ -49,8 +54,8 @@ class _AnimatedLottieEmojiBubbleState extends State<AnimatedLottieEmojiBubble>
 
     _overlayEntry = OverlayEntry(
       builder: (context) => Positioned(
-        top: offset.dy - 120,
-        left: offset.dx + size.width / 2 - 350,
+        top: offset.dy - 20,
+        left: offset.dx + size.width / 2 - 300,
         child: Material(
           color: Colors.transparent,
           child: Container(
@@ -74,30 +79,29 @@ class _AnimatedLottieEmojiBubbleState extends State<AnimatedLottieEmojiBubble>
                     final selectedFile = _funnyLotties[index]["file"]!;
                     widget.onSelected(selectedFile);
 
-                    // 🎭 Show the selected emoji animation in a new overlay
+                    // 🎭 Show selected emoji overlay
                     final emojiOverlay = OverlayEntry(
                       builder: (context) => Positioned(
-                        bottom: 150, // adjust position
-                        left: MediaQuery.of(context).size.width / 2 - 50,
+                        bottom: 150,
+                        left: MediaQuery.of(context).size.width / 2 - 40,
                         child: SizedBox(
-                          width: 100,
-                          height: 100,
-                          child: Lottie.asset(
-                            selectedFile,
-                            repeat: true, // loop
-                          ),
+                          width: 80,
+                          height: 80,
+                          child: Lottie.asset(selectedFile, repeat: true),
                         ),
                       ),
                     );
 
-                    Overlay.of(context)?.insert(emojiOverlay);
+                    if (mounted) {
+                      Overlay.of(context)?.insert(emojiOverlay);
 
-                    // ⏳ remove after 3 seconds
-                    Future.delayed(const Duration(milliseconds: 3500), () {
-                      emojiOverlay.remove();
-                    });
+                      Future.delayed(const Duration(seconds: 3), () {
+                        if (mounted) {
+                          emojiOverlay.remove();
+                        }
+                      });
+                    }
 
-                    // remove the emoji bubble menu
                     _removeOverlay();
                   },
                   child: Padding(
@@ -127,11 +131,15 @@ class _AnimatedLottieEmojiBubbleState extends State<AnimatedLottieEmojiBubble>
       ),
     );
 
-    Overlay.of(context)?.insert(_overlayEntry!);
+    if (mounted) {
+      Overlay.of(context)?.insert(_overlayEntry!);
+    }
 
     for (int i = 0; i < _controllers.length; i++) {
       Future.delayed(Duration(milliseconds: i * 150), () {
-        _controllers[i].forward();
+        if (mounted && i < _controllers.length) {
+          _controllers[i].forward();
+        }
       });
     }
 
@@ -140,23 +148,40 @@ class _AnimatedLottieEmojiBubbleState extends State<AnimatedLottieEmojiBubble>
 
   void _removeOverlay() {
     _removeTimer?.cancel();
+    _removeTimer = null;
+
     if (_overlayEntry != null) {
       _overlayEntry?.remove();
       _overlayEntry = null;
-      for (var c in _controllers) c.dispose();
+
+      for (var c in _controllers) {
+        c.dispose();
+      }
+      _controllers.clear();
     }
+
     _isShowing = false;
 
-    Timer(const Duration(milliseconds: 3000), () {
-      setState(() {
-        _canClick = true;
+    if (mounted) {
+      Future.delayed(const Duration(seconds: 3), () {
+        if (mounted) {
+          setState(() {
+            _canClick = true;
+          });
+        }
       });
-    });
+    }
   }
 
   @override
   void dispose() {
-    _removeOverlay();
+    _removeTimer?.cancel();
+    for (final c in _controllers) {
+      c.dispose();
+    }
+    _controllers.clear();
+    _overlayEntry?.remove();
+    _overlayEntry = null;
     super.dispose();
   }
 
@@ -164,10 +189,13 @@ class _AnimatedLottieEmojiBubbleState extends State<AnimatedLottieEmojiBubble>
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: _showEmojiBubble,
-      child: Icon(
-        Icons.bubble_chart_outlined,
-        color: _canClick && !_isShowing ? Colors.orangeAccent : Colors.grey,
-        size: 32,
+      child: Padding(
+        padding: const EdgeInsets.all(4.0),
+        child: Icon(
+          Icons.message,
+          color: _canClick && !_isShowing ? Colors.orangeAccent : Colors.grey,
+          size: 24,
+        ),
       ),
     );
   }

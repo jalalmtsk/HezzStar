@@ -49,7 +49,7 @@ class _CardGameLauncherState extends State<CardGameLauncher>
   ];
 
   final List<Map<String, dynamic>> handOptions = [
-    {"label": "Quick", "size": 3},
+    {"label": "Quick", "size": 1},
     {"label": "Medium", "size": 5},
     {"label": "Long", "size": 7},
   ];
@@ -527,7 +527,6 @@ class _CardGameLauncherState extends State<CardGameLauncher>
                 expManager.spendGold(bet['gold']);
                 expManager.addExperience(bet['xp']);
                 await SearchingPopup.show(context, widget.botCount);
-
                 Navigator.push(
                   context,
                   MaterialPageRoute(

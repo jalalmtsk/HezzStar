@@ -13,6 +13,7 @@ class CardMaster extends StatelessWidget {
         backgroundColor: Colors.transparent,
         body: AvatarGridWidget(
           avatars: [
+            {"image": "assets/images/Skins/AvatarSkins/DefaultUser.png", 'currency': CurrencyType.gems,"cost": 0},
             {"image": "assets/images/Skins/AvatarSkins/CardMaster/CardMaster1.png", 'currency': CurrencyType.gems,"cost": 100},
             {"image": "assets/images/Skins/AvatarSkins/CardMaster/CardMaster2.png", 'currency': CurrencyType.gems,"cost": 100},
             {"image": "assets/images/Skins/AvatarSkins/CardMaster/CardMaster3.png", 'currency': CurrencyType.gems,"cost": 100},

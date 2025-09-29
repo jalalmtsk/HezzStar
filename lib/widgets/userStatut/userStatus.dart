@@ -8,7 +8,20 @@ class UserStatusBar extends StatelessWidget {
   final GlobalKey gemsKey;
   final GlobalKey xpKey;
 
-  const UserStatusBar({super.key, required this.goldKey, required this.gemsKey, required this.xpKey});
+  // Optional parameters to show/hide each element
+  final bool showXP;
+  final bool showGold;
+  final bool showGems;
+
+  const UserStatusBar({
+    super.key,
+    required this.goldKey,
+    required this.gemsKey,
+    required this.xpKey,
+    this.showXP = true,
+    this.showGold = true,
+    this.showGems = true,
+  });
 
   String formatNumber(int number) {
     if (number >= 1000000) {
@@ -24,43 +37,50 @@ class UserStatusBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Get screen width for scaling
     final screenWidth = MediaQuery.of(context).size.width;
-    final iconSize = screenWidth * 0.12; // icon size relative to width
-    final fontSize = screenWidth * 0.045; // font size relative to width
-    final padding = screenWidth * 0.02; // padding relative to width
+    final iconSize = screenWidth * 0.12;
+    final fontSize = screenWidth * 0.045;
+    final padding = screenWidth * 0.02;
 
     return Consumer<ExperienceManager>(
       builder: (context, xpManager, child) {
+        List<Widget> stats = [];
+
+        if (showXP) {
+          stats.add(_horizontalStat(
+            iconPath: 'assets/UI/Icons/Gamification/LevelXpHolder_Icon.png',
+            level: xpManager.level,
+            value: "${formatNumber(xpManager.currentLevelXP)} / ${formatNumber(xpManager.requiredXPForNextLevel)}",
+            keyForIcon: xpKey,
+            iconSize: iconSize,
+            fontSize: fontSize,
+            padding: padding,
+          ));
+        }
+        if (showGold) {
+          stats.add(_horizontalStat(
+            iconPath: 'assets/UI/Icons/Gamification/Gold_Icon.png',
+            value: formatNumber(xpManager.gold),
+            keyForIcon: goldKey,
+            iconSize: iconSize,
+            fontSize: fontSize,
+            padding: padding,
+          ));
+        }
+        if (showGems) {
+          stats.add(_horizontalStat(
+            iconPath: 'assets/UI/Icons/Gamification/Gems_Icon.png',
+            value: formatNumber(xpManager.gems),
+            keyForIcon: gemsKey,
+            iconSize: iconSize,
+            fontSize: fontSize,
+            padding: padding,
+          ));
+        }
+
         return Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            _horizontalStat(
-              iconPath: 'assets/UI/Icons/Gamification/LevelXpHolder_Icon.png',
-              level: xpManager.level,
-              value: "${formatNumber(xpManager.currentLevelXP)} / ${formatNumber(xpManager.requiredXPForNextLevel)}",
-              keyForIcon: xpKey,
-              iconSize: iconSize,
-              fontSize: fontSize,
-              padding: padding,
-            ),
-            _horizontalStat(
-              iconPath: 'assets/UI/Icons/Gamification/Gold_Icon.png',
-              value: formatNumber(xpManager.gold),
-              keyForIcon: goldKey,
-              iconSize: iconSize,
-              fontSize: fontSize,
-              padding: padding,
-            ),
-            _horizontalStat(
-              iconPath: 'assets/UI/Icons/Gamification/Gems_Icon.png',
-              value: formatNumber(xpManager.gems),
-              keyForIcon: gemsKey,
-              iconSize: iconSize,
-              fontSize: fontSize,
-              padding: padding,
-            ),
-          ],
+          children: stats,
         );
       },
     );

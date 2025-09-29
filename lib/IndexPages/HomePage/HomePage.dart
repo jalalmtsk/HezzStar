@@ -24,7 +24,6 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   final GlobalKey gemsKey = GlobalKey();
   final GlobalKey xpKey = GlobalKey();
 
-
   @override
   void initState() {
     super.initState();
@@ -144,26 +143,12 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                               ),
                             ),
                           ),
-                          Column(
-                            children: [
-                              IconButton(onPressed: (){
-                                xpManager.addExperience(
-                                  10,              // XP amount
-                                  context: context, // needed for dimmed reward screen
-                                  gemsKey: gemsKey, // where the flying gems fly to
-                                );
-                              }, icon: Image.asset(
-                                  height: 60,
-                                  width: 60,
-                                  "assets/UI/Icons/Locked_Icon.png")),
-                              AdsGameButton(
-                                text: "",
-                                sparkleAsset: "assets/animations/AnimationSFX/RewawrdLightEffect.json",
-                                boxAsset: "assets/animations/AnimatGamification/AdsBox.json",
-                                rewardAmount: 5,
-                                gemsKey: gemsKey,
-                              ),
-                            ],
+                          AdsGameButton(
+                            text: "",
+                            sparkleAsset: "assets/animations/AnimationSFX/RewawrdLightEffect.json",
+                            boxAsset: "assets/animations/AnimatGamification/AdsBox.json",
+                            rewardAmount: 5,
+                            gemsKey: gemsKey,
                           ),
                         ],
                       ),
@@ -171,8 +156,31 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                     Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         LanguageMenu(colorButton: Colors.transparent,),
-                        LanguageMenu(colorButton: Colors.transparent,),
+                        Row(
+                          children: [
+                            IconButton(onPressed: (){
+                              xpManager.addExperience(
+                                10,              // XP amount
+                                context: context, // needed for dimmed reward screen
+                                gemsKey: gemsKey, // where the flying gems fly to
+                              );
+                            }, icon: Image.asset(
+                                height: 60,
+                                width: 60,
+                                "assets/UI/Icons/Locked_Icon.png")),
 
+                            IconButton(onPressed: (){
+                              xpManager.addExperience(
+                                10,              // XP amount
+                                context: context, // needed for dimmed reward screen
+                                gemsKey: gemsKey, // where the flying gems fly to
+                              );
+                            }, icon: Image.asset(
+                                height: 60,
+                                width: 60,
+                                "assets/UI/Icons/Locked_Icon.png")),
+                          ],
+                        ),
                       ],
                     ),
                     Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
