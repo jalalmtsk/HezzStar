@@ -249,8 +249,8 @@ class _PlayerActionPanelState extends State<PlayerActionPanel> {
                         child: AnimatedContainer(
                           key: widget.playerCardKeys[i],
                           duration: const Duration(milliseconds: 250),
-                          width: widget.currentPlayer == 0 ? 70 : 69,
-                          height: widget.currentPlayer == 0 ? 114 : 113,
+                          width: widget.currentPlayer == 0 ? 72 : 69,
+                          height: widget.currentPlayer == 0 ? 115 : 113,
                           decoration: BoxDecoration(
                             boxShadow: [
                               BoxShadow(

@@ -88,7 +88,7 @@ class _RoundCompleteOverlayState extends State<RoundCompleteOverlay> {
 
               // Preparing text + countdown
               Text(
-                'Preparing next round in $_remainingSeconds...',
+                'Preparing next round',
                 style: const TextStyle(
                   fontSize: 20,
                   color: Colors.white,

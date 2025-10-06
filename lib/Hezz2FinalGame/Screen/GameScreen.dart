@@ -9,10 +9,10 @@ import 'package:hezzstar/Hezz2FinalGame/Tools/Banner/CenterdLottieAnimation.dart
 import 'package:hezzstar/Hezz2FinalGame/Tools/Banner/CenteredImageEffect.dart';
 
 import 'package:hezzstar/tools/AudioManager/AudioManager.dart';
+import 'package:hezzstar/widgets/userStatut/SimpleUserStatusBar.dart';
 import 'package:provider/provider.dart';
 
-import '../../widgets/userStatut/globalKeyUserStatusBar.dart';
-import '../../widgets/userStatut/userStatus.dart';
+import '../../widgets/LoadingScreen/LoadinScreenDim.dart';
 import '../Models/Cards.dart';
 import '../Models/Deck.dart';
 import '../Bot/BotStack.dart';
@@ -159,6 +159,9 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     final card = deck.draw();
     hands[playerIndex].add(card);
 
+    // 🔊 Play card-deal sound
+    final audioManager = Provider.of<AudioManager>(context, listen: false);
+    audioManager.playSfx("assets/audios/UI/SFX/CardSwapVolumeUp.mp3"); // Add your card deal
     if (!animate) return;
 
     final start = _rectFor(deckKey)?.center;
@@ -229,49 +232,114 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     audioManager.playSfx(Asset);
   }
 
-  Future<void> _animateMove(PlayingCard card, Offset from, Offset to,
-      {required bool cinematic}) async {
+  // Internal generic method
+  Future<void> _animateCardInternal(
+      PlayingCard card,
+      Offset from,
+      Offset to, {
+        required bool faceUp,
+        bool flip = false,
+        bool cinematic = false,
+        Duration? duration,
+      }) async {
+    if (!_isPageActive) return;
     final overlay = Overlay.of(context);
-    if (overlay == null) return;
-    final dur = cinematic ? playDur : drawDur;
+    if (overlay == null || !_isPageActive) return;
+
+    final dur = duration ??
+        (flip
+            ? const Duration(milliseconds: 600)
+            : (cinematic ? playDur : drawDur));
     final ctrl = AnimationController(vsync: this, duration: dur);
     final curve = CurvedAnimation(parent: ctrl, curve: Curves.easeInOutCubic);
-    moving = OverlayEntry(builder: (_) {
-      return AnimatedBuilder(animation: curve, builder: (_, __) {
-        final pos = Offset.lerp(from, to, curve.value)!;
-        final scale = cinematic ? (1.0 + 0.06 * sin(curve.value * pi)) : 1.0;
-        final op = cinematic ? (0.5 + curve.value * 0.5) : 1.0;
-        return Positioned(
+
+    final entry = OverlayEntry(
+      builder: (_) => AnimatedBuilder(
+        animation: curve,
+        builder: (_, __) {
+          final pos = Offset.lerp(from, to, curve.value)!;
+          double scale = 1.0;
+          double rotationY = 0.0;
+          double opacity = 1.0;
+          Widget child;
+
+          if (flip) {
+            final flipProgress = curve.value;
+            rotationY = flipProgress * pi;
+            scale = 1.0 + 0.05 * sin(rotationY);
+            final showFront = flipProgress > 0.5;
+
+            child = Transform(
+              alignment: Alignment.center,
+              transform: Matrix4.identity()
+                ..scale(scale, 1.0)
+                ..rotateY(rotationY),
+              child: SizedBox(
+                width: 70,
+                height: 110,
+                child: Image.asset(
+                    showFront ? card.assetName : card.backAsset(context),
+                    fit: BoxFit.cover),
+              ),
+            );
+          } else {
+            scale = cinematic ? 1.0 + 0.06 * sin(curve.value * pi) : 1.0;
+            opacity = cinematic ? 0.5 + curve.value * 0.5 : 1.0;
+            child = Transform.scale(
+              scale: scale,
+              child: SizedBox(
+                width: 70,
+                height: 110,
+                child: Image.asset(
+                    faceUp ? card.assetName : card.backAsset(context),
+                    fit: BoxFit.cover),
+              ),
+            );
+          }
+
+          return Positioned(
             left: pos.dx - 43,
             top: pos.dy - 60,
-            child: Opacity(
-                opacity: op,
-                child: Transform.scale(
-                    scale: scale,
-                    child: SizedBox(
-                        width: 70,
-                        height: 110,
-                        child: Image.asset(card.assetName, fit: BoxFit.cover)
-                    )
-                )
-            )
-        );
-      });
-    });
-    overlay.insert(moving!);
+            child: Opacity(opacity: opacity, child: child),
+          );
+        },
+      ),
+    );
 
-    if (!mounted) {
-      ctrl.dispose();
-      moving?.remove();
-      moving = null;
-      return;
+    _activeControllers.add(ctrl);
+    _activeOverlays.add(entry);
+
+    if (!_isPageActive) return;
+    overlay.insert(entry);
+
+    try {
+      await ctrl.forward();
+    } catch (_) {
+      // ignore if animation interrupted
     }
 
-    await ctrl.forward();
-    moving?.remove();
-    moving = null;
-    ctrl.dispose(); // dispose immediately
+    // Remove and clean up
+    entry.remove();
+    ctrl.dispose();
+    _activeControllers.remove(ctrl);
+    _activeOverlays.remove(entry);
   }
+
+
+
+// Public methods
+  Future<void> _animateMove(PlayingCard card, Offset from, Offset to, {bool cinematic = false}) async {
+    return _animateCardInternal(card, from, to, faceUp: true, flip: false, cinematic: cinematic);
+  }
+
+  Future<void> _animateMoveFaceDown(PlayingCard card, Offset from, Offset to) async {
+    return _animateCardInternal(card, from, to, faceUp: false, flip: false);
+  }
+
+  Future<void> _animateMoveFaceDownToFaceUp(PlayingCard card, Offset from, Offset to) async {
+    return _animateCardInternal(card, from, to, faceUp: true, flip: true);
+  }
+
 
   Future<void> _playCardByHuman(int idx) async {
     if (eliminatedPlayers[0]) return; // Skip if eliminated
@@ -577,41 +645,6 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     await _playCard(bot, choice);
   }
 
-  Future<void> _animateMoveFaceDown(PlayingCard card, Offset from,
-      Offset to) async {
-    final overlay = Overlay.of(context);
-    if (overlay == null) return;
-    final ctrl = AnimationController(vsync: this, duration: drawDur);
-    final curve = CurvedAnimation(parent: ctrl, curve: Curves.easeInOutCubic);
-    final movingEntry = OverlayEntry(builder: (_) {
-      return AnimatedBuilder(
-        animation: curve,
-        builder: (_, __) {
-          final pos = Offset.lerp(from, to, curve.value)!;
-          return Positioned(
-            left: pos.dx - 43,
-            top: pos.dy - 60,
-            child: SizedBox(
-              width: 70,
-              height: 110,
-              child: Image.asset(card.backAsset(context), fit: BoxFit.cover),
-            ),
-          );
-        },
-      );
-    });
-    overlay.insert(movingEntry);
-
-    if (!mounted) {
-      ctrl.dispose();
-      movingEntry.remove();
-      return;
-    }
-
-    await ctrl.forward();
-    movingEntry.remove();
-    ctrl.dispose(); // dispose right after animation completes
-  }
 
   Future<void> _playerDraw() async {
     if (eliminatedPlayers[0]) {
@@ -697,64 +730,6 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     _advanceTurn();
   }
 
-  Future<void> _animateMoveFaceDownToFaceUp(
-      PlayingCard card, Offset from, Offset to) async {
-    final overlay = Overlay.of(context);
-    if (overlay == null) return;
-
-    final ctrl = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 600));
-    final curve = CurvedAnimation(parent: ctrl, curve: Curves.easeInOutCubic);
-
-    final entry = OverlayEntry(builder: (_) {
-      return AnimatedBuilder(
-        animation: curve,
-        builder: (_, __) {
-          final pos = Offset.lerp(from, to, curve.value)!;
-
-          // Flip progress 0 → 1
-          final flipProgress = curve.value;
-          final showFront = flipProgress > 0.5;
-
-          // Rotation angle
-          final angle = flipProgress * pi;
-          // Slight scale effect for more dynamic feeling
-          final scale = 1.0 + 0.05 * sin(angle);
-
-          return Positioned(
-            left: pos.dx - 43,
-            top: pos.dy - 60,
-            child: Transform(
-              alignment: Alignment.center,
-              transform: Matrix4.identity()
-                ..scale(scale, 1.0)
-                ..rotateY(angle),
-              child: SizedBox(
-                width: 70,
-                height: 110,
-                child: Image.asset(
-                  showFront ? card.assetName : card.backAsset(context),
-                  fit: BoxFit.cover,
-                ),
-              ),
-            ),
-          );
-        },
-      );
-    });
-
-    overlay.insert(entry);
-
-    if (!mounted) {
-      ctrl.dispose();
-      entry.remove();
-      return;
-    }
-
-    await ctrl.forward();
-    entry.remove();
-    ctrl.dispose();
-  }
 
 
   void _checkWin(int p) {
@@ -926,27 +901,51 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       }
     }
 
-    Navigator.push(
+    LoadingScreenDim.show(
       context,
-      MaterialPageRoute(
-        builder: (context) =>
-            EndGameScreen(
-              hands: hands,
-              winnerIndex: winnerIndex,
-              gameModeType: widget.gameModeType,
-              currentRound: currentRound,
-              betAmount: widget.selectedBet,
-              winnerName: BotDetailsPopup.getBotInfo(winnerIndex).name,
-              winnerAvatar: BotDetailsPopup.getBotInfo(winnerIndex).avatarPath,
-            ),
-      ),
+      seconds: 3,
+      lottieAsset: 'assets/animations/AnimationSFX/HezzFinal.json',
+      onComplete: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) =>
+                EndGameScreen(
+                  hands: hands,
+                  winnerIndex: winnerIndex,
+                  gameModeType: widget.gameModeType,
+                  currentRound: currentRound,
+                  betAmount: widget.selectedBet,
+                  winnerName: BotDetailsPopup.getBotInfo(winnerIndex).name,
+                  winnerAvatar: BotDetailsPopup.getBotInfo(winnerIndex).avatarPath,
+                ),
+
+          ),
+        );
+      },
     );
   }
 
+  final List<AnimationController> _activeControllers = [];
+  final List<OverlayEntry> _activeOverlays = [];
   @override
   void dispose() {
-     _isPageActive = false;
-    handScrollController.dispose(); // your scroll controller
+    _isPageActive = false;
+
+    // Stop all active animations
+    for (final ctrl in _activeControllers) {
+      ctrl.stop();
+      ctrl.dispose();
+    }
+    _activeControllers.clear();
+
+    // Remove all overlay entries
+    for (final entry in _activeOverlays) {
+      entry.remove();
+    }
+    _activeOverlays.clear();
+
+    handScrollController.dispose();
     super.dispose();
   }
 
@@ -973,9 +972,22 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                   child: const Text("Cancel"),
                 ),
                 TextButton(
-                  onPressed: () => Navigator.pop(ctx, true),
+                  onPressed: () async {
+                    Navigator.pop(ctx, true); // close the dialog first
+
+                    // Wait until all animations finish
+                    while (isAnimating) {
+                      await Future.delayed(const Duration(milliseconds: 50));
+                    }
+
+                    // Then exit the game screen
+                    if (context.mounted) {
+                      Navigator.pop(context); // pop the GameScreen
+                    }
+                  },
                   child: const Text("Quit"),
                 ),
+
               ],
             ),
           );
@@ -1125,7 +1137,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                       playerCardKeys: playerCardKeys,
                       onPlayCard: _playCardByHuman,
                       gameModeType: widget.gameModeType,
-                      onLeaveGame: () => Navigator.of(context).pop(),
+                      onLeaveGame: () => _showEnd(),
                       onEmojiSelected: (filePath) {
                         setState(() => _shownEmoji = filePath);
                         Future.delayed(const Duration(seconds: 2), () {
@@ -1136,7 +1148,6 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
 
                     // Top AppBar
                     Positioned(
-                      key: const ValueKey("top-bar"), // 👈 stable key for this Positioned
                       top: 8,
                       left: 8,
                       right: 8,
@@ -1144,30 +1155,20 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Expanded(
-                            flex: 2,
+                            flex: 1,
                             child: handDealt
                                 ? MenuOverlayButton(
-                              key: const ValueKey("menu-overlay"), // 👈 key for toggling widget
                               gameModeName: widget.gameModeType.name,
                               botCount: widget.botCount,
                               selectedBet: widget.selectedBet,
                               currentPlayer: currentPlayer,
                             )
-                                : const SizedBox.shrink(key: ValueKey("empty-menu")), // 👈 even shrink gets a key
+                                : const SizedBox.shrink(key: ValueKey("empty-menu")),
                           ),
+                          const SizedBox(width: 30,),
                           Expanded(
-                            flex: 3,
-                            child: Padding(
-                              padding: const EdgeInsets.only(left: 8.0),
-                              child: UserStatusBar(
-                                key: const ValueKey("user-status-bar"), // 👈 key for UserStatusBar
-                                goldKey: goldKey,
-                                gemsKey: gemsKey,
-                                xpKey: xpKey,
-                                showXP: false,
-                                showPlusButton: false,
-                              ),
-                            ),
+                            flex: 4,
+                            child: SimpleUserStatusBar()
                           ),
                         ],
                       ),

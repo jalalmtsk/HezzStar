@@ -115,8 +115,6 @@ class PlayerSelector {
 
   // Pro-level final reveal
   Widget _buildProFinalReveal(String name, String avatarPath) {
-    final size = MediaQuery.of(context).size;
-
     return Positioned.fill(
       child: Stack(
         children: [
@@ -124,25 +122,11 @@ class PlayerSelector {
           BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
             child: Container(
-              color: Colors.black.withOpacity(0.7),
+              color: Colors.black.withOpacity(0.5),
             ),
           ),
 
-          // 🎉 Confetti + shine particles
-          Positioned.fill(
-            child: Stack(
-              children: [
-                Lottie.asset(
-                  "assets/animations/AnimationSFX/Boom.json",
-                  width: size.width * 0.8,
-                  fit: BoxFit.cover,
-                  repeat: false,
-                ),
-              ],
-            ),
-          ),
-
-          // Center avatar + neon rings
+          // Center avatar + Lottie behind
           Center(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -150,6 +134,17 @@ class PlayerSelector {
                 Stack(
                   alignment: Alignment.center,
                   children: [
+                    // 🎉 Lottie animation behind avatar
+                    SizedBox(
+                      width: 200,
+                      height: 200,
+                      child: Lottie.asset(
+                        "assets/animations/AnimationSFX/Boom.json",
+                        repeat: false,
+                        fit: BoxFit.contain,
+                      ),
+                    ),
+
                     // 🔵 Floating neon rings
                     for (int i = 0; i < 3; i++)
                       AnimatedContainer(

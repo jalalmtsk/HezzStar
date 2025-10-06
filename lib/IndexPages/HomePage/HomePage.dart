@@ -222,7 +222,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       }, icon: Image.asset(
                           height: 60,
                           width: 60,
-                          "assets/UI/Icons/Locked_Icon.png")),                        Row(
+                          "assets/UI/Icons/Locked_Icon.png")),
+                      Row(
                         children: [
                           IconButton(onPressed: (){
                             xpManager.addExperience(
@@ -390,7 +391,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         fontSize: 26,
                         fontWeight: FontWeight.bold,
                         shadows: [
-                          Shadow(color: Colors.purpleAccent, blurRadius: 12),
+                          Shadow(color: Colors.lightGreenAccent, blurRadius: 12),
                           Shadow(color: Colors.black, blurRadius: 20),
                         ],
                       ),
@@ -458,7 +459,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                   actions: [
                                     TextButton(
                                       child: const Text("Close",
-                                          style: TextStyle(color: Colors.purpleAccent)),
+                                          style: TextStyle(color: Colors.green)),
                                       onPressed: () => Navigator.pop(context),
                                     ),
                                   ],
