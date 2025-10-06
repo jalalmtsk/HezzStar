@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:hezzstar/tools/AudioManager/AudioManager.dart';
 import 'package:lottie/lottie.dart';
 import 'package:hezzstar/ExperieneManager.dart';
+import 'package:provider/provider.dart';
 
 class AvatarDetailsPopup {
   static void show(BuildContext context, ExperienceManager xpManager) {
@@ -15,7 +17,8 @@ class AvatarDetailsPopup {
             // base scale depending on shortest side
             final base = constraints.biggest.shortestSide;
             final scale = base / 400.0; // 400 = reference size (medium phone)
-
+            final audioManager = Provider.of<AudioManager>(context, listen: false);
+            audioManager.playEventSound("sandClick");
             return ConstrainedBox(
               constraints: BoxConstraints(
                 maxHeight: constraints.maxHeight * 0.8,
@@ -115,13 +118,13 @@ class AvatarDetailsPopup {
                         alignment: WrapAlignment.center,
                         children: [
                           _buildStat("Level", xpManager.level.toString(), scale),
-                          _buildStat("Total Earnings", "12,450", scale),
+                          _buildStat("Total Earnings", xpManager.totalGoldEarned.toString(), scale),
                           _buildStat("Gold", xpManager.gold.toString(), scale),
-                          _buildStat("Wins 1v1", "85", scale),
-                          _buildStat("Wins 2 Players", "40", scale),
-                          _buildStat("Wins 3 Players", "22", scale),
-                          _buildStat("Wins 4 Players", "18", scale),
-                          _buildStat("Wins 5 Players", "10", scale),
+                          _buildStat("Wins 1v1", xpManager.wins1v1.toString(), scale),
+                          _buildStat("Wins 3 Players", xpManager.wins3Players.toString(), scale),
+                          _buildStat("Wins 4 Players", xpManager.wins4Players.toString(), scale),
+                          _buildStat("Wins 5 Players", xpManager.wins5Players.toString(), scale),
+
                         ],
                       ),
 
@@ -148,7 +151,10 @@ class AvatarDetailsPopup {
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10 * scale)),
                           padding: EdgeInsets.symmetric(vertical: 10 * scale, horizontal: 20 * scale),
                         ),
-                        onPressed: () => Navigator.pop(context),
+                        onPressed: () {
+                          final audioManager = Provider.of<AudioManager>(context, listen: false);
+                          audioManager.playEventSound("sandClick");
+                          Navigator.pop(context);},
                         child: Text("Close", style: TextStyle(fontSize: 14 * scale)),
                       ),
                     ],
@@ -163,7 +169,11 @@ class AvatarDetailsPopup {
   }
 
   static void _showEditUsernameDialog(BuildContext context, ExperienceManager xpManager) {
-    final controller = TextEditingController(text: xpManager.userProfile.username ?? "");
+    final audioManager = Provider.of<AudioManager>(context, listen: false);
+    audioManager.playEventSound("sandClick");
+    final controller = TextEditingController(
+      text: xpManager.userProfile.username ?? "",
+    );
 
     showDialog(
       context: context,
@@ -173,27 +183,34 @@ class AvatarDetailsPopup {
         title: const Text("Edit Username", style: TextStyle(color: Colors.white)),
         content: TextField(
           controller: controller,
+          maxLength: 12, // Limit input to 12 characters
           style: const TextStyle(color: Colors.white),
           decoration: const InputDecoration(
             hintText: "Enter new username",
             hintStyle: TextStyle(color: Colors.white54),
+            counterStyle: TextStyle(color: Colors.white54), // optional: counter color
             enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.amber)),
             focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.amber, width: 2)),
           ),
         ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(context),
+              onPressed: () {
+                final audioManager = Provider.of<AudioManager>(context, listen: false);
+                audioManager.playEventSound("sandClick");
+                Navigator.pop(context);},
               child: const Text("Cancel", style: TextStyle(color: Colors.white70))),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Colors.amber),
             onPressed: () async {
-              if (controller.text.trim().isNotEmpty) {
-                await xpManager.setUsername(controller.text.trim());
+              String newName = controller.text.trim();
+              if (newName.isNotEmpty) {
+                if (newName.length > 12) newName = newName.substring(0, 12); // truncate if somehow exceeded
+                await xpManager.setUsername(newName);
               }
-              Navigator.pop(context);
-              Navigator.pop(context);
-              show(context, xpManager);
+              Navigator.pop(context); // close edit dialog
+              Navigator.pop(context); // close popup
+              show(context, xpManager); // reopen popup with updated name
             },
             child: const Text("Save", style: TextStyle(color: Colors.black)),
           ),
@@ -201,6 +218,7 @@ class AvatarDetailsPopup {
       ),
     );
   }
+
 
   static Widget _buildStat(String title, String value, double scale) {
     return Container(

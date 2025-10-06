@@ -11,6 +11,7 @@ import 'package:hezzstar/Hezz2FinalGame/Tools/Banner/CenteredImageEffect.dart';
 import 'package:hezzstar/tools/AudioManager/AudioManager.dart';
 import 'package:provider/provider.dart';
 
+import '../../widgets/userStatut/globalKeyUserStatusBar.dart';
 import '../../widgets/userStatut/userStatus.dart';
 import '../Models/Cards.dart';
 import '../Models/Deck.dart';
@@ -20,7 +21,6 @@ import '../Tools/Dialog/BotPlayerInfoDialog.dart';
 import '../Tools/Dialog/MenuOverlayButton.dart';
 import '../Tools/Dialog/PlayerSelectorAnimation.dart';
 import '../Tools/Dialog/SuitSelectionDialog.dart';
-
 
 import 'GameScreen/GameScreen__Tools/DeckCenteredPanel.dart';
 import 'GameScreen/GameScreen__Tools/PlayerActionPanel.dart';
@@ -49,9 +49,6 @@ class GameScreen extends StatefulWidget {
 }
 
 class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
-  final GlobalKey goldKey = GlobalKey();
-  final GlobalKey gemsKey = GlobalKey();
-  final GlobalKey xpKey = GlobalKey();
 
   late Deck deck;
   final ScrollController handScrollController = ScrollController();
@@ -105,80 +102,37 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     isAnimating = true;
 
     // Reset game state
-    deck = Deck();
-    deck.shuffle();
+    deck = Deck()..shuffle();
     BotDetailsPopup.resetBotInfos();
     for (var h in hands) h.clear();
     discard.clear();
-    currentPlayer = 0;
+    currentPlayer = Random().nextInt(widget.botCount + 1);
     pendingDraw = 0;
     skipNext = false;
     gameOver = false;
     winner = '';
     qualifiedPlayers.clear();
 
-    // For elimination mode, reset eliminations but keep track of rounds
     if (widget.gameModeType == GameModeType.elimination) {
       eliminatedPlayers = List.generate(widget.botCount + 1, (_) => false);
       isBetweenRounds = false;
     }
 
-    // pick a random starting player (must be within 0..botCount)
-    currentPlayer = Random().nextInt(widget.botCount + 1);
-
-    final selector = PlayerSelector(
+    await PlayerSelector(
       context: context,
       botCount: widget.botCount,
       eliminatedPlayers: eliminatedPlayers,
-      onPlayerSelected: (selectedPlayer) {
-        setState(() {
-          currentPlayer = selectedPlayer; // update your current player
-        });
-      },
-    );
+      onPlayerSelected: (selectedPlayer) => currentPlayer = selectedPlayer,
+    ).animateSelection();
 
-    await selector.animateSelection();
     await _precacheAssets(context);
 
-    final toDeal = widget.startHandSize;
-
-    // Deal starting from currentPlayer and rotate around (so starter isn't always player 0)
-    for (int round = 0; round < toDeal; round++) {
+    // Deal starting hands
+    for (int round = 0; round < widget.startHandSize; round++) {
       for (int i = 0; i <= widget.botCount; i++) {
         final p = (currentPlayer + i) % (widget.botCount + 1);
-
         if (eliminatedPlayers[p]) continue;
-        if (deck.isEmpty) _recycle();
-        if (deck.isEmpty) break;
-
-        final c = deck.draw();
-        hands[p].add(c);
-
-        final start = _rectFor(deckKey)?.center;
-        Offset? end;
-
-        if (p == 0) {
-          final idx = hands[0].length - 1;
-          if (idx < playerCardKeys.length) {
-            end = _rectFor(playerCardKeys[idx])?.center;
-          }
-          end ??= Offset(
-            MediaQuery.of(context).size.width / 2,
-            MediaQuery.of(context).size.height - 90,
-          );
-
-          if (start != null && end != null) {
-            await _animateMoveFaceDown(c, start, end);
-          }
-        } else {
-          final botPos = _cardStartForPlayer(p, hands[p].length - 1);
-          if (start != null && botPos != null) {
-            await _animateMoveFaceDown(c, start, botPos);
-          }
-        }
-
-        setState(() {});
-        await Future.delayed(const Duration(milliseconds: 90));
+        await _dealCardToPlayer(p);
       }
     }
 
@@ -187,17 +141,46 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     topCard = deck.draw();
     discard.add(topCard!);
 
-    setState(() {});
-    await Future.delayed(const Duration(milliseconds: 600));
+    setState(() {
+      isAnimating = false;
+      handDealt = true;
+      playerSelected = true;
+    });
 
-    isAnimating = false;
-    handDealt = true;
-
-    // ✅ Turn timer can start now
-    playerSelected = true;
-
-    setState(() {});
     _maybeAutoPlay();
+  }
+
+
+
+  Future<void> _dealCardToPlayer(int playerIndex, {bool animate = true}) async {
+    if (deck.isEmpty) _recycle();
+    if (deck.isEmpty) return;
+
+    final card = deck.draw();
+    hands[playerIndex].add(card);
+
+    if (!animate) return;
+
+    final start = _rectFor(deckKey)?.center;
+    Offset? end;
+
+    if (playerIndex == 0) {
+      final idx = hands[0].length - 1;
+      if (idx < playerCardKeys.length) {
+        end = _rectFor(playerCardKeys[idx])?.center;
+      }
+      end ??= Offset(MediaQuery.of(context).size.width / 2,
+          MediaQuery.of(context).size.height - 90);
+    } else {
+      end = _cardStartForPlayer(playerIndex, hands[playerIndex].length - 1);
+    }
+
+    if (start != null && end != null) {
+      await _animateMoveFaceDown(card, start, end);
+    }
+
+    setState(() {});
+    await Future.delayed(const Duration(milliseconds: 90));
   }
 
 
@@ -239,6 +222,11 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       final center = rect.center;
       return center;
     }
+  }
+
+  void playSfxVoice(String Asset){
+    final audioManager = Provider.of<AudioManager>(context, listen: false);
+    audioManager.playSfx(Asset);
   }
 
   Future<void> _animateMove(PlayingCard card, Offset from, Offset to,
@@ -336,26 +324,55 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
 
   Future<void> _handleSpecial(int player, PlayingCard card) async {
     if (card.rank == 2) {
+      // Add to pending draw
       pendingDraw += 2;
-      CenterBanner(context: context,centerKey:centerKey).show("+2", Colors.orangeAccent);
-      final myImage = AssetImage('assets/UI/Containers/Hezz2_Effect.png'); // or NetworkImage
-      CenterImageEffect(context: context).show(myImage,size: 200);
-    } else if (card.rank == 1) {
-      skipNext = true;
-      CenterBanner(context: context,centerKey:centerKey).show("Skip", Colors.orangeAccent);
-      CenterLottieEffect(context: context).show("assets/animations/AnimationSFX/StopPlaying.json",size: 300, duration: const Duration(milliseconds:900 ));
-    } else if (card.rank == 7) {
-      if (player == 0) {
-        // get the current suit of the top card before change
-        final previousSuit = topCard?.suit ?? "Coins";
 
+      // Decide which sound to play based on the total
+      switch (pendingDraw) {
+        case 2:
+          playSfxVoice("assets/audios/UI/SFX/Voices/Hezz2.mp3");
+          break;
+        case 4:
+          playSfxVoice("assets/audios/UI/SFX/Voices/Hezz4Test.ogg");
+          break;
+        case 6:
+          playSfxVoice("assets/audios/UI/SFX/Voices/Hezz6.ogg");
+          break;
+        case 8:
+          playSfxVoice("assets/audios/UI/SFX/Voices/Hezz8.ogg");
+          break;
+        default:
+          playSfxVoice("assets/audios/UI/SFX/Voices/Hezz2.mp3");
+          break;
+      }
+
+      // Show visual effect
+      CenterBanner(context: context, centerKey: centerKey)
+          .show("+$pendingDraw", Colors.orangeAccent);
+
+      final myImage = AssetImage('assets/UI/Containers/Hezz2_Effect.png');
+      CenterImageEffect(context: context).show(myImage, size: 200);
+    }
+
+    else if (card.rank == 1) {
+      skipNext = true;
+      playSfxVoice("assets/audios/UI/SFX/Voices/Roppo_Voice.mp3");
+      CenterBanner(context: context, centerKey: centerKey)
+          .show("Skip", Colors.orangeAccent);
+      CenterLottieEffect(context: context).show(
+        "assets/animations/AnimationSFX/StopPlaying.json",
+        size: 300,
+        duration: const Duration(milliseconds: 900),
+      );
+    }
+
+    else if (card.rank == 7) {
+      if (player == 0) {
+        final previousSuit = topCard?.suit ?? "Coins";
         final choice = await _askSuit(previousSuit);
 
         if (choice != null) {
-          final audioManager = Provider.of<AudioManager>(
-            context,
-            listen: false,
-          );
+          final audioManager = Provider.of<AudioManager>(context, listen: false);
           audioManager.playSfx("assets/audios/UI/SFX/CardSound.mp3");
 
           setState(() {
@@ -364,12 +381,14 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
             discard.add(topCard!);
           });
 
-          CenterBanner(context: context,centerKey:centerKey).show('Suit: $choice', Colors.orangeAccent);
+          CenterBanner(context: context, centerKey: centerKey)
+              .show('Suit: $choice', Colors.orangeAccent);
         }
       } else {
         final suit = _botPickSuit(player);
-        CenterBanner(context: context,centerKey:centerKey).show('Suit: $suit', Colors.orangeAccent);
-        await Future.delayed(const Duration(milliseconds: 600));
+        CenterBanner(context: context, centerKey: centerKey)
+            .show('Suit: $suit', Colors.orangeAccent);
+        await Future.delayed(const Duration(milliseconds: 1200));
 
         setState(() {
           topCard = PlayingCard(suit: suit, rank: 7);
@@ -379,6 +398,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       }
     }
   }
+
 
 
   Future<String?> _askSuit(String lastSuit) {
@@ -827,54 +847,64 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   void _startNextRound() {
     setState(() {
       isBetweenRounds = true;
-      isSpectating = false; // Reset spectating state
+      isSpectating = false;
+      handDealt = false; // Reset hand dealt state
     });
 
-    Future.delayed(const Duration(seconds: 2), () {
+    Future.delayed(const Duration(seconds: 2), () async {
       setState(() {
         currentRound++;
         isBetweenRounds = false;
 
-        // Reset hands but keep track of eliminated players
+        // Reset deck
         deck = Deck();
         deck.shuffle();
-        for (int i = 0; i < hands.length; i++) {
-          hands[i].clear();
-          if (!eliminatedPlayers[i]) {
-            for (int j = 0; j < widget.startHandSize; j++) {
-              if (deck.isEmpty) _recycle();
-              hands[i].add(deck.draw());
-            }
-          }
-        }
-        // Reset top card
-        if (deck.isEmpty) _recycle();
-        topCard = deck.draw();
+
+        // Clear discard and set top card later
         discard.clear();
-        discard.add(topCard!);
+        topCard = null;
 
         // Reset round state
         pendingDraw = 0;
         skipNext = false;
         qualifiedPlayers.clear();
-
-        // Pick a random non-eliminated starter for the round
-        int candidate = Random().nextInt(widget.botCount + 1);
-        int attempts = 0;
-        while (eliminatedPlayers[candidate] && attempts < widget.botCount + 1) {
-          candidate = (candidate + 1) % (widget.botCount + 1);
-          attempts++;
-        }
-        // If somehow all are eliminated (shouldn't happen), fallback to 0
-        currentPlayer = (attempts <= widget.botCount) ? candidate : 0;
       });
 
-      // 🔑 Kick the bots after UI updates
+      // Deal hands with animation
+      for (int i = 0; i <= widget.botCount; i++) {
+        if (!eliminatedPlayers[i]) {
+          hands[i].clear(); // Clear previous round cards
+          for (int j = 0; j < widget.startHandSize; j++) {
+            await _dealCardToPlayer(i); // 🔑 Use your deal function for proper animation
+          }
+        }
+      }
+
+      // Draw top card
+      if (deck.isEmpty) _recycle();
+      topCard = deck.draw();
+      discard.add(topCard!);
+
+      // Pick random starting player who is not eliminated
+      int candidate = Random().nextInt(widget.botCount + 1);
+      int attempts = 0;
+      while (eliminatedPlayers[candidate] && attempts < widget.botCount + 1) {
+        candidate = (candidate + 1) % (widget.botCount + 1);
+        attempts++;
+      }
+      currentPlayer = (attempts <= widget.botCount) ? candidate : 0;
+
+      setState(() {
+        handDealt = true; // Show hands after dealing
+      });
+
+      // Start bot/autoplay after UI updated
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _maybeAutoPlay();
       });
     });
   }
+
 
 
   void _showEnd() {
@@ -928,192 +958,226 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
 
     final w = MediaQuery.of(context).size.width;
     final h = MediaQuery.of(context).size.height;
-    return Scaffold(
-      body: Stack(
-        children: [
-          // Full-screen background
-          Positioned.fill(child: TableBackground()),
-
-          // Optional overlay between rounds
-          if (isBetweenRounds)
-            Positioned.fill(
-              child: RoundCompleteOverlay(
-                currentRound: currentRound,
-                qualifiedPlayers: qualifiedPlayers,
-              ),
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (!didPop) {
+          final quit = await showDialog<bool>(
+            context: context,
+            builder: (ctx) => AlertDialog(
+              title: const Text("Quit Game?"),
+              content: const Text("Are you sure you want to leave the match?"),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx, false),
+                  child: const Text("Cancel"),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx, true),
+                  child: const Text("Quit"),
+                ),
+              ],
             ),
+          );
 
-          // Main game UI
-          if (!isBetweenRounds)
-            SafeArea(
-              child: Stack(
-                children: [
-                  // Top row of horizontal bots
-                  if (widget.botCount >= 2 || widget.botCount >= 3)
+          if (quit == true && context.mounted) {
+            Navigator.pop(context, result); // ✅ pop with result if user confirms
+          }
+        }
+      },
+      child: Scaffold(
+        body: Stack(
+          children: [
+            // Full-screen background
+            Positioned.fill(child: TableBackground()),
+
+            // Optional overlay between rounds
+            if (isBetweenRounds)
+              Positioned.fill(
+                child: RoundCompleteOverlay(
+                  currentRound: currentRound,
+                  qualifiedPlayers: qualifiedPlayers,
+                ),
+              ),
+
+            // Main game UI
+            if (!isBetweenRounds)
+              SafeArea(
+                child: Stack(
+                  children: [
+                    // Top row of horizontal bots
+                    if (widget.botCount >= 2 || widget.botCount >= 3)
+                      Positioned(
+                        top: 110,
+                        left: 0,
+                        right: 0,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: [
+                            if (widget.botCount >= 2)
+                              GestureDetector(
+                                onTap: () => BotDetailsPopup.show(
+                                  context, 2, xpManager, hands, eliminatedPlayers, qualifiedPlayers, currentPlayer,
+                                ),
+                                child: PlayerCard(
+                                  bot: 2,
+                                  vertical: false,
+                                  isEliminated: eliminatedPlayers[2],
+                                  isQualified: qualifiedPlayers.contains(2),
+                                  isTurn: currentPlayer == 2,
+                                  cardCount: hands[2].length,
+                                  hand: hands[2],
+                                  playerKey: botKeys[2],
+                                  handDealt: handDealt,
+                                ),
+                              ),
+                            if (widget.botCount >= 3)
+                              GestureDetector(
+                                onTap: () => BotDetailsPopup.show(
+                                  context, 3,xpManager, hands, eliminatedPlayers, qualifiedPlayers, currentPlayer,
+                                ),
+                                child: PlayerCard(
+                                  bot: 3,
+                                  vertical: false,
+                                  isEliminated: eliminatedPlayers[3],
+                                  isQualified: qualifiedPlayers.contains(3),
+                                  isTurn: currentPlayer == 3,
+                                  cardCount: hands[3].length,
+                                  hand: hands[3],
+                                  playerKey: botKeys[3],
+                                  handDealt: handDealt,
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+
+                    // Side bots
+                    if (widget.botCount >= 1)
+                      Positioned(
+                        left: 2,
+                        top: MediaQuery.of(context).size.height * 0.42,
+                        child: GestureDetector(
+                          onTap: () => BotDetailsPopup.show(
+                            context, 1,xpManager, hands, eliminatedPlayers, qualifiedPlayers, currentPlayer,
+                          ),
+                          child: PlayerCard(
+                            bot: 1,
+                            vertical: true,
+                            isEliminated: eliminatedPlayers[1],
+                            isQualified: qualifiedPlayers.contains(1),
+                            isTurn: currentPlayer == 1,
+                            cardCount: hands[1].length,
+                            hand: hands[1],
+                            playerKey: botKeys[1],
+                            handDealt: handDealt,
+                          ),
+                        ),
+                      ),
+                    if (widget.botCount >= 4)
+                      Positioned(
+                        right: 2,
+                        top: MediaQuery.of(context).size.height * 0.42,
+                        child: GestureDetector(
+                          onTap: () => BotDetailsPopup.show(
+                            context, 4,xpManager, hands, eliminatedPlayers, qualifiedPlayers, currentPlayer,
+                          ),
+                          child: PlayerCard(
+                            bot: 4,
+                            vertical: true,
+                            isEliminated: eliminatedPlayers[4],
+                            isQualified: qualifiedPlayers.contains(4),
+                            isTurn: currentPlayer == 4,
+                            cardCount: hands[4].length,
+                            hand: hands[4],
+                            playerKey: botKeys[4],
+                            handDealt: handDealt,
+                          ),
+                        ),
+                      ),
+
+                    // Center deck
+                    DeckCenterPanel(
+                      top: MediaQuery.of(context).size.height * 0.42,
+                      left: MediaQuery.of(context).size.width * 0.18,
+                      right: MediaQuery.of(context).size.width * 0.18,
+                      onDraw: _playerDraw,
+                      deck: deck,
+                      topCard: topCard,
+                      discard: discard,
+                      deckKey: deckKey,
+                      centerKey: centerKey,
+                    ),
+
+                    // Player action panel
+                    PlayerActionPanel(
+                      eliminated: eliminatedPlayers[0],
+                      isSpectating: isSpectating,
+                      isAnimating: isAnimating,
+                      handDealt: handDealt,
+                      currentPlayer: currentPlayer,
+                      hand: hands[0],
+                      selectedAvatar: xpManager.selectedAvatar,
+                      username: xpManager.username,
+                      onDraw: _playerDraw,
+                      handKey: handKey,
+                      handScrollController: handScrollController,
+                      playerCardKeys: playerCardKeys,
+                      onPlayCard: _playCardByHuman,
+                      gameModeType: widget.gameModeType,
+                      onLeaveGame: () => Navigator.of(context).pop(),
+                      onEmojiSelected: (filePath) {
+                        setState(() => _shownEmoji = filePath);
+                        Future.delayed(const Duration(seconds: 2), () {
+                          setState(() => _shownEmoji = null);
+                        });
+                      },
+                    ),
+
+                    // Top AppBar
                     Positioned(
-                      top: 110,
-                      left: 0,
-                      right: 0,
+                      key: const ValueKey("top-bar"), // 👈 stable key for this Positioned
+                      top: 8,
+                      left: 8,
+                      right: 8,
                       child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          if (widget.botCount >= 2)
-                            GestureDetector(
-                              onTap: () => BotDetailsPopup.show(
-                                context, 2, hands, eliminatedPlayers, qualifiedPlayers, currentPlayer,
-                              ),
-                              child: PlayerCard(
-                                bot: 2,
-                                vertical: false,
-                                isEliminated: eliminatedPlayers[2],
-                                isQualified: qualifiedPlayers.contains(2),
-                                isTurn: currentPlayer == 2,
-                                cardCount: hands[2].length,
-                                hand: hands[2],
-                                playerKey: botKeys[2],
-                                handDealt: handDealt,
-                              ),
-                            ),
-                          if (widget.botCount >= 3)
-                            GestureDetector(
-                              onTap: () => BotDetailsPopup.show(
-                                context, 3, hands, eliminatedPlayers, qualifiedPlayers, currentPlayer,
-                              ),
-                              child: PlayerCard(
-                                bot: 3,
-                                vertical: false,
-                                isEliminated: eliminatedPlayers[3],
-                                isQualified: qualifiedPlayers.contains(3),
-                                isTurn: currentPlayer == 3,
-                                cardCount: hands[3].length,
-                                hand: hands[3],
-                                playerKey: botKeys[3],
-                                handDealt: handDealt,
+                          Expanded(
+                            flex: 2,
+                            child: handDealt
+                                ? MenuOverlayButton(
+                              key: const ValueKey("menu-overlay"), // 👈 key for toggling widget
+                              gameModeName: widget.gameModeType.name,
+                              botCount: widget.botCount,
+                              selectedBet: widget.selectedBet,
+                              currentPlayer: currentPlayer,
+                            )
+                                : const SizedBox.shrink(key: ValueKey("empty-menu")), // 👈 even shrink gets a key
+                          ),
+                          Expanded(
+                            flex: 3,
+                            child: Padding(
+                              padding: const EdgeInsets.only(left: 8.0),
+                              child: UserStatusBar(
+                                key: const ValueKey("user-status-bar"), // 👈 key for UserStatusBar
+                                goldKey: goldKey,
+                                gemsKey: gemsKey,
+                                xpKey: xpKey,
+                                showXP: false,
+                                showPlusButton: false,
                               ),
                             ),
+                          ),
                         ],
                       ),
                     ),
 
-                  // Side bots
-                  if (widget.botCount >= 1)
-                    Positioned(
-                      left: 2,
-                      top: MediaQuery.of(context).size.height * 0.42,
-                      child: GestureDetector(
-                        onTap: () => BotDetailsPopup.show(
-                          context, 1, hands, eliminatedPlayers, qualifiedPlayers, currentPlayer,
-                        ),
-                        child: PlayerCard(
-                          bot: 1,
-                          vertical: true,
-                          isEliminated: eliminatedPlayers[1],
-                          isQualified: qualifiedPlayers.contains(1),
-                          isTurn: currentPlayer == 1,
-                          cardCount: hands[1].length,
-                          hand: hands[1],
-                          playerKey: botKeys[1],
-                          handDealt: handDealt,
-                        ),
-                      ),
-                    ),
-                  if (widget.botCount >= 4)
-                    Positioned(
-                      right: 2,
-                      top: MediaQuery.of(context).size.height * 0.42,
-                      child: GestureDetector(
-                        onTap: () => BotDetailsPopup.show(
-                          context, 4, hands, eliminatedPlayers, qualifiedPlayers, currentPlayer,
-                        ),
-                        child: PlayerCard(
-                          bot: 4,
-                          vertical: true,
-                          isEliminated: eliminatedPlayers[4],
-                          isQualified: qualifiedPlayers.contains(4),
-                          isTurn: currentPlayer == 4,
-                          cardCount: hands[4].length,
-                          hand: hands[4],
-                          playerKey: botKeys[4],
-                          handDealt: handDealt,
-                        ),
-                      ),
-                    ),
-
-                  // Center deck
-                  DeckCenterPanel(
-                    top: MediaQuery.of(context).size.height * 0.36,
-                    left: MediaQuery.of(context).size.width * 0.18,
-                    right: MediaQuery.of(context).size.width * 0.18,
-                    onDraw: _playerDraw,
-                    deck: deck,
-                    topCard: topCard,
-                    discard: discard,
-                    deckKey: deckKey,
-                    centerKey: centerKey,
-                  ),
-
-                  // Player action panel
-                  PlayerActionPanel(
-                    eliminated: eliminatedPlayers[0],
-                    isSpectating: isSpectating,
-                    isAnimating: isAnimating,
-                    handDealt: handDealt,
-                    currentPlayer: currentPlayer,
-                    hand: hands[0],
-                    selectedAvatar: xpManager.selectedAvatar,
-                    username: xpManager.username,
-                    onDraw: _playerDraw,
-                    handKey: handKey,
-                    handScrollController: handScrollController,
-                    playerCardKeys: playerCardKeys,
-                    onPlayCard: _playCardByHuman,
-                    gameModeType: widget.gameModeType,
-                    onLeaveGame: () => Navigator.of(context).pop(),
-                    onEmojiSelected: (filePath) {
-                      setState(() => _shownEmoji = filePath);
-                      Future.delayed(const Duration(seconds: 2), () {
-                        setState(() => _shownEmoji = null);
-                      });
-                    },
-                  ),
-
-                  // Top AppBar
-                  Positioned(
-                    top: 8,
-                    left: 8,
-                    right: 8,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          flex: 2,
-                          child: handDealt ? MenuOverlayButton(
-                            gameModeName: widget.gameModeType.name,
-                            botCount: widget.botCount,
-                            selectedBet: widget.selectedBet,
-                            currentPlayer: currentPlayer,
-                          ):
-                            SizedBox.shrink(),
-                        ),
-                        Expanded(
-                          flex: 3,
-                          child: Padding(
-                            padding: const EdgeInsets.only(left: 8.0),
-                            child: UserStatusBar(
-                              goldKey: goldKey,
-                              gemsKey: gemsKey,
-                              xpKey: xpKey,
-                              showXP: false,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-        ],
+          ],
+        ),
       ),
     );
   }

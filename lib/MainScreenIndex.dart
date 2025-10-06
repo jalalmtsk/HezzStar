@@ -2,11 +2,15 @@ import 'dart:math';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:hezzstar/IndexPages/Settings/SettingPage.dart';
+import 'package:hezzstar/tools/AudioManager/AudioManager.dart';
+import 'package:provider/provider.dart';
 import 'IndexPages/Collection/MainCollectionPage.dart';
 import 'IndexPages/EventsPage/EventPage.dart';
 import 'IndexPages/HomePage/HomePage.dart';
 import 'IndexPages/ShopPage/ShopPage.dart';
-import 'main.dart';
+
+
+final GlobalKey<_MainScreenState> mainScreenKey = GlobalKey<_MainScreenState>();
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -17,6 +21,14 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   int _selectedIndex = 2;
+
+
+  void goToShop() {
+    setState(() {
+      _selectedIndex = 0; // switch to Shop tab
+    });
+  }
+
 
   final List<Widget> _pages = [
     const ShopPage(),
@@ -54,6 +66,8 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   }
 
   void _onItemTapped(int index) {
+    final audioManager = Provider.of<AudioManager>(context, listen: false);
+    audioManager.playEventSound("sandClick");
     setState(() {
       _selectedIndex = index;
     });

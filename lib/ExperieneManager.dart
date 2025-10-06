@@ -11,6 +11,13 @@ class ExperienceManager with ChangeNotifier {
   int _experience = 0;
   int _gold = 500;
   int _gems = 25;
+  int _totalGoldEarned = 500;
+
+  int _wins1v1 = 0;
+  int _wins3Players = 0;
+  int _wins4Players = 0;
+  int _wins5Players = 0;
+
 
   // ---------------------------
   // CARD SYSTEM
@@ -30,6 +37,13 @@ class ExperienceManager with ChangeNotifier {
   int get experience => _experience;
   int get gold => _gold;
   int get gems => _gems;
+  int get totalGoldEarned => _totalGoldEarned;
+
+  int get wins1v1 => _wins1v1;
+  int get wins3Players => _wins3Players;
+  int get wins4Players => _wins4Players;
+  int get wins5Players => _wins5Players;
+
 
   List<String> get unlockedCards => _unlockedCards;
   String? get selectedCard => _selectedCard;
@@ -68,6 +82,13 @@ class ExperienceManager with ChangeNotifier {
     _experience = prefs.getInt('experience') ?? 0;
     _gold = prefs.getInt('gold') ?? 500;
     _gems = prefs.getInt('gems') ?? 25;
+    _totalGoldEarned = prefs.getInt('totalGoldEarned') ?? 500;
+
+    _wins1v1 = prefs.getInt('wins1v1') ?? 0;
+    _wins3Players = prefs.getInt('wins3Players') ?? 0;
+    _wins4Players = prefs.getInt('wins4Players') ?? 0;
+    _wins5Players = prefs.getInt('wins5Players') ?? 0;
+
 
     _unlockedCards = prefs.getStringList('unlockedCards') ?? ["assets/images/cards/backCard.png"];
     _selectedCard = prefs.getString('selectedCard') ?? _unlockedCards.first;
@@ -92,6 +113,12 @@ class ExperienceManager with ChangeNotifier {
     await prefs.setInt('experience', _experience);
     await prefs.setInt('gold', _gold);
     await prefs.setInt('gems', _gems);
+    await prefs.setInt('totalGoldEarned', _totalGoldEarned);
+    await prefs.setInt('wins1v1', _wins1v1);
+    await prefs.setInt('wins3Players', _wins3Players);
+    await prefs.setInt('wins4Players', _wins4Players);
+    await prefs.setInt('wins5Players', _wins5Players);
+
     await prefs.setStringList('unlockedCards', _unlockedCards);
     await prefs.setStringList('unlockedAvatars', _unlockedAvatars);
     await prefs.setStringList('unlockedTableSkins', _unlockedTableSkins);
@@ -107,39 +134,44 @@ class ExperienceManager with ChangeNotifier {
   // RESOURCE MANAGEMENT
   // ---------------------------
 
-  Future<void> addExperience(int amount, {BuildContext? context, GlobalKey? gemsKey}) async {
-    int oldLevel = level; // before adding XP
+  Future<void> addExperience(
+      int amount, {
+        BuildContext? context,
+        GlobalKey? gemsKey,
+      }) async {
+    int oldLevel = level;
     _experience += amount;
-    int newLevel = level; // after adding XP
-
-    if (newLevel > oldLevel) {
-      int levelsGained = newLevel - oldLevel;
-      int gemsReward = 5 * levelsGained; // 5 gems per level
-
-      _gems += gemsReward;
-
-      // Show reward animation if context & key are provided
-      if (context != null && gemsKey != null) {
-        RewardDimScreen.show(
-          context,
-          start: const Offset(200, 400), // optionally adjust start position
-          endKey: gemsKey,
-          amount: gemsReward,
-          type: RewardType.gem,
-        );
-      }
-    }
+    int newLevel = level;
 
     await _saveData();
     notifyListeners();
+
+    if (newLevel > oldLevel && context != null && gemsKey != null) {
+      // Only show rewards one by one
+      for (int lvl = oldLevel + 1; lvl <= newLevel; lvl++) {
+        // Wait for the user to collect before continuing
+        await  RewardDimScreen.show(
+          context,
+          start: const Offset(200, 400),
+          endKey: gemsKey,
+          amount: 5,
+          type: RewardType.gem,
+        );
+        await Future.delayed(const Duration(milliseconds: 200));
+      }
+    }
   }
+
+
 
 
   Future<void> addGold(int amount) async {
     _gold += amount;
+    _totalGoldEarned += amount; // track total earnings
     await _saveData();
     notifyListeners();
   }
+
 
   Future<void> addGems(int amount) async {
     _gems += amount;
@@ -179,10 +211,37 @@ class ExperienceManager with ChangeNotifier {
     }
   }
 
+  Future<void> addWin(int playerCount) async {
+    switch (playerCount) {
+      case 2:
+        _wins1v1++;
+        break;
+      case 3:
+        _wins3Players++;
+        break;
+      case 4:
+        _wins4Players++;
+        break;
+      case 5:
+        _wins5Players++;
+        break;
+    }
+    await _saveData();
+    notifyListeners();
+  }
+
+
   Future<void> resetAll() async {
     _experience = 0;
     _gold = 500;
     _gems = 25;
+    _totalGoldEarned = 500;
+
+    _wins1v1 = 0;
+    _wins3Players = 0;
+    _wins4Players = 0;
+    _wins5Players = 0;
+
     _unlockedCards = ["assets/images/cards/backCard.png"];
     _selectedCard = null;
     _unlockedAvatars = ["assets/images/Skins/AvatarSkins/DefaultUser.png"];
@@ -199,11 +258,39 @@ class ExperienceManager with ChangeNotifier {
   }
 
   // ---------------------------
-  // LEVEL SYSTEM
+  // LEVEL SYSTEM (Dynamic XP per level)
   // ---------------------------
-  int get level => (_experience ~/ 100) + 1;
-  int get currentLevelXP => _experience % 100;
-  int get requiredXPForNextLevel => 100;
+
+  /// Returns how much XP is required for a specific level.
+  int xpForLevel(int level) {
+    return 100 + (level - 1) * 50; // 🔥 Linear growth
+    // Or use exponential: return (100 * pow(1.2, level - 1)).round();
+  }
+
+  int get level {
+    int lvl = 1;
+    int xp = _experience;
+
+    while (xp >= xpForLevel(lvl)) {
+      xp -= xpForLevel(lvl);
+      lvl++;
+    }
+    return lvl;
+  }
+
+  int get currentLevelXP {
+    int xp = _experience;
+    int lvl = 1;
+
+    while (xp >= xpForLevel(lvl)) {
+      xp -= xpForLevel(lvl);
+      lvl++;
+    }
+    return xp;
+  }
+
+  int get requiredXPForNextLevel => xpForLevel(level);
+
   double get levelProgress => currentLevelXP / requiredXPForNextLevel;
 
   // ---------------------------

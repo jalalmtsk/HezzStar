@@ -1,7 +1,9 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:hezzstar/IndexPages/HomePage/HomePage.dart';
 import 'package:provider/provider.dart';
 import '../../ExperieneManager.dart';
+import '../../widgets/userStatut/globalKeyUserStatusBar.dart';
 import 'FlyingRewardWidget.dart';
 import 'package:hezzstar/tools/AudioManager/AudioManager.dart';
 
@@ -15,7 +17,7 @@ class FlyingRewardManager {
   late OverlayState _overlayState;
 
   final Map<RewardType, String> _soundAssets = {
-    RewardType.gold: 'assets/audios/UI/SFX/Gamification_SFX/WinningGold_Sound.mp3',
+    RewardType.gold: 'assets/audios/UI/SFX/Gamification_SFX/MuchCoinsSound.mp3',
     RewardType.gem: 'assets/sounds/gem.wav',
     RewardType.star: 'assets/sounds/star.wav',
   };
@@ -48,7 +50,7 @@ class FlyingRewardManager {
         xpManager.addGems(amount);
         break;
       case RewardType.star:
-        xpManager.addExperience(amount);
+        xpManager.addExperience(amount,context: context,gemsKey: gemsKey);
         break;
     }
 

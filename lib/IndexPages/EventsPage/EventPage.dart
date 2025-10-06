@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'dart:async';
 
+import '../../widgets/SpiningWheel/Spiningwheel.dart';
+
 class EventsPage extends StatefulWidget {
   const EventsPage({super.key});
 
@@ -10,6 +12,9 @@ class EventsPage extends StatefulWidget {
 }
 
 class _EventsPageState extends State<EventsPage> {
+
+  final GlobalKey goldEventKey = GlobalKey();
+
   bool _isLoading = false;
 
   void _showLoading() {
@@ -55,6 +60,7 @@ class _EventsPageState extends State<EventsPage> {
                       ],
                     ),
                   ),
+
                   const SizedBox(height: 10),
                   Text(
                     "Check back later for upcoming \ntournaments and exclusive challenges!",
@@ -66,6 +72,11 @@ class _EventsPageState extends State<EventsPage> {
                     ),
                   ),
                   const SizedBox(height: 40),
+
+                  SpinWheelScreen(goldKey: goldEventKey),
+
+                  const SizedBox(height: 40),
+
                   ElevatedButton.icon(
                     onPressed: _showLoading,
                     style: ElevatedButton.styleFrom(

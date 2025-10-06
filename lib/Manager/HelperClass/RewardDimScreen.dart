@@ -1,21 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:hezzstar/tools/AudioManager/AudioManager.dart';
 import 'package:lottie/lottie.dart';
+import 'package:provider/provider.dart';
 import 'FlyingRewardManager.dart';
 
 class RewardDimScreen {
-  /// Shows a full-screen dimmed overlay with animated image + amount + confetti + glowing aura.
-  static void show(
+  /// Shows a full-screen dimmed overlay with animated image + amount + confetti + glowing aura + sound.
+  static Future<void> show(
       BuildContext context, {
         required Offset start,
         required GlobalKey endKey,
         required int amount,
         required RewardType type,
-      }) {
-    // Choose image asset based on reward type
+      }) async {
+    // Choose image asset and sound based on reward type
     String assetPath;
     String label;
     Color glowColor;
     String auraLottie;
+    String audioPath;
 
     switch (type) {
       case RewardType.gold:
@@ -23,21 +26,29 @@ class RewardDimScreen {
         label = "Gold";
         glowColor = Colors.amberAccent;
         auraLottie = "assets/animations/AnimationSFX/RewawrdLightEffect.json";
+        audioPath = "assets/sounds/gold_sound.mp3";
         break;
       case RewardType.gem:
         assetPath = "assets/UI/Icons/Gamification/Gems_Icon.png";
         label = "Gems";
         glowColor = Colors.greenAccent;
         auraLottie = "assets/animations/AnimationSFX/RewawrdLightEffect.json";
+        audioPath = "assets/audios/UI/SFX/Gamification_SFX/rewardGemsOpening.mp3";
         break;
       case RewardType.star:
         assetPath = "assets/UI/Icons/Gamification/Xp_Icon.png";
         label = "XP";
         glowColor = Colors.yellowAccent;
         auraLottie = "assets/animations/AnimationSFX/RewawrdLightEffect.json";
+        audioPath = "assets/sounds/star_sound.mp3";
         break;
     }
 
+    // Play sound immediately
+    final audioManager = Provider.of<AudioManager>(context, listen: false);
+    audioManager.playSfx(audioPath);
+
+    // Show dialog
     showDialog(
       context: context,
       barrierColor: Colors.black.withOpacity(0.75), // immersive dim
@@ -58,13 +69,13 @@ class RewardDimScreen {
           child: Stack(
             alignment: Alignment.center,
             children: [
-              // Background confetti celebration (fills screen)
+              // Background confetti celebration
               Positioned.fill(
                 child: IgnorePointer(
                   child: Lottie.asset(
                     'assets/animations/Win/Confetti4.json',
                     fit: BoxFit.cover,
-                    repeat: true,
+                    repeat: false,
                   ),
                 ),
               ),
@@ -148,15 +159,12 @@ class RewardDimScreen {
                               Stack(
                                 alignment: Alignment.center,
                                 children: [
-                                  // Aura Lottie always centered
                                   Lottie.asset(
                                     auraLottie,
                                     height: 180,
                                     repeat: true,
                                     fit: BoxFit.contain,
                                   ),
-
-                                  // Glow pulse
                                   Container(
                                     width: 120,
                                     height: 120,
@@ -171,8 +179,6 @@ class RewardDimScreen {
                                       ),
                                     ),
                                   ),
-
-                                  // Reward icon
                                   Image.asset(
                                     assetPath,
                                     height: 100,
@@ -181,10 +187,7 @@ class RewardDimScreen {
                                   ),
                                 ],
                               ),
-
                               const SizedBox(height: 16),
-
-                              // Reward label
                               Text(
                                 label,
                                 style: TextStyle(
@@ -200,8 +203,6 @@ class RewardDimScreen {
                                 ),
                               ),
                               const SizedBox(height: 10),
-
-                              // Reward amount
                               Text(
                                 '+$amount',
                                 style: TextStyle(
@@ -218,8 +219,6 @@ class RewardDimScreen {
                                 ),
                               ),
                               const SizedBox(height: 14),
-
-                              // Hint text
                               Text(
                                 'Tap anywhere to collect',
                                 style: TextStyle(

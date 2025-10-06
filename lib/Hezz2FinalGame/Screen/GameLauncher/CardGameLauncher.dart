@@ -2,11 +2,19 @@
 import 'dart:math';
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:hezzstar/MainScreenIndex.dart';
+import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 import 'package:hezzstar/Hezz2FinalGame/Screen/GameScreen.dart';
 import 'package:hezzstar/Hezz2FinalGame/Models/GameCardEnums.dart';
 import 'package:hezzstar/widgets/userStatut/userStatus.dart';
 import '../../../ExperieneManager.dart';
+import '../../../Manager/HelperClass/FlyingSpending/FlyingSpendingManager.dart';
+import '../../../tools/AudioManager/AudioManager.dart';
+import '../../../tools/ConnectivityManager/ConnectivityManager.dart';
+import 'GameLauncher_Tools/AnmatedCard_GameLauncher.dart';
+import 'GameLauncher_Tools/RewardInfoDialog.dart';
+import 'GameLauncher_Tools/RewardinfoButton.dart';
 import 'GameLauncher_Tools/SearchingPopup.dart';
 
 class CardGameLauncher extends StatefulWidget {
@@ -19,6 +27,9 @@ class CardGameLauncher extends StatefulWidget {
 
 class _CardGameLauncherState extends State<CardGameLauncher>
     with TickerProviderStateMixin {
+
+  final GlobalKey startButtonKey = GlobalKey();
+
   final GlobalKey goldKey = GlobalKey(); // <-- add this
   final GlobalKey gemKey = GlobalKey(); // <-- add this
   final GlobalKey xpKey = GlobalKey(); // <-- add this
@@ -26,6 +37,8 @@ class _CardGameLauncherState extends State<CardGameLauncher>
   GameModeType gameMode = GameModeType.playToWin;
   int handSize = 5;
   int selectedBetIndex = 0;
+
+  bool _showDisconnectedOverlay = false;
 
   late PageController _pageController;
   late AnimationController _pulseController; // for pulses
@@ -63,6 +76,9 @@ class _CardGameLauncherState extends State<CardGameLauncher>
   Color primaryAccent = Colors.orangeAccent;
   Color secondaryAccent = Colors.deepOrange;
 
+
+
+
   @override
   void initState() {
     super.initState();
@@ -79,15 +95,48 @@ class _CardGameLauncherState extends State<CardGameLauncher>
       duration: const Duration(milliseconds: 700),
     )..forward();
 
+    // initialize flying spend manager
+    FlyingSpendManager().init(context);
     // initial theme
     _applyThemeForMode();
   }
 
+  late ConnectivityService _connectivityService; // <-- store reference
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    // Get the provider once and store it
+    _connectivityService = Provider.of<ConnectivityService>(context);
+    _connectivityService.addListener(_connectivityListener);
+  }
+
+  void _connectivityListener() {
+    final connectivity = Provider.of<ConnectivityService>(context, listen: false);
+
+    if (!connectivity.isConnected && !_showDisconnectedOverlay) {
+      setState(() => _showDisconnectedOverlay = true);
+
+      // Wait 1 second and navigate to MainScreen
+      Future.delayed(const Duration(seconds: 3), () {
+        if (mounted) {
+          setState(() => _showDisconnectedOverlay = false);
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (_) => const MainScreen()),
+                (route) => false,
+          );
+        }
+      });
+    }
+  }
   @override
   void dispose() {
-    _pageController.dispose();
+    // Use stored reference instead of calling Provider.of again
+    _connectivityService.removeListener(_connectivityListener);
+
     _pulseController.dispose();
     _handEntranceController.dispose();
+    _pageController.dispose();
     super.dispose();
   }
 
@@ -123,8 +172,12 @@ class _CardGameLauncherState extends State<CardGameLauncher>
             child: Column(
               children: [
                 const SizedBox(height: 6),
-                // UserStatusBar (keeps its own layout) — you already have a widget for it
-                 UserStatusBar(goldKey: goldKey, gemsKey: gemKey, xpKey: xpKey,),
+                UserStatusBar(
+                  goldKey: goldKey,
+                  gemsKey: gemKey,
+                  xpKey: xpKey,
+                  showPlusButton: false,
+                ),
                 const SizedBox(height: 28),
                 _luxTitle(),
                 Expanded(
@@ -147,7 +200,6 @@ class _CardGameLauncherState extends State<CardGameLauncher>
                               const SizedBox(height: 14),
                               _handSizeSelectorRow(),
                               const SizedBox(height: 10),
-                              // animated hand preview
                               SizedBox(
                                 height: 110,
                                 child: Center(child: _animatedHandPreview()),
@@ -165,9 +217,26 @@ class _CardGameLauncherState extends State<CardGameLauncher>
               ],
             ),
           ),
+
+          // ================= DISCONNECTED OVERLAY =================
+          if (_showDisconnectedOverlay)
+            Positioned.fill(
+              child: Container(
+                color: Colors.black.withOpacity(0.6),
+                child: Center(
+                  child: Lottie.asset(
+                    'assets/animations/AnimationSFX/HezzFinal.json', // replace with your Lottie
+                    width: 180,
+                    height: 180,
+                    fit: BoxFit.contain,
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
     );
+
   }
 
   // Animated background that changes with game mode
@@ -177,7 +246,7 @@ class _CardGameLauncherState extends State<CardGameLauncher>
       curve: Curves.easeInOut,
       decoration: BoxDecoration(
         image: const DecorationImage(
-          image: AssetImage('assets/images/Skins/BackCard_Skins/bgLauncher.jpg'),
+          image: AssetImage('assets/UI/BackgroundImage/EndScreenBackground.jpg'),
           fit: BoxFit.cover,
           repeat: ImageRepeat.noRepeat,
         ),
@@ -212,7 +281,7 @@ class _CardGameLauncherState extends State<CardGameLauncher>
   // Title at top
   Widget _luxTitle() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 6),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 350),
         padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 24),
@@ -262,6 +331,7 @@ class _CardGameLauncherState extends State<CardGameLauncher>
                 style: const TextStyle(color: Colors.white70, fontWeight: FontWeight.w600),
               ),
             ),
+
           ],
         ),
       ),
@@ -275,9 +345,11 @@ class _CardGameLauncherState extends State<CardGameLauncher>
       children: gameModes.map((mode) {
         bool isSelected = gameMode == mode["type"];
         return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 2),
           child: GestureDetector(
             onTap: () {
+              final audioManager = Provider.of<AudioManager>(context, listen: false);
+              audioManager.playEventSound("sandClick");
               setState(() {
                 gameMode = mode["type"];
                 _applyThemeForMode();
@@ -332,6 +404,8 @@ class _CardGameLauncherState extends State<CardGameLauncher>
           padding: const EdgeInsets.symmetric(horizontal: 6),
           child: GestureDetector(
             onTap: () {
+              final audioManager = Provider.of<AudioManager>(context, listen: false);
+              audioManager.playEventSound("sandClick");
               setState(() {
                 handSize = opt["size"];
                 // small entrance animation
@@ -448,66 +522,169 @@ class _CardGameLauncherState extends State<CardGameLauncher>
 
   /// ===== BET CAROUSEL =====
   Widget _luxBetCarousel() {
-    return PageView.builder(
-      controller: _pageController,
-      itemCount: bets.length,
-      onPageChanged: (index) => setState(() => selectedBetIndex = index),
-      itemBuilder: (context, index) {
-        final bet = bets[index];
-        bool isSelected = selectedBetIndex == index;
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        PageView.builder(
+          controller: _pageController,
+          itemCount: bets.length,
+          onPageChanged: (index) => setState(() => selectedBetIndex = index),
+          itemBuilder: (context, index) {
+            final bet = bets[index];
+            bool isSelected = selectedBetIndex == index;
 
-        return Center(
-          child: Transform.scale(
-            scale: isSelected ? _pulseAnimation.value : 1.0,
-            child: GestureDetector(
-              onTap: () => setState(() => selectedBetIndex = index),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 300),
-                width: isSelected ? 280 : 240,
-                height: isSelected ? 320 : 260,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(18),
-                  image: DecorationImage(
-                    image: AssetImage(isSelected
-                        ? 'assets/UI/Containers/BetContainer_Active.png'
-                        : 'assets/UI/Containers/BetContainer_Inactive.png'),
-                    fit: BoxFit.cover,
+            return Center(
+              child: Transform.scale(
+                scale: isSelected ? _pulseAnimation.value : 1.0,
+                child: GestureDetector(
+                  onTap: () {
+                    setState(() => selectedBetIndex = index);
+
+                    // Show rewards dialog only when selected
+                    if (isSelected) {
+                      showDialog(
+                        context: context,
+                        builder: (_) => RewardDialog(
+                          botCount: widget.botCount,
+                          betGold: bet['gold'],
+                          gameMode: gameMode,
+                        ),
+                      );
+                    }
+                  },
+                  child: Stack(
+                    alignment: Alignment.bottomCenter,
+                    children: [
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 300),
+                        width: isSelected ? 280 : 240,
+                        height: isSelected ? 320 : 260,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(20),
+                          image: DecorationImage(
+                            image: AssetImage(isSelected
+                                ? 'assets/UI/Containers/BetContainer_Active.png'
+                                : 'assets/UI/Containers/BetContainer_Inactive.png'),
+                            fit: BoxFit.cover,
+                          ),
+                          boxShadow: [
+                            if (isSelected)
+                              BoxShadow(
+                                color: primaryAccent.withOpacity(0.5),
+                                blurRadius: 25,
+                                spreadRadius: 2,
+                                offset: const Offset(0, 12),
+                              )
+                          ],
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              "${_formatGold(bet['gold'])} G",
+                              style: TextStyle(
+                                fontSize: isSelected ? 40 : 32,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.yellowAccent,
+                                shadows: const [
+                                  Shadow(
+                                      color: Colors.black54,
+                                      offset: Offset(2, 2),
+                                      blurRadius: 5)
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              "+${bet['xp']} XP",
+                              style: TextStyle(
+                                fontSize: isSelected ? 24 : 18,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                                shadows: const [
+                                  Shadow(
+                                      color: Colors.black38,
+                                      offset: Offset(1, 1),
+                                      blurRadius: 3)
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      // Optional "Prizes" button overlay
+                      // Positioned "Prizes" button for selected bet
+                      if (isSelected)
+                        Positioned(
+                          bottom: 20,
+                          child: RewardButton(
+                            onPressed: () {
+                              showDialog(
+                                context: context,
+                                builder: (_) => RewardDialog(
+                                  botCount: widget.botCount,
+                                  betGold: bet['gold'],
+                                  gameMode: gameMode,
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+
+                    ],
                   ),
-                  boxShadow: [
-                    if (isSelected) BoxShadow(color: primaryAccent.withOpacity(0.45), blurRadius: 20, offset: const Offset(0, 10))
-                  ],
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      "${_formatGold(bet['gold'])} G",
-                      style: TextStyle(
-                        fontSize: isSelected ? 38 : 32,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.yellowAccent,
-                        shadows: const [Shadow(color: Colors.black45, offset: Offset(2, 2), blurRadius: 4)],
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      "+${bet['xp']} XP",
-                      style: TextStyle(
-                        fontSize: isSelected ? 22 : 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white70,
-                        shadows: const [Shadow(color: Colors.black45, offset: Offset(2, 2), blurRadius: 4)],
-                      ),
-                    ),
-                  ],
                 ),
               ),
-            ),
+            );
+          },
+        ),
+
+        // LEFT ARROW
+        Positioned(
+          left: 12,
+          child: IconButton(
+            icon: Icon(Icons.arrow_back_ios_rounded,
+                color: selectedBetIndex > 0
+                    ? Colors.white.withOpacity(0.9)
+                    : Colors.white24,
+                size: 38),
+            onPressed: selectedBetIndex > 0
+                ? () {
+              final audioManager = Provider.of<AudioManager>(context, listen: false);
+              audioManager.playEventSound("sandClick");
+              _pageController.previousPage(
+                  duration: const Duration(milliseconds: 400),
+                  curve: Curves.easeInOut);
+            }
+                : null,
           ),
-        );
-      },
+        ),
+
+        // RIGHT ARROW
+        Positioned(
+          right: 12,
+          child: IconButton(
+            icon: Icon(Icons.arrow_forward_ios_rounded,
+                color: selectedBetIndex < bets.length - 1
+                    ? Colors.white.withOpacity(0.9)
+                    : Colors.white24,
+                size: 38),
+            onPressed: selectedBetIndex < bets.length - 1
+                ? () {
+              final audioManager = Provider.of<AudioManager>(context, listen: false);
+              audioManager.playEventSound("sandClick");
+              _pageController.nextPage(
+                  duration: const Duration(milliseconds: 400),
+                  curve: Curves.easeInOut);
+            }
+                : null,
+          ),
+        ),
+      ],
     );
   }
+
 
   /// ===== START BUTTON =====
   Widget _premiumStartButton(ExperienceManager expManager) {
@@ -519,12 +696,45 @@ class _CardGameLauncherState extends State<CardGameLauncher>
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
       child: Row(
         children: [
+
+          GestureDetector(
+            onTap: () {
+              final audioManager = Provider.of<AudioManager>(context, listen: false);
+              audioManager.playEventSound("sandClick");
+              Navigator.of(context).pop();},
+            child: Container(
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.black.withOpacity(0.6),
+                boxShadow: [BoxShadow(color: primaryAccent.withOpacity(0.45), blurRadius: 8, spreadRadius: 1)],
+                border: Border.all(color: Colors.yellowAccent, width: 2),
+              ),
+              padding: const EdgeInsets.all(10),
+              child: Icon(Icons.transit_enterexit, color: Colors.yellowAccent, size: 40),
+            ),
+          ),
+          const SizedBox(width: 12),
+
           Expanded(
             child: GestureDetector(
+              key: startButtonKey,
               onTap: enough
                   ? () async {
-                // Spend gold + XP, popup searching, navigate
+                final audioManager = Provider.of<AudioManager>(context, listen: false);
+                audioManager.playEventSound("sandClick");
+                // spawn flying gold
+                final RenderBox goldBox = goldKey.currentContext!.findRenderObject() as RenderBox;
+                final startOffset = goldBox.localToGlobal(Offset.zero);
                 expManager.spendGold(bet['gold']);
+
+                await FlyingSpendManager().spawnSpend(
+                  context: context,
+                  start: startOffset,
+                  endKey: startButtonKey,
+                  amount: bet['gold'],
+                );
+
+                // Spend gold + XP, popup searching, navigate
                 expManager.addExperience(bet['xp']);
                 await SearchingPopup.show(context, widget.botCount);
                 Navigator.push(
@@ -541,11 +751,54 @@ class _CardGameLauncherState extends State<CardGameLauncher>
                 );
               }
                   : () {
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Not enough Gold!')));
+                showModalBottomSheet(
+                  context: context,
+                  backgroundColor: Colors.black87,
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                  ),
+                  builder: (context) {
+                    return Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.warning_amber_rounded,
+                              color: Colors.amber, size: 50),
+                          const SizedBox(height: 10),
+                          const Text(
+                            "Not Enough Gold!",
+                            style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white),
+                          ),
+                          const SizedBox(height: 8),
+                          const Text(
+                            "Earn or buy more gold to place this bet.",
+                            style: TextStyle(color: Colors.white70),
+                          ),
+                          const SizedBox(height: 16),
+                          ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.amber,
+                              foregroundColor: Colors.black,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            onPressed: () => Navigator.pop(context),
+                            child: const Text("OK"),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                );
               },
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 350),
-                height: 76,
+                height: 60,
                 decoration: BoxDecoration(
                   gradient: LinearGradient(colors: [primaryAccent, secondaryAccent]),
                   borderRadius: BorderRadius.circular(18),
@@ -557,7 +810,7 @@ class _CardGameLauncherState extends State<CardGameLauncher>
                   children: [
                     ScaleTransition(
                       scale: _pulseAnimation,
-                      child: Icon(Icons.play_arrow_rounded, size: 30, color: Colors.white),
+                      child: Icon(enough ? Icons.play_arrow_rounded : Icons.lock_outline, size: 30, color: Colors.white),
                     ),
                     const SizedBox(width: 10),
                     Text(
@@ -575,127 +828,7 @@ class _CardGameLauncherState extends State<CardGameLauncher>
               ),
             ),
           ),
-          const SizedBox(width: 12),
-          GestureDetector(
-            onTap: () => Navigator.of(context).pop(),
-            child: Container(
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.black.withOpacity(0.6),
-                boxShadow: [BoxShadow(color: primaryAccent.withOpacity(0.45), blurRadius: 8, spreadRadius: 1)],
-                border: Border.all(color: Colors.yellowAccent, width: 2),
-              ),
-              padding: const EdgeInsets.all(10),
-              child: Icon(Icons.exit_to_app, color: Colors.yellowAccent, size: 30),
-            ),
-          ),
         ],
-      ),
-    );
-  }
-}
-
-/// A reusable animated card that flips on tap.
-/// - `backImagePath` shows the back face
-/// - `frontBuilder` builds the front face (customizable)
-class AnimatedCard extends StatefulWidget {
-  final double width;
-  final double height;
-  final String backImagePath;
-  final WidgetBuilder frontBuilder;
-  final Color accent;
-
-  const AnimatedCard({
-    super.key,
-    required this.width,
-    required this.height,
-    required this.backImagePath,
-    required this.frontBuilder,
-    required this.accent,
-  });
-
-  @override
-  State<AnimatedCard> createState() => _AnimatedCardState();
-}
-
-class _AnimatedCardState extends State<AnimatedCard> with SingleTickerProviderStateMixin {
-  late AnimationController _flipController;
-  bool _showFront = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _flipController = AnimationController(vsync: this, duration: const Duration(milliseconds: 450));
-  }
-
-  @override
-  void dispose() {
-    _flipController.dispose();
-    super.dispose();
-  }
-
-  void _flip() {
-    if (_flipController.isAnimating) return;
-    if (_showFront) {
-      _flipController.reverse();
-    } else {
-      _flipController.forward();
-    }
-    setState(() => _showFront = !_showFront);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: _flip,
-      child: AnimatedBuilder(
-        animation: _flipController,
-        builder: (context, child) {
-          final t = _flipController.value;
-          final ang = t * pi; // 0 -> pi
-          final isFrontVisible = t > 0.5;
-
-          return Transform(
-            alignment: Alignment.center,
-            transform: Matrix4.identity()
-              ..setEntry(3, 2, 0.001) // perspective
-              ..rotateY(ang),
-            child: isFrontVisible ? _buildFront() : _buildBack(),
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildBack() {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(8),
-      child: Container(
-        width: widget.width,
-        height: widget.height,
-        decoration: BoxDecoration(
-          boxShadow: [BoxShadow(color: widget.accent.withOpacity(0.25), blurRadius: 8, offset: const Offset(2, 3))],
-        ),
-        child: Image.asset(
-          widget.backImagePath,
-          fit: BoxFit.cover,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildFront() {
-    // When front-side shows, we flip the content horizontally to keep it readable (because we rotated)
-    return Transform(
-      alignment: Alignment.center,
-      transform: Matrix4.identity()..rotateY(pi), // mirror front so it reads correctly
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(8),
-        child: SizedBox(
-          width: widget.width,
-          height: widget.height,
-          child: widget.frontBuilder(context),
-        ),
       ),
     );
   }

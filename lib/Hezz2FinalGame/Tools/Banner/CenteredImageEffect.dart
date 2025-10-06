@@ -62,7 +62,7 @@ class _AnimatedImageState extends State<_AnimatedImage>
     _opacity = Tween<double>(begin: 0, end: 1).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: const Interval(0.0, 0.4, curve: Curves.easeOut),
+        curve: const Interval(0.0, 0.2, curve: Curves.easeOut),
         reverseCurve: Curves.easeIn,
       ),
     );
@@ -107,8 +107,8 @@ class _AnimatedImageState extends State<_AnimatedImage>
               boxShadow: [
                 BoxShadow(
                   color: Colors.yellow.withOpacity(0.7),
-                  blurRadius: 30,
-                  spreadRadius: 5,
+                  blurRadius: 15,
+                  spreadRadius: 3,
                 ),
               ],
             ),

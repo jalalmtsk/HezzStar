@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:hezzstar/tools/AudioManager/AudioManager.dart';
+import 'package:provider/provider.dart';
 import '../main.dart'; // to access navigatorKey and audioManager
 
 class AppLifecycleManager extends StatefulWidget {
@@ -31,6 +33,7 @@ class _AppLifecycleManagerState extends State<AppLifecycleManager> with WidgetsB
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
+    final audioManager = Provider.of<AudioManager>(context, listen: false);
 
     if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
       _resetTimer?.cancel();
@@ -46,10 +49,10 @@ class _AppLifecycleManagerState extends State<AppLifecycleManager> with WidgetsB
         _shouldRestart = false;
 
         // Stop background music before restart
-        //audioManager.stopMusic();
+        audioManager.stopMusic();
 
         // Restart app from splash, clearing history
-        //navigatorKey.currentState?.pushNamedAndRemoveUntil('Splash', (route) => false);
+        navigatorKey.currentState?.pushNamedAndRemoveUntil('Splash', (route) => false);
       }
     }
   }

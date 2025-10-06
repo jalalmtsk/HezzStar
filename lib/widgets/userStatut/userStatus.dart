@@ -1,7 +1,9 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:hezzstar/ExperieneManager.dart';
+import 'package:hezzstar/IndexPages/ShopPage/ShopPage.dart';
 import 'package:provider/provider.dart';
+
+import '../../MainScreenIndex.dart';
 
 class UserStatusBar extends StatelessWidget {
   final GlobalKey goldKey;
@@ -13,6 +15,9 @@ class UserStatusBar extends StatelessWidget {
   final bool showGold;
   final bool showGems;
 
+  // Control if "+" button is shown
+  final bool showPlusButton;
+
   const UserStatusBar({
     super.key,
     required this.goldKey,
@@ -21,6 +26,7 @@ class UserStatusBar extends StatelessWidget {
     this.showXP = true,
     this.showGold = true,
     this.showGems = true,
+    this.showPlusButton = true,
   });
 
   String formatNumber(int number) {
@@ -50,7 +56,8 @@ class UserStatusBar extends StatelessWidget {
           stats.add(_horizontalStat(
             iconPath: 'assets/UI/Icons/Gamification/LevelXpHolder_Icon.png',
             level: xpManager.level,
-            value: "${formatNumber(xpManager.currentLevelXP)} / ${formatNumber(xpManager.requiredXPForNextLevel)}",
+            value:
+            "${formatNumber(xpManager.currentLevelXP)} / ${formatNumber(xpManager.requiredXPForNextLevel)}",
             keyForIcon: xpKey,
             iconSize: iconSize,
             fontSize: fontSize,
@@ -65,6 +72,10 @@ class UserStatusBar extends StatelessWidget {
             iconSize: iconSize,
             fontSize: fontSize,
             padding: padding,
+            showPlus: showPlusButton,
+            onPlusTap: () {
+              mainScreenKey.currentState?.goToShop();
+            },
           ));
         }
         if (showGems) {
@@ -75,6 +86,10 @@ class UserStatusBar extends StatelessWidget {
             iconSize: iconSize,
             fontSize: fontSize,
             padding: padding,
+            showPlus: showPlusButton,
+            onPlusTap: () {
+              mainScreenKey.currentState?.goToShop();
+              },
           ));
         }
 
@@ -91,13 +106,18 @@ class UserStatusBar extends StatelessWidget {
     int? level,
     required String value,
     double iconSize = 70,
-    double fontSize = 22,
-    double padding = 10,
+    double fontSize = 20,
+    double padding = 8,
     GlobalKey? keyForIcon,
+    bool showPlus = false,
+    VoidCallback? onPlusTap,
   }) {
     return Expanded(
       child: LayoutBuilder(
         builder: (context, constraints) {
+          // Prevent overflow
+          final maxContainerWidth = constraints.maxWidth;
+
           return Stack(
             clipBehavior: Clip.none,
             alignment: Alignment.centerLeft,
@@ -108,23 +128,45 @@ class UserStatusBar extends StatelessWidget {
                   margin: EdgeInsets.only(left: iconSize * 0.6),
                   padding: EdgeInsets.symmetric(horizontal: padding, vertical: padding / 2),
                   decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.6),
-                    borderRadius: BorderRadius.circular(6),
+                    color: Colors.black.withValues(alpha: 0.60), // darker grey background
+                    borderRadius: BorderRadius.circular(8),
                   ),
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(maxWidth: constraints.maxWidth - iconSize),
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        value,
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: fontSize,
-                          fontWeight: FontWeight.bold,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Flexible(
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(
+                            maxWidth: maxContainerWidth - iconSize - (showPlus ? iconSize * 0.5 : 0),
+                          ),
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              value,
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: fontSize,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
                         ),
                       ),
-                    ),
+                      if (showPlus && onPlusTap != null)
+                        GestureDetector(
+                          onTap: onPlusTap,
+                          child: Container(
+                            width: iconSize * 0.4,
+                            height: iconSize * 0.4,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            alignment: Alignment.center,
+                            child: Icon(Icons.add_circle, color: Colors.orange, size: fontSize * 1.1),
+                          ),
+                        ),
+                    ],
                   ),
                 ),
               ),
@@ -135,18 +177,19 @@ class UserStatusBar extends StatelessWidget {
                   children: [
                     Image.asset(
                       iconPath,
-                      key: keyForIcon,
+                      key: keyForIcon, // ✅ stable key for Flutter tree
                       width: iconSize,
                       height: iconSize,
                       fit: BoxFit.contain,
                     ),
-                    if (level != null)
-                      CircleAvatar(
+                    Visibility(
+                      visible: level != null,
+                      child: CircleAvatar(
                         backgroundColor: Colors.black.withOpacity(0.5),
                         maxRadius: iconSize * 0.22,
                         child: FittedBox(
                           child: Text(
-                            "$level",
+                            level?.toString() ?? '',
                             style: TextStyle(
                               color: Colors.yellowAccent,
                               fontSize: fontSize * 0.77,
@@ -155,9 +198,11 @@ class UserStatusBar extends StatelessWidget {
                           ),
                         ),
                       ),
+                    ),
                   ],
                 ),
               ),
+
             ],
           );
         },

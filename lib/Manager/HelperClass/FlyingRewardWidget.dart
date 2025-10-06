@@ -25,26 +25,14 @@ class FlyingRewardWidget extends StatefulWidget {
 class _FlyingRewardWidgetState extends State<FlyingRewardWidget>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
-  late Animation<Offset> _animation;
+  Animation<Offset>? _animation; // Nullable
   late Offset _randomOffset;
-
-  Offset _getEndOffset() {
-    final context = widget.endKey.currentContext;
-    if (context == null) {
-      // Target widget is gone, return a fallback position
-      return Offset(-50, -50); // Offscreen to avoid crash
-    }
-    final renderBox = context.findRenderObject() as RenderBox;
-    final position = renderBox.localToGlobal(Offset.zero);
-    final size = renderBox.size;
-    return position + Offset(size.width / 2 - 16, size.height / 2 - 16);
-  }
-
 
   @override
   void initState() {
     super.initState();
-    final endOffset = _getEndOffset();
+
+    // Random offset for slight variation in trajectory
     final random = Random();
     _randomOffset = Offset(random.nextDouble() * 50 - 25, random.nextDouble() * 50 - 25);
 
@@ -52,6 +40,30 @@ class _FlyingRewardWidgetState extends State<FlyingRewardWidget>
       vsync: this,
       duration: Duration(milliseconds: 600 + random.nextInt(300)),
     );
+
+    // Initialize animation after first frame
+    WidgetsBinding.instance.addPostFrameCallback((_) => _initAnimation());
+  }
+
+  void _initAnimation() {
+    if (!mounted) return;
+
+    final context = widget.endKey.currentContext;
+    if (context == null) {
+      // Retry in next frame if not ready
+      WidgetsBinding.instance.addPostFrameCallback((_) => _initAnimation());
+      return;
+    }
+
+    final renderBox = context.findRenderObject() as RenderBox?;
+    if (renderBox == null || !renderBox.attached) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _initAnimation());
+      return;
+    }
+
+    final position = renderBox.localToGlobal(Offset.zero);
+    final size = renderBox.size;
+    final endOffset = position + Offset(size.width / 2 - 16, size.height / 2 - 16);
 
     _animation = Tween<Offset>(
       begin: widget.startOffset + _randomOffset,
@@ -63,6 +75,9 @@ class _FlyingRewardWidgetState extends State<FlyingRewardWidget>
     });
 
     _controller.forward();
+
+    // Rebuild now that animation is ready
+    setState(() {});
   }
 
   Color _getTextColor() {
@@ -89,23 +104,24 @@ class _FlyingRewardWidgetState extends State<FlyingRewardWidget>
 
   @override
   void dispose() {
-    // Ensure completion if disposed mid-animation
-    if (_controller.isAnimating) {
-      widget.onCompleted();
-    }
+    if (_controller.isAnimating) widget.onCompleted();
     _controller.dispose();
     super.dispose();
   }
 
-
   @override
   Widget build(BuildContext context) {
+    if (_animation == null) {
+      // Animation not ready yet
+      return const SizedBox.shrink();
+    }
+
     return AnimatedBuilder(
-      animation: _animation,
+      animation: _animation!,
       builder: (context, child) {
         return Positioned(
-          left: _animation.value.dx,
-          top: _animation.value.dy,
+          left: _animation!.value.dx,
+          top: _animation!.value.dy,
           child: Stack(
             alignment: Alignment.center,
             children: [
@@ -117,10 +133,7 @@ class _FlyingRewardWidgetState extends State<FlyingRewardWidget>
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
-                    colors: [
-                      _getTextColor().withOpacity(0.8),
-                      Colors.transparent
-                    ],
+                    colors: [_getTextColor().withOpacity(0.8), Colors.transparent],
                   ),
                   borderRadius: BorderRadius.circular(2),
                 ),
@@ -134,3 +147,4 @@ class _FlyingRewardWidgetState extends State<FlyingRewardWidget>
     );
   }
 }
+

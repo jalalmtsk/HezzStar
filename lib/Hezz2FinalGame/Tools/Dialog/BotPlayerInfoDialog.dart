@@ -2,128 +2,54 @@ import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'dart:math';
 
+import '../../../ExperieneManager.dart';
+import '../../Bot/BotAvatars.dart';
 import '../../Bot/BotInfoModel.dart';
 import '../../Bot/BotNames.dart';
+import '../../Bot/BotStack.dart';
 
 class BotDetailsPopup {
   static final Map<int, BotInfo> botInfos = {};
 
+  // Make emojiCosts static
+  static const Map<String, int> emojiCosts = {
+    "🎁": 50,
+    "💎": 100,
+    "⭐": 75,
+    "❤️": 60,
+    "🔥": 120,
+  };
+
   static BotInfo getBotInfo(int bot) {
-    return botInfos.putIfAbsent(bot, () {
-      final random = Random();
-      const String defaultAvatar = "assets/images/Skins/AvatarSkins/DefaultUser.png";
+    final random = Random();
+    const String defaultAvatar = "assets/images/Skins/AvatarSkins/DefaultUser.png";
 
-      List<String> botAvatars = [
-        "assets/images/Skins/AvatarSkins/DefaultUser.png",
-        'assets/images/Skins/AvatarSkins/CardMaster/CardMaster1.png',
-        'assets/images/Skins/AvatarSkins/CardMaster/CardMaster2.png',
-        'assets/images/Skins/AvatarSkins/CardMaster/CardMaster3.png',
-        'assets/images/Skins/AvatarSkins/CardMaster/CardMaster4.png',
-        'assets/images/Skins/AvatarSkins/CardMaster/CardMaster5.png',
-        'assets/images/Skins/AvatarSkins/CardMaster/CardMaster6.png',
-        'assets/images/Skins/AvatarSkins/CardMaster/CardMaster7.png',
-        'assets/images/Skins/AvatarSkins/CardMaster/CardMaster8.png',
-        'assets/images/Skins/AvatarSkins/CardMaster/CardMaster9.png',
-        'assets/images/Skins/AvatarSkins/CardMaster/CardMaster10.png',
-        'assets/images/Skins/AvatarSkins/CardMaster/CardMaster11.png',
-        'assets/images/Skins/AvatarSkins/CardMaster/CardMaster12.png',
-        'assets/images/Skins/AvatarSkins/CardMaster/CardMaster13.png',
-        'assets/images/Skins/AvatarSkins/CardMaster/CardMaster14.png',
-        'assets/images/Skins/AvatarSkins/CardMaster/CardMaster15.png',
-        'assets/images/Skins/AvatarSkins/CardMaster/CardMaster16.png',
-        'assets/images/Skins/AvatarSkins/CardMaster/CardMaster17.png',
-        'assets/images/Skins/AvatarSkins/CardMaster/CardMaster18.png',
-        'assets/images/Skins/AvatarSkins/CardMaster/CardMaster19.png',
-        'assets/images/Skins/AvatarSkins/CardMaster/CardMaster20.png',
-        'assets/images/Skins/AvatarSkins/CardMaster/CardMaster21.png',
-        'assets/images/Skins/AvatarSkins/CardMaster/CardMaster22.png',
-        'assets/images/Skins/AvatarSkins/CardMaster/CardMaster23.png',
-        'assets/images/Skins/AvatarSkins/CardMaster/CardMaster24.png',
-        'assets/images/Skins/AvatarSkins/CardMaster/CardMaster25.png',
-        'assets/images/Skins/AvatarSkins/CardMaster/CardMaster26.png',
-        'assets/images/Skins/AvatarSkins/CardMaster/CardMaster27.png',
+    String avatarPath = botAvatars.isNotEmpty
+        ? botAvatars[random.nextInt(botAvatars.length)]
+        : defaultAvatar;
 
-        'assets/images/Skins/AvatarSkins/Elements/Elements1.png',
-        'assets/images/Skins/AvatarSkins/Elements/Elements2.png',
-        'assets/images/Skins/AvatarSkins/Elements/Elements3.png',
-        'assets/images/Skins/AvatarSkins/Elements/Elements4.png',
-        'assets/images/Skins/AvatarSkins/Elements/Elements5.png',
-        'assets/images/Skins/AvatarSkins/Elements/Elements6.png',
-        'assets/images/Skins/AvatarSkins/Elements/Elements7.png',
-        'assets/images/Skins/AvatarSkins/Elements/Elements8.png',
-        'assets/images/Skins/AvatarSkins/Elements/Elements9.png',
-        'assets/images/Skins/AvatarSkins/Elements/Elements10.png',
-        'assets/images/Skins/AvatarSkins/Elements/Elements11.png',
-        'assets/images/Skins/AvatarSkins/Elements/Elements12.png',
-        'assets/images/Skins/AvatarSkins/Elements/Elements13.png',
-        'assets/images/Skins/AvatarSkins/Elements/Elements14.png',
-        'assets/images/Skins/AvatarSkins/Elements/Elements15.png',
-        'assets/images/Skins/AvatarSkins/Elements/Elements16.png',
-        'assets/images/Skins/AvatarSkins/Elements/Elements17.png',
-        'assets/images/Skins/AvatarSkins/Elements/Elements18.png',
-        'assets/images/Skins/AvatarSkins/Elements/Elements19.png',
-        'assets/images/Skins/AvatarSkins/Elements/Elements20.png',
-        'assets/images/Skins/AvatarSkins/Elements/Elements21.png',
-        'assets/images/Skins/AvatarSkins/Elements/Elements22.png',
-        'assets/images/Skins/AvatarSkins/Elements/Elements23.png',
-        'assets/images/Skins/AvatarSkins/Elements/Elements24.png',
-        'assets/images/Skins/AvatarSkins/Elements/Elements25.png',
-        'assets/images/Skins/AvatarSkins/Elements/Elements26.png',
-        'assets/images/Skins/AvatarSkins/Elements/Elements27.png',
-        'assets/images/Skins/AvatarSkins/Elements/Elements28.png',
-        'assets/images/Skins/AvatarSkins/Elements/Elements29.png',
-        'assets/images/Skins/AvatarSkins/Elements/Elements30.png',
-        'assets/images/Skins/AvatarSkins/Elements/Elements31.png',
-        'assets/images/Skins/AvatarSkins/Elements/Elements32.png',
-        'assets/images/Skins/AvatarSkins/Elements/Elements33.png',
-        'assets/images/Skins/AvatarSkins/Elements/Elements34.png',
-        'assets/images/Skins/AvatarSkins/Elements/Elements35.png',
+    String botName = botNames.isNotEmpty
+        ? botNames[random.nextInt(botNames.length)]
+        : 'User $bot';
 
-        'assets/images/Skins/AvatarSkins/Warriors/Warrior1.png',
-        'assets/images/Skins/AvatarSkins/Warriors/Warrior2.png',
-        'assets/images/Skins/AvatarSkins/Warriors/Warrior3.png',
-        'assets/images/Skins/AvatarSkins/Warriors/Warrior4.png',
-        'assets/images/Skins/AvatarSkins/Warriors/Warrior5.png',
-        'assets/images/Skins/AvatarSkins/Warriors/Warrior6.png',
-        'assets/images/Skins/AvatarSkins/Warriors/Warrior7.png',
-        'assets/images/Skins/AvatarSkins/Warriors/Warrior8.png',
-        'assets/images/Skins/AvatarSkins/Warriors/Warrior9.png',
-        'assets/images/Skins/AvatarSkins/Warriors/Warrior10.png',
-        'assets/images/Skins/AvatarSkins/Warriors/Warrior11.png',
-        'assets/images/Skins/AvatarSkins/Warriors/Warrior12.png',
-        'assets/images/Skins/AvatarSkins/Warriors/Warrior13.png',
-        'assets/images/Skins/AvatarSkins/Warriors/Warrior14.png',
-
-
-
-      ];
-
-      String avatarPath = botAvatars.isNotEmpty
-          ? botAvatars[random.nextInt(botAvatars.length)]
-          : defaultAvatar;
-
-      String botName = botNames.isNotEmpty
-          ? botNames[random.nextInt(botNames.length)]
-          : 'User $bot';
-
-      return BotInfo(
-        name: botName,
-        avatarPath: avatarPath,
-        level: random.nextInt(50) + 1,
-        gold: random.nextInt(10000),
-        totalEarnings: random.nextInt(50000),
-        wins1v1: random.nextInt(100),
-        wins2: random.nextInt(50),
-        wins3: random.nextInt(30),
-        wins4: random.nextInt(20),
-        wins5: random.nextInt(10),
-      );
-    });
+    return botInfos.putIfAbsent(bot, () => BotInfo(
+      name: botName,
+      avatarPath: avatarPath,
+      level: random.nextInt(50) + 1,
+      gold: random.nextInt(10000),
+      totalEarnings: random.nextInt(50000),
+      wins1v1: random.nextInt(100),
+      wins2: random.nextInt(50),
+      wins3: random.nextInt(30),
+      wins4: random.nextInt(20),
+      wins5: random.nextInt(10),
+    ));
   }
 
   static void show(
       BuildContext context,
       int bot,
+      ExperienceManager expManager,
       List<List<dynamic>> hands,
       List<bool> eliminatedPlayers,
       List<int> qualifiedPlayers,
@@ -220,35 +146,83 @@ class BotDetailsPopup {
             Positioned(
               top: 10,
               right: 10,
-              child: IconButton(
-                icon: Icon(Icons.card_giftcard, color: Colors.amberAccent, size: width * 0.08),
-                onPressed: () {
-                  Navigator.pop(context); // Close current bot dialog
+              child: Row(
+                children: [
+                  IconButton(
+                    icon: Icon(Icons.card_giftcard, color: Colors.amberAccent, size: width * 0.08),
+                    onPressed: () {
+                      Navigator.pop(context); // Close current bot dialog
 
-                  // Show emoji selection dialog
-                  showDialog(
-                    context: context,
-                    builder: (_) => AlertDialog(
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20)),
-                      backgroundColor: Colors.black87,
-                      title: Text(
-                        "Choose a Gift",
-                        style: TextStyle(color: Colors.amberAccent),
-                      ),
-                      content: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: [
-                          _emojiButton(context, "🎁"),
-                          _emojiButton(context, "💎"),
-                          _emojiButton(context, "⭐"),
-                          _emojiButton(context, "❤️"),
-                          _emojiButton(context, "🔥"),
-                        ],
-                      ),
-                    ),
-                  );
-                },
+                      // Show emoji selection dialog
+                      showDialog(
+                        context: context,
+                        barrierDismissible: true,
+                        builder: (_) {
+                          final media = MediaQuery.of(context).size;
+                          final dialogWidth = media.width * 0.8;
+                          final dialogHeight = media.height * 0.25;
+
+                          return Dialog(
+                            backgroundColor: Colors.transparent,
+                            insetPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 40),
+                            child: Center(
+                              child: Container(
+                                width: dialogWidth,
+                                height: dialogHeight,
+                                padding: EdgeInsets.all(4),
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [Colors.grey.shade900, Colors.black87],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                  ),
+                                  borderRadius: BorderRadius.circular(25),
+                                  border: Border.all(color: Colors.amberAccent, width: 2),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.amberAccent.withOpacity(0.5),
+                                      blurRadius: 20,
+                                      spreadRadius: 2,
+                                    ),
+                                  ],
+                                ),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      "Choose a Gift",
+                                      style: TextStyle(
+                                        color: Colors.amberAccent,
+                                        fontSize: dialogWidth * 0.07,
+                                        fontWeight: FontWeight.bold,
+                                        shadows: [
+                                          Shadow(color: Colors.black, blurRadius: 4),
+                                        ],
+                                      ),
+                                    ),
+                                    SizedBox(height: 16),
+                                    Expanded(
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                        children: [
+                                          _emojiCard(context, "🎁", expManager),
+                                          _emojiCard(context, "💎", expManager),
+                                          _emojiCard(context, "⭐", expManager),
+                                          _emojiCard(context, "❤️", expManager),
+                                          _emojiCard(context, "🔥", expManager),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  ),
+                ],
               ),
             ),
           ],
@@ -257,16 +231,57 @@ class BotDetailsPopup {
     );
   }
 
-  static Widget _emojiButton(BuildContext context, String emoji) {
+ static Widget _emojiCard(BuildContext context, String emoji, ExperienceManager expManager) {
+    final int cost = BotDetailsPopup.emojiCosts[emoji] ?? 50;
+
     return GestureDetector(
-      onTap: () {
-        Navigator.pop(context); // Close emoji dialog
-        print("Selected emoji: $emoji"); // Handle selection
-        // Here you can trigger showing the emoji on the bot's avatar
+      onTap: () async {
+        bool success = await expManager.spendGold(cost);
+        if (success) {
+          Navigator.pop(context);
+          print("Sent $emoji for $cost gold");
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Not enough gold for $emoji!")),
+          );
+        }
       },
-      child: Text(
-        emoji,
-        style: TextStyle(fontSize: 32),
+      child: Container(
+        width: 60,
+        height: 90,
+        padding: EdgeInsets.all(4),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.black54, Colors.grey.shade800],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.amberAccent, width: 1.5),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.amberAccent.withOpacity(0.5),
+              blurRadius: 8,
+              spreadRadius: 1,
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(emoji, style: TextStyle(fontSize: 32)),
+            SizedBox(height: 6),
+            Text(
+              "$cost 💰",
+              style: TextStyle(
+                color: Colors.amberAccent,
+                fontWeight: FontWeight.bold,
+                fontSize: 12,
+                shadows: [Shadow(color: Colors.black, blurRadius: 2)],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

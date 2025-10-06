@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:hezzstar/widgets/SplashScreen/SplashScreen.dart';
 import 'package:provider/provider.dart';
 
 import 'package:hezzstar/tools/AudioManager/AudioManager.dart';
@@ -51,7 +52,7 @@ class MyApp extends StatelessWidget {
         return MaterialApp(
           debugShowCheckedModeBanner: false,
           navigatorKey: navigatorKey,
-          home: const MainScreen(),
+          home: const SplashPage(),
           locale: currentLocale,
 
           // ✅ Add localization support

@@ -1,6 +1,12 @@
+import 'dart:async';
+import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
 import 'package:marquee/marquee.dart';
 import '../Tools/Dialog/BotPlayerInfoDialog.dart';
+
+
+bool isLottieActivated = true; // default ON
 
 
 class PlayerCard extends StatefulWidget {
@@ -31,18 +37,55 @@ class PlayerCard extends StatefulWidget {
   State<PlayerCard> createState() => _PlayerCardState();
 }
 
-class _PlayerCardState extends State<PlayerCard> {
-  String? emoji; // current emoji to display on top of avatar
+class _PlayerCardState extends State<PlayerCard> with TickerProviderStateMixin {
+  String? reactionAnimation;
+  Timer? _reactionTimer;
 
-  void showEmoji(String selectedEmoji) {
-    setState(() => emoji = selectedEmoji);
+  // Your Lottie JSON files
+  final List<String> _reactions = [
+    'assets/animations/MessageAnimations/AngryEmoji.json',
+    'assets/animations/MessageAnimations/CoolEmoji.json',
+    'assets/animations/MessageAnimations/LaughingCat.json',
+    'assets/animations/MessageAnimations/MoneyEmoji.json',
+    'assets/animations/MessageAnimations/StreamOfHearts.json',
+  ];
 
-    // Remove emoji after 5 seconds
-    Future.delayed(const Duration(seconds: 5), () {
-      if (mounted) {
-        setState(() => emoji = null);
-      }
+  @override
+  void initState() {
+    super.initState();
+    _startRandomReactions();
+  }
+
+  void _startRandomReactions() {
+    final random = Random();
+
+    // Start the first reaction after a random delay (1-5 seconds)
+    Future.delayed(Duration(milliseconds: 1000 + random.nextInt(4000)), _playRandomReaction);
+  }
+
+  void _playRandomReaction() {
+    if (!mounted) return;
+
+    final random = Random();
+    setState(() {
+      reactionAnimation = _reactions[random.nextInt(_reactions.length)];
     });
+
+    // Animation duration random between 1.5s - 3s
+    int animDuration = 1500 + random.nextInt(1500);
+    Future.delayed(Duration(milliseconds: animDuration), () {
+      if (!mounted) return;
+      setState(() => reactionAnimation = null);
+
+      // Schedule next reaction with random interval (5-20 seconds)
+      Future.delayed(Duration(milliseconds: 5000 + random.nextInt(20000)), _playRandomReaction);
+    });
+  }
+
+  @override
+  void dispose() {
+    _reactionTimer?.cancel();
+    super.dispose();
   }
 
   @override
@@ -95,17 +138,31 @@ class _PlayerCardState extends State<PlayerCard> {
             ],
           ),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const SizedBox(height: 6),
-              _PlayerName(name: info.name, maxWidth: 60),
-              const SizedBox(height: 6),
-              _CardPreview(hand: widget.hand, vertical: widget.vertical, scale: 1.3),
-              const SizedBox(height: 4),
-              _CardCount(count: widget.cardCount),
-            ],
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const SizedBox(height: 6),
+        _PlayerName(name: info.name, maxWidth: 60),
+        const SizedBox(height: 6),
+
+        // Show cards only if not eliminated
+        if (!widget.isEliminated)
+          _CardPreview(
+            hand: widget.hand,
+            vertical: widget.vertical,
+            scale: 1.3,
+            isEliminated: widget.isEliminated,
+            isQualified: widget.isQualified,
           ),
-        ),
+
+        const SizedBox(height: 4),
+
+        // Show card count only if not eliminated
+        if (!widget.isEliminated)
+          _CardCount(count: widget.cardCount),
+      ],
+    ),
+    ),
+
         // Avatar outside container
         Positioned(
           top: -22,
@@ -139,17 +196,26 @@ class _PlayerCardState extends State<PlayerCard> {
                 backgroundImage: AssetImage(info.avatarPath),
               ),
 
-              // Emoji on top of avatar
-              if (emoji != null)
-                Positioned(
-                  top: -16,
-                  child: Text(
-                    emoji!,
-                    style: const TextStyle(fontSize: 22),
-                  ),
+              // Random reaction animation
+              if(isLottieActivated)
+              Positioned(
+                top: 20,
+                child: SizedBox(
+                  width: 58,
+                  height: 58,
+                  child: reactionAnimation != null
+                      ? Lottie.asset(
+                    reactionAnimation!,
+                    key: ValueKey(reactionAnimation),
+                    repeat: false,
+                    fit: BoxFit.contain,
+                  )
+                      : const SizedBox.shrink(), // keep structure stable
                 ),
+              ),
 
-              // Status badge on top of avatar
+
+              // Status badge
               if (statusText.isNotEmpty)
                 Positioned(
                   top: -14,
@@ -184,12 +250,22 @@ class _PlayerCardState extends State<PlayerCard> {
   }
 }
 
+// ------------------ Other Widgets ---------------------
+
 class _CardPreview extends StatelessWidget {
   final List<dynamic> hand;
   final bool vertical;
   final double scale;
+  final bool isEliminated;
+  final bool isQualified;
 
-  const _CardPreview({required this.hand, required this.vertical, this.scale = 1.0});
+  const _CardPreview({
+    required this.hand,
+    required this.vertical,
+    this.scale = 1.0,
+    this.isEliminated = false,
+    this.isQualified = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -205,25 +281,61 @@ class _CardPreview extends StatelessWidget {
             Positioned(
               left: i * 6,
               top: i * 3,
-              child: Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(6),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.3),
-                      blurRadius: 2,
-                      offset: const Offset(1, 1),
-                    )
-                  ],
-                ),
-                child: Image.asset(
-                  hand.isNotEmpty
-                      ? hand.first.backAsset(context)
-                      : 'assets/images/cards/backCard.png',
-                  width: cardWidth,
-                  height: cardHeight,
-                  fit: BoxFit.cover,
-                ),
+              child: Stack(
+                children: [
+                  Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(6),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.3),
+                          blurRadius: 2,
+                          offset: const Offset(1, 1),
+                        )
+                      ],
+                    ),
+                    child: Image.asset(
+                      hand.isNotEmpty
+                          ? hand.first.backAsset(context)
+                          : 'assets/images/cards/backCard.png',
+                      width: cardWidth,
+                      height: cardHeight,
+                      fit: BoxFit.cover,
+                      color: (isEliminated || isQualified)
+                          ? Colors.grey.withOpacity(0.6)
+                          : null,
+                      colorBlendMode: BlendMode.saturation,
+                    ),
+                  ),
+                  if (isEliminated)
+                    Positioned.fill(
+                      child: Container(
+                        alignment: Alignment.center,
+                        color: Colors.red.withOpacity(0.4),
+                        child: const Text(
+                          "ELIMINATED",
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ),
+                  if (isQualified)
+                    Positioned.fill(
+                      child: Container(
+                        alignment: Alignment.center,
+                        color: Colors.blue.withOpacity(0.4),
+                        child: const Text(
+                          "QUALIFIED",
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ),
+                ],
               ),
             ),
         ],
@@ -231,6 +343,7 @@ class _CardPreview extends StatelessWidget {
     );
   }
 }
+
 
 class _CardCount extends StatelessWidget {
   final int count;

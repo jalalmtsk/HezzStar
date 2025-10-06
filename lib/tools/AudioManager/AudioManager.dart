@@ -31,7 +31,7 @@ class AudioManager extends ChangeNotifier with WidgetsBindingObserver{
     // ------------ ButtonSounds -------------
 
     'clickButton': 'assets/audios/UI_Audio/ButtonSounds/ClickButton_SB.mp3',
-    'clickButton2': 'assets/audios/UI_Audio/ButtonSounds/ClickButton2_SB.mp3',
+    'sandClick': 'assets/audios/UI/Buttons/sandClickButton.mp3',
     'cancelButton': 'assets/audios/UI_Audio/ButtonSounds/CancelButton_SB.mp3',
     'PopButton': 'assets/audios/UI_Audio/ButtonSounds/PopButton_SB.mp3',
     'PopClick' : 'assets/audios/UI_Audio/ButtonSounds/PopClick_SB.mp3',
@@ -182,7 +182,7 @@ class AudioManager extends ChangeNotifier with WidgetsBindingObserver{
       return;
     }
 
-    if (key == 'clickButton' || key == 'cancelButton' || key == 'toggleButton' || key == 'clickButton2' || key == 'PopButton' || key == 'PopClick' ) {
+    if (key == 'clickButton' || key == 'cancelButton' || key == 'toggleButton' || key == 'clickNav' || key == 'PopButton' || key == 'PopClick' ) {
       await playButtonSound(path);
     } else {
       await playSfx(path);

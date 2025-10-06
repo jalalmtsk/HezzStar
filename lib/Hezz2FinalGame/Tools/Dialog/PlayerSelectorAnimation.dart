@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'dart:math';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:lottie/lottie.dart';
 import '../../../ExperieneManager.dart';
 import 'BotPlayerInfoDialog.dart';
 
@@ -9,7 +11,7 @@ class PlayerSelector {
   final BuildContext context;
   final int botCount;
   final List<bool> eliminatedPlayers;
-  final Function(int) onPlayerSelected; // callback to set current player
+  final Function(int) onPlayerSelected;
   bool isAnimating = false;
 
   PlayerSelector({
@@ -24,8 +26,6 @@ class PlayerSelector {
     if (overlay == null) return;
 
     isAnimating = true;
-
-    // Active players include you (0) and bots (1..botCount)
     final activePlayers = List.generate(botCount + 1, (i) => i)
         .where((i) => !eliminatedPlayers[i])
         .toList();
@@ -36,8 +36,9 @@ class PlayerSelector {
     int currentIndex = 0;
     final random = Random();
 
+    // 🚀 Cycling overlay for suspense
     Timer? timer;
-    timer = Timer.periodic(const Duration(milliseconds: 150), (t) {
+    timer = Timer.periodic(const Duration(milliseconds: 120), (_) {
       if (entry != null) entry!.remove();
 
       final p = activePlayers[currentIndex % activePlayers.length];
@@ -47,22 +48,20 @@ class PlayerSelector {
       final avatar = isYou ? xpManager.selectedAvatar : BotDetailsPopup.getBotInfo(p).avatarPath;
 
       entry = OverlayEntry(
-        builder: (_) => _buildOverlay(name, avatar!, Colors.deepPurple.withOpacity(0.9)),
+        builder: (_) => _buildAnimatedOverlay(name, avatar!),
       );
 
       overlay.insert(entry!);
       currentIndex++;
     });
 
-    // Shuffle for random duration
     await Future.delayed(Duration(milliseconds: 1500 + random.nextInt(1500)));
-
-    // Stop timer and pick final player
     timer.cancel();
-    if (entry != null) entry?.remove();
+    if (entry != null) entry!.remove();
 
+    // 🎯 Final selected player
     final p = activePlayers[random.nextInt(activePlayers.length)];
-    onPlayerSelected(p); // notify parent
+    onPlayerSelected(p);
 
     final xpManager = Provider.of<ExperienceManager>(context, listen: false);
     final isYou = p == 0;
@@ -70,48 +69,143 @@ class PlayerSelector {
     final finalAvatar = isYou ? xpManager.selectedAvatar : BotDetailsPopup.getBotInfo(p).avatarPath;
 
     entry = OverlayEntry(
-      builder: (_) => _buildOverlay(finalName, finalAvatar!, Colors.greenAccent.withOpacity(0.9)),
+      builder: (_) => _buildProFinalReveal(finalName, finalAvatar!),
     );
 
     overlay.insert(entry!);
-    await Future.delayed(const Duration(milliseconds: 1000));
+    await Future.delayed(const Duration(milliseconds: 2200));
     entry?.remove();
     isAnimating = false;
   }
 
-  Widget _buildOverlay(String name, String avatarPath, Color color) {
-    final size = MediaQuery.of(context).size;
-    return Positioned(
-      top: size.height * 0.4,
-      left: size.width * 0.3,
-      right: size.width * 0.3,
-      child: Material(
-        color: Colors.transparent,
-        child: Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: color,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                name,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
+  // Minimalist cycling overlay
+  Widget _buildAnimatedOverlay(String name, String avatarPath) {
+    return Positioned.fill(
+      child: Container(
+        color: Colors.black.withOpacity(0.4),
+        child: Center(
+          child: AnimatedScale(
+            scale: 1.05,
+            duration: const Duration(milliseconds: 120),
+            curve: Curves.easeInOut,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircleAvatar(
+                  radius: 35,
+                  backgroundImage: AssetImage(avatarPath),
+                  backgroundColor: Colors.grey[900],
                 ),
-              ),
-              const SizedBox(height: 8),
-              CircleAvatar(
-                radius: 30,
-                backgroundImage: AssetImage(avatarPath),
-              ),
-            ],
+                const SizedBox(height: 8),
+                Text(
+                  name,
+                  style: const TextStyle(
+                    color: Colors.white70,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
+      ),
+    );
+  }
+
+  // Pro-level final reveal
+  Widget _buildProFinalReveal(String name, String avatarPath) {
+    final size = MediaQuery.of(context).size;
+
+    return Positioned.fill(
+      child: Stack(
+        children: [
+          // 🌫 Background blur with dark overlay
+          BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+            child: Container(
+              color: Colors.black.withOpacity(0.7),
+            ),
+          ),
+
+          // 🎉 Confetti + shine particles
+          Positioned.fill(
+            child: Stack(
+              children: [
+                Lottie.asset(
+                  "assets/animations/AnimationSFX/Boom.json",
+                  width: size.width * 0.8,
+                  fit: BoxFit.cover,
+                  repeat: false,
+                ),
+              ],
+            ),
+          ),
+
+          // Center avatar + neon rings
+          Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    // 🔵 Floating neon rings
+                    for (int i = 0; i < 3; i++)
+                      AnimatedContainer(
+                        duration: Duration(milliseconds: 800 + i * 200),
+                        width: 130.0 + i * 15,
+                        height: 130.0 + i * 15,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: Colors.amberAccent.withOpacity(0.3 + i * 0.2),
+                            width: 3,
+                          ),
+                        ),
+                      ),
+
+                    // 🟡 Avatar bounce
+                    AnimatedScale(
+                      scale: 1.25,
+                      duration: const Duration(milliseconds: 700),
+                      curve: Curves.elasticOut,
+                      child: CircleAvatar(
+                        radius: 60,
+                        backgroundImage: AssetImage(avatarPath),
+                        backgroundColor: Colors.grey[900],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+
+                // ✨ Glowing name
+                Text(
+                  "$name Selected!",
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1.2,
+                    color: Colors.amberAccent,
+                    shadows: [
+                      Shadow(
+                        color: Colors.amberAccent.withOpacity(0.7),
+                        blurRadius: 12,
+                        offset: const Offset(0, 0),
+                      ),
+                      Shadow(
+                        color: Colors.deepOrange.withOpacity(0.5),
+                        blurRadius: 20,
+                        offset: const Offset(0, 0),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -1,9 +1,14 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:hezzstar/MainScreenIndex.dart';
+import 'package:hezzstar/widgets/userStatut/userStatus.dart';
 import 'package:provider/provider.dart';
 import '../../ExperieneManager.dart';
 import 'package:hezzstar/Hezz2FinalGame/Models/Cards.dart';
 import 'package:hezzstar/Hezz2FinalGame/Models/GameCardEnums.dart';
+
+import '../../Manager/HelperClass/FlyingRewardManager.dart';
+import '../../Manager/HelperClass/RewardDimScreen.dart';
 
 class EndGameScreen extends StatefulWidget {
   final List<List<PlayingCard>> hands;
@@ -31,6 +36,12 @@ class EndGameScreen extends StatefulWidget {
 
 class _EndGameScreenLuxState extends State<EndGameScreen>
     with TickerProviderStateMixin {
+
+  final GlobalKey goldKeyEnd = GlobalKey();
+  final GlobalKey gemsKeyEnd = GlobalKey();
+  final GlobalKey xpKeyEnd = GlobalKey();
+
+
   bool _rewardGiven = false;
   late AnimationController _fadeController;
   late Animation<double> _fadeAnim;
@@ -78,16 +89,31 @@ class _EndGameScreenLuxState extends State<EndGameScreen>
     if (widget.gameModeType == GameModeType.playToWin) {
       reward = widget.winnerIndex == 0 ? totalPool : 0;
     } else {
-      List<double> percentages = [0.5, 0.25, 0.15, 0.10];
-      reward = (totalPool *
-          (widget.winnerIndex < percentages.length
-              ? percentages[widget.winnerIndex]
-              : 0))
-          .toInt();
+      // Exponential-like reward weights for elimination mode
+      // Example: for n players, weights = [2^(n-1), 2^(n-2), ..., 1]
+      final int n = widget.hands.length;
+      List<int> weights = List.generate(n, (i) => 1 << (n - i - 1)); // 2^(n-i-1)
+      int sumWeights = weights.reduce((a, b) => a + b);
+
+      reward = (totalPool * weights[widget.winnerIndex] / sumWeights).toInt();
     }
 
-    if (reward > 0) xpManager.addGold(reward);
+    if (reward > 0) {
+      RewardDimScreen.show(
+        context,
+        start: const Offset(200, 400),
+        endKey: goldKeyEnd,
+        amount: reward,
+        type: RewardType.gold,
+      );
+      // ✅ Track win if user (index 0) won
+      if (widget.winnerIndex == 0) {
+        xpManager.addWin(widget.hands.length);
+      }
+    }
   }
+
+
 
   @override
   void dispose() {
@@ -97,15 +123,22 @@ class _EndGameScreenLuxState extends State<EndGameScreen>
 
   @override
   Widget build(BuildContext context) {
+    Map<int, int> prizes = {};
     final int playerCount = widget.hands.length;
     final int totalPool = playerCount * widget.betAmount;
 
-    Map<int, int> prizes = {};
-    List<double> percentages = [0.5, 0.25, 0.15, 0.10];
-    for (int i = 0; i < playerCount; i++) {
-      prizes[i] = widget.gameModeType == GameModeType.playToWin
-          ? (i == widget.winnerIndex ? totalPool : 0)
-          : (totalPool * (i < percentages.length ? percentages[i] : 0)).toInt();
+    if (widget.gameModeType == GameModeType.playToWin) {
+      for (int i = 0; i < playerCount; i++) {
+        prizes[i] = i == widget.winnerIndex ? totalPool : 0;
+      }
+    } else {
+      // Exponential-like weights for elimination mode
+      List<int> weights = List.generate(playerCount, (i) => 1 << (playerCount - i - 1));
+      int sumWeights = weights.reduce((a, b) => a + b);
+
+      for (int i = 0; i < playerCount; i++) {
+        prizes[i] = (totalPool * weights[i] / sumWeights).toInt();
+      }
     }
 
     return Scaffold(
@@ -117,9 +150,12 @@ class _EndGameScreenLuxState extends State<EndGameScreen>
               opacity: _fadeAnim,
               child: Column(
                 children: [
-                  const SizedBox(height: 8),
+                  UserStatusBar(goldKey: goldKeyEnd, gemsKey: gemsKeyEnd, xpKey: xpKeyEnd, showPlusButton: false,),
+
+                  const SizedBox(height: 40),
                   _luxTitle(),
                   const SizedBox(height: 24),
+
                   Expanded(
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -150,7 +186,7 @@ class _EndGameScreenLuxState extends State<EndGameScreen>
       duration: const Duration(milliseconds: 600),
       decoration: BoxDecoration(
         image: const DecorationImage(
-          image: AssetImage('assets/images/Skins/BackCard_Skins/bgLauncher.jpg'),
+          image: AssetImage('assets/UI/BackgroundImage/EndScreenBackground.jpg'),
           fit: BoxFit.cover,
         ),
         gradient: LinearGradient(
@@ -206,9 +242,19 @@ class _EndGameScreenLuxState extends State<EndGameScreen>
   }
 
   Widget _luxPlayerCard(int index, bool isWinner, int gold) {
-    final String avatarPath = index == widget.winnerIndex
-        ? widget.winnerAvatar
-        : 'assets/images/Skins/AvatarSkins/CardMaster/CardMaster${index % 6 + 1}.png';
+    final xpManager = Provider.of<ExperienceManager>(context, listen: false);
+
+    final String avatarPath;
+    if (index == 0) {
+      // Player avatar
+      avatarPath = xpManager.selectedAvatar ?? 'assets/images/Skins/AvatarSkins/DefaultUser.png';
+    } else if (index == widget.winnerIndex && widget.winnerAvatar != null) {
+      // Bot is winner with a custom avatar
+      avatarPath = widget.winnerAvatar!;
+    } else {
+      // Default bot avatar
+      avatarPath = 'assets/images/Skins/AvatarSkins/CardMaster/CardMaster${index % 6 + 1}.png';
+    }
 
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -240,7 +286,7 @@ class _EndGameScreenLuxState extends State<EndGameScreen>
 
   Widget _luxBackButton() {
     return GestureDetector(
-      onTap: () => Navigator.of(context).pop(),
+      onTap: () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => MainScreen())),
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 32),
         padding: const EdgeInsets.symmetric(vertical: 14),
