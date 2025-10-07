@@ -120,9 +120,9 @@ class PlayerSelector {
         children: [
           // 🌫 Background blur with dark overlay
           BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+            filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
             child: Container(
-              color: Colors.black.withOpacity(0.5),
+              color: Colors.black.withOpacity(0.7),
             ),
           ),
 
@@ -136,8 +136,8 @@ class PlayerSelector {
                   children: [
                     // 🎉 Lottie animation behind avatar
                     SizedBox(
-                      width: 200,
-                      height: 200,
+                      width: 360,
+                      height: 360,
                       child: Lottie.asset(
                         "assets/animations/AnimationSFX/Boom.json",
                         repeat: false,

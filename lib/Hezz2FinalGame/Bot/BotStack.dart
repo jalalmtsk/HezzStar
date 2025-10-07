@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:hezzstar/tools/AudioManager/AudioManager.dart';
 import 'package:lottie/lottie.dart';
 import 'package:marquee/marquee.dart';
+import 'package:provider/provider.dart';
 import '../Tools/Dialog/BotPlayerInfoDialog.dart';
 
 
@@ -40,15 +42,16 @@ class PlayerCard extends StatefulWidget {
 class _PlayerCardState extends State<PlayerCard> with TickerProviderStateMixin {
   String? reactionAnimation;
   Timer? _reactionTimer;
+  bool _botTurnSoundPlayed = false;
 
-  // Your Lottie JSON files
-  final List<String> _reactions = [
-    'assets/animations/MessageAnimations/AngryEmoji.json',
-    'assets/animations/MessageAnimations/CoolEmoji.json',
-    'assets/animations/MessageAnimations/LaughingCat.json',
-    'assets/animations/MessageAnimations/MoneyEmoji.json',
-    'assets/animations/MessageAnimations/StreamOfHearts.json',
-  ];
+  final Map<String, String> _reactionSounds = {
+    'assets/animations/MessageAnimations/AngryEmoji.json': 'assets/audios/UI/SFX/MessageSound/evilLaugh.mp3',
+    'assets/animations/MessageAnimations/CoolEmoji.json': 'assets/audios/UI/SFX/MessageSound/ohYeah.mp3',
+    'assets/animations/MessageAnimations/LaughingCat.json': 'assets/audios/UI/SFX/MessageSound/CatLaugh.mp3',
+    'assets/animations/MessageAnimations/cryingSmoothymon.json': 'assets/audios/UI/SFX/MessageSound/CryingAziza.mp3',
+    'assets/animations/MessageAnimations/StreamOfHearts.json': 'assets/audios/UI/SFX/HeartsSound.mp3',
+  };
+
 
   @override
   void initState() {
@@ -57,29 +60,51 @@ class _PlayerCardState extends State<PlayerCard> with TickerProviderStateMixin {
   }
 
   void _startRandomReactions() {
+    if (!isLottieActivated) return; // skip entirely
     final random = Random();
-
-    // Start the first reaction after a random delay (1-5 seconds)
-    Future.delayed(Duration(milliseconds: 1000 + random.nextInt(4000)), _playRandomReaction);
+    _reactionTimer = Timer(
+      Duration(milliseconds: 4500 + random.nextInt(10000)),
+      _playRandomReaction,
+    );
   }
 
   void _playRandomReaction() {
-    if (!mounted) return;
+    if (!mounted || !isLottieActivated) return;
 
     final random = Random();
+    final keys = _reactionSounds.keys.toList();
+    final selectedAnimation = keys[random.nextInt(keys.length)];
+
     setState(() {
-      reactionAnimation = _reactions[random.nextInt(_reactions.length)];
+      reactionAnimation = selectedAnimation;
     });
 
-    // Animation duration random between 1.5s - 3s
+    final audioManager = Provider.of<AudioManager>(context, listen: false);
+    final soundPath = _reactionSounds[selectedAnimation];
+    if (soundPath != null && isLottieActivated) {
+      audioManager.playSfx(soundPath);
+    }
+
     int animDuration = 1500 + random.nextInt(1500);
-    Future.delayed(Duration(milliseconds: animDuration), () {
-      if (!mounted) return;
+    _reactionTimer = Timer(Duration(milliseconds: animDuration), () {
+      if (!mounted || !isLottieActivated) return;
       setState(() => reactionAnimation = null);
 
-      // Schedule next reaction with random interval (5-20 seconds)
-      Future.delayed(Duration(milliseconds: 5000 + random.nextInt(20000)), _playRandomReaction);
+      _reactionTimer = Timer(
+        Duration(milliseconds: 6000 + random.nextInt(18000)),
+        _playRandomReaction,
+      );
     });
+  }
+
+  void toggleLottie(bool value) {
+    isLottieActivated = value;
+    if (!isLottieActivated) {
+      _reactionTimer?.cancel();
+      setState(() => reactionAnimation = null);
+    } else {
+      _startRandomReactions();
+    }
   }
 
   @override
@@ -109,6 +134,20 @@ class _PlayerCardState extends State<PlayerCard> with TickerProviderStateMixin {
       statusColor = Colors.greenAccent;
       statusText = 'TURN';
     }
+
+    // ---------------------- BOT TURN SOUND ----------------------
+// Play sound only once when bot's turn starts
+    if (widget.bot > 0 && widget.isTurn && !_botTurnSoundPlayed) {
+      final audioManager =  Provider.of<AudioManager>(context, listen: false);
+      _botTurnSoundPlayed = true;
+      audioManager.playSfx("assets/audios/UI/SFX/Gamification_SFX/Bot'sTurnSound.mp3");
+    }
+
+// Reset the flag when turn ends
+    if (!widget.isTurn && _botTurnSoundPlayed) {
+      _botTurnSoundPlayed = false;
+    }
+// ------------------------------------------------------------
 
     return Stack(
       clipBehavior: Clip.none,
@@ -163,6 +202,7 @@ class _PlayerCardState extends State<PlayerCard> with TickerProviderStateMixin {
     ),
     ),
 
+
         // Avatar outside container
         Positioned(
           top: -22,
@@ -197,22 +237,23 @@ class _PlayerCardState extends State<PlayerCard> with TickerProviderStateMixin {
               ),
 
               // Random reaction animation
-              if(isLottieActivated)
-              Positioned(
-                top: 20,
-                child: SizedBox(
-                  width: 58,
-                  height: 58,
-                  child: reactionAnimation != null
-                      ? Lottie.asset(
-                    reactionAnimation!,
-                    key: ValueKey(reactionAnimation),
-                    repeat: false,
-                    fit: BoxFit.contain,
-                  )
-                      : const SizedBox.shrink(), // keep structure stable
+              if (isLottieActivated)
+                Positioned(
+                  top: 20,
+                  child: SizedBox(
+                    width: 58,
+                    height: 58,
+                    child: reactionAnimation != null
+                        ? Lottie.asset(
+                      reactionAnimation!,
+                      key: ValueKey(reactionAnimation),
+                      repeat: false,
+                      fit: BoxFit.contain,
+                    )
+                        : const SizedBox.shrink(),
+                  ),
                 ),
-              ),
+
 
 
               // Status badge

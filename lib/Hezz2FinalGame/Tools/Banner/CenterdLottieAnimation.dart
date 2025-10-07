@@ -1,50 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 
-class CenterLottieEffect {
-  final BuildContext context;
-
-  CenterLottieEffect({required this.context});
-
-  /// [lottieAsset] is your local JSON file or network URL
-  /// [size] sets the width & height of the animation
-  void show(String lottieAsset, {double size = 250, Duration duration = const Duration(seconds: 2)}) {
-    final overlay = Overlay.of(context);
-    if (overlay == null) return;
-
-    late OverlayEntry entry;
-
-    entry = OverlayEntry(
-      builder: (_) => _AnimatedLottie(
-        lottieAsset: lottieAsset,
-        size: size,
-        duration: duration,
-        onEnd: () => entry.remove(),
-      ),
-    );
-
-    overlay.insert(entry);
-  }
-}
-
-class _AnimatedLottie extends StatefulWidget {
+class CenterLottieEffect extends StatefulWidget {
   final String lottieAsset;
   final double size;
   final Duration duration;
-  final VoidCallback onEnd;
+  final VoidCallback? onEnd;
 
-  const _AnimatedLottie({
+  const CenterLottieEffect({
+    super.key,
     required this.lottieAsset,
-    required this.size,
-    required this.duration,
-    required this.onEnd,
+    this.size = 250,
+    this.duration = const Duration(seconds: 1),
+    this.onEnd,
   });
 
   @override
-  State<_AnimatedLottie> createState() => _AnimatedLottieState();
+  State<CenterLottieEffect> createState() => _CenterLottieEffectWidgetState();
 }
 
-class _AnimatedLottieState extends State<_AnimatedLottie> with SingleTickerProviderStateMixin {
+class _CenterLottieEffectWidgetState extends State<CenterLottieEffect>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _scale;
   late Animation<double> _opacity;
@@ -54,7 +30,7 @@ class _AnimatedLottieState extends State<_AnimatedLottie> with SingleTickerProvi
     super.initState();
 
     _controller = AnimationController(
-      duration: const Duration(milliseconds: 1200),
+      duration: const Duration(milliseconds: 800),
       vsync: this,
     );
 
@@ -65,16 +41,19 @@ class _AnimatedLottieState extends State<_AnimatedLottie> with SingleTickerProvi
     );
 
     _opacity = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(parent: _controller, curve: const Interval(0.0, 0.4, curve: Curves.easeOut)),
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.0, 0.4, curve: Curves.easeOut),
+      ),
     );
 
     _controller.forward();
 
-    // auto close after duration
+    // Auto reverse after duration
     Future.delayed(widget.duration, () async {
       if (mounted) {
         await _controller.reverse();
-        widget.onEnd();
+        if (widget.onEnd != null) widget.onEnd!();
       }
     });
   }
@@ -87,11 +66,7 @@ class _AnimatedLottieState extends State<_AnimatedLottie> with SingleTickerProvi
 
   @override
   Widget build(BuildContext context) {
-    final screen = MediaQuery.of(context).size;
-
-    return Positioned(
-      left: (screen.width - widget.size) / 2,
-      top: (screen.height - widget.size) / 2,
+    return Center(
       child: FadeTransition(
         opacity: _opacity,
         child: ScaleTransition(

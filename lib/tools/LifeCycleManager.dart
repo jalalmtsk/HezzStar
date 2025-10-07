@@ -39,7 +39,7 @@ class _AppLifecycleManagerState extends State<AppLifecycleManager> with WidgetsB
       _resetTimer?.cancel();
 
       // 60 SECONDS TO GO TO SPLASH SCREEN AND REBUILD UI
-      _resetTimer = Timer(const Duration(seconds: 60), () {
+      _resetTimer = Timer(const Duration(seconds: 20), () {
         _shouldRestart = true;
       });
     } else if (state == AppLifecycleState.resumed) {
@@ -50,6 +50,7 @@ class _AppLifecycleManagerState extends State<AppLifecycleManager> with WidgetsB
 
         // Stop background music before restart
         audioManager.stopMusic();
+        audioManager.stopSfxLoop();
 
         // Restart app from splash, clearing history
         navigatorKey.currentState?.pushNamedAndRemoveUntil('Splash', (route) => false);

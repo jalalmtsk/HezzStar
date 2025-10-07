@@ -6,6 +6,7 @@ import '../../../tools/AudioManager/AudioManager.dart';
 
 class InstructionsDialog extends StatefulWidget {
   const InstructionsDialog({super.key});
+
   @override
   State<InstructionsDialog> createState() => _InstructionsDialogState();
 }
@@ -15,8 +16,8 @@ class _InstructionsDialogState extends State<InstructionsDialog> with TickerProv
   bool _rewardsOpen = false;
   bool _tipsOpen = false;
 
-  late AnimationController _pulseController;
-  late Animation<double> _pulseAnim;
+  late final AnimationController _pulseController;
+  late final Animation<double> _pulseAnim;
 
   Color primaryAccent = Colors.greenAccent;
   Color secondaryAccent = Colors.tealAccent;
@@ -24,6 +25,8 @@ class _InstructionsDialogState extends State<InstructionsDialog> with TickerProv
   @override
   void initState() {
     super.initState();
+
+    // Pulsing animation for buttons or headers
     _pulseController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1100),
@@ -42,6 +45,8 @@ class _InstructionsDialogState extends State<InstructionsDialog> with TickerProv
 
   void _togglePanel(String key) {
     final audioManager = Provider.of<AudioManager>(context, listen: false);
+    if (!mounted) return;
+
     audioManager.playEventSound('PopClick');
 
     setState(() {
@@ -174,33 +179,66 @@ class _InstructionsDialogState extends State<InstructionsDialog> with TickerProv
                         _buildPanel(
                           id: 'controls',
                           icon: Icons.gamepad,
-                          title: "Controls",
+                          title: "Game Setup & Controls",
                           accent: Colors.tealAccent,
                           open: _controlsOpen,
                           child: const Text(
-                            "• Tap to jump\n• Swipe to move left or right\n• Hold to charge power\n• Avoid obstacles",
+                            "• 1 human player + 1-5 bots\n"
+                                "• Modes: PlayToWin (first to finish hand) or Elimination\n"
+                                "• Player can spectate\n"
+                                "• Start with a hand of cards; deck is shuffled\n"
+                                "• Click card to play if valid\n"
+                                "• Draw card if no valid plays\n"
+                                "• Turn-based gameplay\n"
+                                "• Bot turns are delayed to simulate thinking",
                             style: TextStyle(color: Colors.white70),
                           ),
                         ),
                         _buildPanel(
                           id: 'rewards',
                           icon: Icons.military_tech,
-                          title: "Rewards",
+                          title: "Special Cards & Effects",
                           accent: Colors.amberAccent,
                           open: _rewardsOpen,
-                          child: const Text(
-                            "• Collect coins to increase score\n• Unlock achievements\n• Earn gems for special items",
-                            style: TextStyle(color: Colors.white70),
+                          child: SizedBox(
+                            height: 250, // Fixed height for PageView
+                            child: PageView(
+                              children: [
+                                _specialCardPage(
+                                  imagePath: 'assets/images/cards/clubs_1.png', // replace with your Skip card image
+                                  title: '1: Skip',
+                                  description:
+                                  '• Skips the next player\'s turn.',
+                                ),
+                                _specialCardPage(
+                                  imagePath: 'assets/images/Tutorials/StackOf2_Tuto.png',
+                                  title: '2: Draw +2',
+                                  description:
+                                  '• Adds +2 to pending draw.\n• Can chain with another 2.',
+                                ),
+                                _specialCardPage(
+                                  imagePath: 'assets/images/cards/clubs_7.png',
+                                  title: '7: Change Suit',
+                                  description:
+                                  '• Allows player to change the current suit.\n• Players choose suit via dialog.',
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                         _buildPanel(
                           id: 'tips',
                           icon: Icons.lightbulb,
-                          title: "Tips & Tricks",
+                          title: "Gameplay Tips",
                           accent: Colors.greenAccent,
                           open: _tipsOpen,
                           child: const Text(
-                            "• Plan your moves carefully\n• Use power-ups wisely\n• Replay levels to improve score",
+                            "• Aim to empty your hand first (PlayToWin)\n"
+                                "• In Elimination, avoid finishing last\n"
+                                "• Watch for special card combos (1,2,7)\n"
+                                "• Animations & banners show card effects\n"
+                                "• Quitting waits for all animations to finish to avoid glitches\n"
+                                "• Overlay entries and animation controllers are properly disposed",
                             style: TextStyle(color: Colors.white70),
                           ),
                         ),
@@ -211,22 +249,25 @@ class _InstructionsDialogState extends State<InstructionsDialog> with TickerProv
                               audioManager.playEventSound('cancelButton');
                               Navigator.of(context).pop();
                             },
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 18),
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(12),
-                                gradient: LinearGradient(colors: [primaryAccent, secondaryAccent]),
-                                boxShadow: [
-                                  BoxShadow(color: primaryAccent.withOpacity(0.28), blurRadius: 8, offset: const Offset(0, 6))
-                                ],
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: const [
-                                  Icon(Icons.close, color: Colors.white),
-                                  SizedBox(width: 8),
-                                  Text("Close", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                                ],
+                            child: ScaleTransition(
+                              scale: _pulseAnim,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 18),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(12),
+                                  gradient: LinearGradient(colors: [primaryAccent, secondaryAccent]),
+                                  boxShadow: [
+                                    BoxShadow(color: primaryAccent.withOpacity(0.28), blurRadius: 8, offset: const Offset(0, 6))
+                                  ],
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: const [
+                                    Icon(Icons.close, color: Colors.white),
+                                    SizedBox(width: 8),
+                                    Text("Close", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                                  ],
+                                ),
                               ),
                             ),
                           ),
@@ -241,6 +282,51 @@ class _InstructionsDialogState extends State<InstructionsDialog> with TickerProv
           ),
         ),
       ),
+    );
+  }
+
+  // Helper function for PageView
+  Widget _specialCardPage({
+    required String imagePath,
+    required String title,
+    required String description,
+  }) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Expanded(
+          flex: 3,
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Image.asset(
+              imagePath,
+              fit: BoxFit.contain,
+            ),
+          ),
+        ),
+        Expanded(
+          flex: 2,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text(title,
+                    style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold)),
+                const SizedBox(height: 2),
+                Text(description,
+                    style: const TextStyle(
+                        color: Colors.white70, fontSize: 17),
+                    textAlign: TextAlign.center),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

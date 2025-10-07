@@ -96,6 +96,7 @@ flutter:
     - assets/UI/Icons/TabBars_Icons/
     - assets/UI/Buttons/
     - assets/ImpoImages/
+    - assets/images/Tutorials/
 
     # AUDIO
     - assets/audios/UI/SFX/

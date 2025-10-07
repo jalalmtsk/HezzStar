@@ -1,44 +1,24 @@
 import 'package:flutter/material.dart';
 
-class CenterImageEffect {
-  final BuildContext context;
-
-  CenterImageEffect({required this.context});
-
-  void show(ImageProvider image, {double size = 200}) {
-    final overlay = Overlay.of(context);
-    if (overlay == null) return;
-
-    late OverlayEntry entry;
-
-    entry = OverlayEntry(
-      builder: (_) => _AnimatedImage(
-        image: image,
-        size: size,
-        onEnd: () => entry.remove(),
-      ),
-    );
-
-    overlay.insert(entry);
-  }
-}
-
-class _AnimatedImage extends StatefulWidget {
+class CenterImageEffect extends StatefulWidget {
   final ImageProvider image;
   final double size;
-  final VoidCallback onEnd;
+  final Duration duration;
+  final VoidCallback? onEnd;
 
-  const _AnimatedImage({
+  const CenterImageEffect({
+    super.key,
     required this.image,
-    required this.size,
-    required this.onEnd,
+    this.size = 200,
+    this.duration = const Duration(seconds: 1),
+    this.onEnd,
   });
 
   @override
-  State<_AnimatedImage> createState() => _AnimatedImageState();
+  State<CenterImageEffect> createState() => _CenterImageEffectState();
 }
 
-class _AnimatedImageState extends State<_AnimatedImage>
+class _CenterImageEffectState extends State<CenterImageEffect>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _scale;
@@ -49,31 +29,30 @@ class _AnimatedImageState extends State<_AnimatedImage>
     super.initState();
 
     _controller = AnimationController(
-      duration: const Duration(milliseconds: 1200),
+      duration: const Duration(milliseconds: 800),
       vsync: this,
     );
 
     _scale = CurvedAnimation(
       parent: _controller,
-      curve: Curves.elasticOut, // bouncy anime-style
+      curve: Curves.elasticOut,
       reverseCurve: Curves.easeIn,
     );
 
     _opacity = Tween<double>(begin: 0, end: 1).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: const Interval(0.0, 0.2, curve: Curves.easeOut),
-        reverseCurve: Curves.easeIn,
+        curve: const Interval(0.0, 0.4, curve: Curves.easeOut),
       ),
     );
 
     _controller.forward();
 
-    // auto close after 2 seconds
-    Future.delayed(const Duration(seconds: 2), () async {
+    // Auto reverse after duration
+    Future.delayed(widget.duration, () async {
       if (mounted) {
         await _controller.reverse();
-        widget.onEnd();
+        if (widget.onEnd != null) widget.onEnd!();
       }
     });
   }
@@ -86,11 +65,7 @@ class _AnimatedImageState extends State<_AnimatedImage>
 
   @override
   Widget build(BuildContext context) {
-    final screen = MediaQuery.of(context).size;
-
-    return Positioned(
-      left: (screen.width - widget.size) / 2,
-      top: (screen.height - widget.size) / 2,
+    return Center(
       child: FadeTransition(
         opacity: _opacity,
         child: ScaleTransition(

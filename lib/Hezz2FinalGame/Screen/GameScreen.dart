@@ -7,6 +7,7 @@ import 'package:hezzstar/ExperieneManager.dart';
 import 'package:hezzstar/Hezz2FinalGame/Models/GameCardEnums.dart';
 import 'package:hezzstar/Hezz2FinalGame/Tools/Banner/CenterdLottieAnimation.dart';
 import 'package:hezzstar/Hezz2FinalGame/Tools/Banner/CenteredImageEffect.dart';
+import 'package:hezzstar/MainScreenIndex.dart';
 
 import 'package:hezzstar/tools/AudioManager/AudioManager.dart';
 import 'package:hezzstar/widgets/userStatut/SimpleUserStatusBar.dart';
@@ -50,10 +51,16 @@ class GameScreen extends StatefulWidget {
 
 class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
 
+  CenterLottieEffect? _CenteredActiveLottie;
+  CenterImageEffect? _CenteredActiveImage;
+
   late Deck deck;
   final ScrollController handScrollController = ScrollController();
   final botKeys = List.generate(5, (_) => GlobalKey());
   late List<List<PlayingCard>> hands;
+
+  List<Widget> _animatedCardsWidgets = []; // All active animated cards
+  List<AnimationController> _activeControllers = []; // Track controllers for disposal
 
   PlayingCard? topCard;
   List<PlayingCard> discard = [];
@@ -232,6 +239,19 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     audioManager.playSfx(Asset);
   }
 
+  Future<void> _waitForAllAnimations() async {
+    // Wait until all active animation controllers are done
+    while (_activeControllers.any((ctrl) => ctrl.isAnimating)) {
+      await Future.delayed(const Duration(milliseconds: 1000));
+    }
+
+    // Just in case some overlays are still on screen
+    while (_activeOverlays.isNotEmpty) {
+      await Future.delayed(const Duration(milliseconds: 600));
+    }
+  }
+
+
   // Internal generic method
   Future<void> _animateCardInternal(
       PlayingCard card,
@@ -243,74 +263,74 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
         Duration? duration,
       }) async {
     if (!_isPageActive) return;
-    final overlay = Overlay.of(context);
-    if (overlay == null || !_isPageActive) return;
 
     final dur = duration ??
         (flip
             ? const Duration(milliseconds: 600)
             : (cinematic ? playDur : drawDur));
+
     final ctrl = AnimationController(vsync: this, duration: dur);
     final curve = CurvedAnimation(parent: ctrl, curve: Curves.easeInOutCubic);
 
-    final entry = OverlayEntry(
-      builder: (_) => AnimatedBuilder(
-        animation: curve,
-        builder: (_, __) {
-          final pos = Offset.lerp(from, to, curve.value)!;
-          double scale = 1.0;
-          double rotationY = 0.0;
-          double opacity = 1.0;
-          Widget child;
+    // Create the animated widget
+    late Widget animatedCard; // Use late to reference inside builder
+    animatedCard = AnimatedBuilder(
+      animation: curve,
+      builder: (_, __) {
+        final pos = Offset.lerp(from, to, curve.value)!;
+        double scale = 1.0;
+        double rotationY = 0.0;
+        double opacity = 1.0;
+        Widget child;
 
-          if (flip) {
-            final flipProgress = curve.value;
-            rotationY = flipProgress * pi;
-            scale = 1.0 + 0.05 * sin(rotationY);
-            final showFront = flipProgress > 0.5;
+        if (flip) {
+          final flipProgress = curve.value;
+          rotationY = flipProgress * pi;
+          scale = 1.0 + 0.05 * sin(rotationY);
+          final showFront = flipProgress > 0.5;
 
-            child = Transform(
-              alignment: Alignment.center,
-              transform: Matrix4.identity()
-                ..scale(scale, 1.0)
-                ..rotateY(rotationY),
-              child: SizedBox(
-                width: 70,
-                height: 110,
-                child: Image.asset(
-                    showFront ? card.assetName : card.backAsset(context),
-                    fit: BoxFit.cover),
-              ),
-            );
-          } else {
-            scale = cinematic ? 1.0 + 0.06 * sin(curve.value * pi) : 1.0;
-            opacity = cinematic ? 0.5 + curve.value * 0.5 : 1.0;
-            child = Transform.scale(
-              scale: scale,
-              child: SizedBox(
-                width: 70,
-                height: 110,
-                child: Image.asset(
-                    faceUp ? card.assetName : card.backAsset(context),
-                    fit: BoxFit.cover),
-              ),
-            );
-          }
-
-          return Positioned(
-            left: pos.dx - 43,
-            top: pos.dy - 60,
-            child: Opacity(opacity: opacity, child: child),
+          child = Transform(
+            alignment: Alignment.center,
+            transform: Matrix4.identity()
+              ..scale(scale, 1.0)
+              ..rotateY(rotationY),
+            child: SizedBox(
+              width: 70,
+              height: 110,
+              child: Image.asset(
+                  showFront ? card.assetName : card.backAsset(context),
+                  fit: BoxFit.cover),
+            ),
           );
-        },
-      ),
+        } else {
+          scale = cinematic ? 1.0 + 0.06 * sin(curve.value * pi) : 1.0;
+          opacity = cinematic ? 0.5 + curve.value * 0.5 : 1.0;
+          child = Transform.scale(
+            scale: scale,
+            child: SizedBox(
+              width: 70,
+              height: 110,
+              child: Image.asset(
+                  faceUp ? card.assetName : card.backAsset(context),
+                  fit: BoxFit.cover),
+            ),
+          );
+        }
+
+        return Positioned(
+          left: pos.dx - 43,
+          top: pos.dy - 60,
+          child: Opacity(opacity: opacity, child: child),
+        );
+      },
     );
 
-    _activeControllers.add(ctrl);
-    _activeOverlays.add(entry);
-
+    // Add the animated card to the Stack
     if (!_isPageActive) return;
-    overlay.insert(entry);
+    setState(() {
+      _animatedCardsWidgets.add(animatedCard);
+      _activeControllers.add(ctrl);
+    });
 
     try {
       await ctrl.forward();
@@ -318,11 +338,13 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       // ignore if animation interrupted
     }
 
-    // Remove and clean up
-    entry.remove();
+    // Remove after animation ends
+    if (!_isPageActive) return;
+    setState(() {
+      _animatedCardsWidgets.remove(animatedCard);
+      _activeControllers.remove(ctrl);
+    });
     ctrl.dispose();
-    _activeControllers.remove(ctrl);
-    _activeOverlays.remove(entry);
   }
 
 
@@ -418,8 +440,21 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       CenterBanner(context: context, centerKey: centerKey)
           .show("+$pendingDraw", Colors.orangeAccent);
 
+
       final myImage = AssetImage('assets/UI/Containers/Hezz2_Effect.png');
-      CenterImageEffect(context: context).show(myImage, size: 200);
+
+      setState(() {
+        _CenteredActiveImage = CenterImageEffect(
+          image: myImage,
+          duration: Duration(seconds: 1),
+          size: 200,
+          onEnd: () {
+            setState(() {
+              _CenteredActiveImage = null; // remove it when done
+            });
+          },
+        );
+      });
     }
 
     else if (card.rank == 1) {
@@ -427,11 +462,19 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       playSfxVoice("assets/audios/UI/SFX/Voices/Roppo_Voice.mp3");
       CenterBanner(context: context, centerKey: centerKey)
           .show("Skip", Colors.orangeAccent);
-      CenterLottieEffect(context: context).show(
-        "assets/animations/AnimationSFX/StopPlaying.json",
-        size: 300,
-        duration: const Duration(milliseconds: 900),
-      );
+
+      // Show Lottie animation
+      setState(() {
+        _CenteredActiveLottie = CenterLottieEffect(
+          lottieAsset: 'assets/animations/AnimationSFX/StopPlaying.json',
+          size: 300,
+          onEnd: () {
+            setState(() {
+              _CenteredActiveLottie = null; // remove it when done
+            });
+          },
+        );
+      });
     }
 
     else if (card.rank == 7) {
@@ -926,7 +969,6 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     );
   }
 
-  final List<AnimationController> _activeControllers = [];
   final List<OverlayEntry> _activeOverlays = [];
   @override
   void dispose() {
@@ -976,13 +1018,11 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                     Navigator.pop(ctx, true); // close the dialog first
 
                     // Wait until all animations finish
-                    while (isAnimating) {
-                      await Future.delayed(const Duration(milliseconds: 50));
-                    }
+                    await _waitForAllAnimations();
 
                     // Then exit the game screen
                     if (context.mounted) {
-                      Navigator.pop(context); // pop the GameScreen
+                      Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_)=> MainScreen())); // pop the GameScreen
                     }
                   },
                   child: const Text("Quit"),
@@ -993,7 +1033,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
           );
 
           if (quit == true && context.mounted) {
-            Navigator.pop(context, result); // ✅ pop with result if user confirms
+            Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_)=> MainScreen())); // pop the GameScreen
           }
         }
       },
@@ -1017,6 +1057,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
               SafeArea(
                 child: Stack(
                   children: [
+
+
                     // Top row of horizontal bots
                     if (widget.botCount >= 2 || widget.botCount >= 3)
                       Positioned(
@@ -1161,7 +1203,6 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                               gameModeName: widget.gameModeType.name,
                               botCount: widget.botCount,
                               selectedBet: widget.selectedBet,
-                              currentPlayer: currentPlayer,
                             )
                                 : const SizedBox.shrink(key: ValueKey("empty-menu")),
                           ),
@@ -1173,6 +1214,17 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                         ],
                       ),
                     ),
+
+                    if (_CenteredActiveLottie != null)
+                      Center(
+                        child: _CenteredActiveLottie!,
+                      ),
+                    if (_CenteredActiveImage != null)
+                      Center(
+                        child: _CenteredActiveImage!,
+                      ),
+
+                    ..._animatedCardsWidgets,    // Animated cards being played
 
                   ],
                 ),

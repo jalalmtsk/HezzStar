@@ -53,6 +53,9 @@ class _PlayerActionPanelState extends State<PlayerActionPanel> {
   int? _lastTurnPlayer;
   bool _playedFiveSecSound = false;
   bool isLastFiveSeconds = false;
+  LottieBuilder? _selectedEmojiAnimation;
+  bool _showSelectedEmoji = false;
+
   @override
   void didUpdateWidget(covariant PlayerActionPanel oldWidget) {
     super.didUpdateWidget(oldWidget);
@@ -127,15 +130,25 @@ class _PlayerActionPanelState extends State<PlayerActionPanel> {
                             : (widget.isSpectating ? Colors.grey : Colors.white),
                       ),
                     ),
-                    const SizedBox(width: 7),
-                    AnimatedLottieEmojiBubble(
-                      onSelected: widget.onEmojiSelected,
+                    const SizedBox(width: 12),
+
+                    _showSelectedEmoji && _selectedEmojiAnimation != null ?
+                      _selectedEmojiAnimation!:
+
+                    GestureDetector(
+                      onTap:() => _showEmojiDialog(context),
+                      child: Icon(
+                        Icons.message,
+                        color: Colors.orangeAccent,
+                        size: 24,
+                      ),
                     ),
                     const SizedBox(width: 1),
                     // Avatar + Timer + Red Alert Lottie
                     Stack(
                       alignment: Alignment.center,
                       children: [
+
                         CircleAvatar(
                           radius: 28,
                           backgroundColor: Colors.deepPurple,
@@ -174,6 +187,7 @@ class _PlayerActionPanelState extends State<PlayerActionPanel> {
                                       "assets/audios/UI/SFX/Gamification_SFX/TimerTicking.mp3");
                                   _playedFiveSecSound = true; // mark as played
                                 }
+
 
                                 // Build the circular timer + flash effect
                                 return Stack(
@@ -214,6 +228,9 @@ class _PlayerActionPanelState extends State<PlayerActionPanel> {
               ],
             ),
           ),
+
+
+
           // Cards / eliminated / spectating messages
           if (widget.eliminated)
             Container(
@@ -293,4 +310,80 @@ class _PlayerActionPanelState extends State<PlayerActionPanel> {
       ),
     );
   }
+
+
+  void _showEmojiDialog(BuildContext context) {
+    final audioManager = Provider.of<AudioManager>(context, listen: false);
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        final List<Map<String, String>> emojiOptions = [
+          {
+            "lottie": "assets/animations/MessageAnimations/CoolEmoji.json",
+            "sound": "assets/audios/UI/SFX/MessageSound/ohYeah.mp3"
+          },
+          {
+            "lottie": "assets/animations/MessageAnimations/AngryEmoji.json",
+            "sound": "assets/audios/UI/SFX/MessageSound/evilLaugh.mp3"
+          },
+          {
+            "lottie": "assets/animations/MessageAnimations/LaughingCat.json",
+            "sound": "assets/audios/UI/SFX/MessageSound/CatLaugh.mp3"
+          },
+          {
+            "lottie": "assets/animations/MessageAnimations/cryingSmoothymon.json",
+            "sound": "assets/audios/UI/SFX/MessageSound/CryingAziza.mp3"
+          },
+          {
+            "lottie": "assets/animations/MessageAnimations/StreamOfHearts.json",
+            "sound": "assets/audios/UI/SFX/MessageSound/ohYeah.mp3"
+          },
+        ];
+
+        return AlertDialog(
+          backgroundColor: Colors.black87.withValues(alpha: 0.6),
+          content: SizedBox(
+            height: 40,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: emojiOptions.map((emoji) {
+                return GestureDetector(
+                  onTap: () {
+                    // Play sound
+                    audioManager.playSfx(emoji["sound"]!);
+
+                    // Show selected animation
+                    setState(() {
+                      _selectedEmojiAnimation = Lottie.asset(
+                        emoji["lottie"]!,
+                        width: 55,
+                        height: 55,
+                        repeat: true,
+                      );
+                      _showSelectedEmoji = true;
+                    });
+
+                    Navigator.of(context).pop(); // close dialog
+
+                    // Hide after 2 seconds
+                    Future.delayed(const Duration(seconds: 2), () {
+                      if (mounted) {
+                        setState(() {
+                          _showSelectedEmoji = false;
+                          _selectedEmojiAnimation = null;
+                        });
+                      }
+                    });
+                  },
+                  child: Lottie.asset(emoji["lottie"]!, width: 50, height: 50),
+                );
+              }).toList(),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
 }

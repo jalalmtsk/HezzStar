@@ -1,11 +1,14 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
-class GameInfoDialog extends StatelessWidget {
+import '../../../tools/AudioManager/AudioManager.dart';
+import '../../Bot/BotStack.dart';
+
+class GameInfoDialog extends StatefulWidget {
   final String mode;
   final int players;
   final int prize;
-  final int currentPlayer;
   final VoidCallback onSettings;
   final VoidCallback onInstructions;
   final VoidCallback onExit; // ✅ new callback
@@ -15,12 +18,16 @@ class GameInfoDialog extends StatelessWidget {
     required this.mode,
     required this.players,
     required this.prize,
-    required this.currentPlayer,
     required this.onSettings,
     required this.onInstructions,
     required this.onExit, // required
   });
 
+  @override
+  State<GameInfoDialog> createState() => _GameInfoDialogState();
+}
+
+class _GameInfoDialogState extends State<GameInfoDialog> {
   @override
   Widget build(BuildContext context) {
     return Material(
@@ -79,7 +86,7 @@ class GameInfoDialog extends StatelessWidget {
                         ),
                         const SizedBox(width: 10),
                         Text(
-                          "Winning Gold: $prize",
+                          "Winning Gold: ${widget.prize}",
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
@@ -116,34 +123,74 @@ class GameInfoDialog extends StatelessWidget {
                       ),
                     ),
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Container(
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            gradient: const LinearGradient(
-                              colors: [Colors.deepPurple, Colors.purpleAccent],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.purple.withOpacity(0.5),
-                                blurRadius: 8,
-                                offset: Offset(0, 4),
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                gradient: const LinearGradient(
+                                  colors: [Colors.deepPurple, Colors.purpleAccent],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                ),
                               ),
-                            ],
-                          ),
-                          child: const Icon(Icons.people, color: Colors.white, size: 26),
+                              child: const Icon(Icons.people, color: Colors.white, size: 26),
+                            ),
+                            const SizedBox(width: 12),
+                            Text(
+                              "Players: ${widget.players}",
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(width: 12),
-                        Text(
-                          "Players: $players",
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
+
+                        // 🎭 Toggle
+                        GestureDetector(
+                          onTap: () {
+                            final audioManager = Provider.of<AudioManager>(context, listen: false);
+                            audioManager.playEventSound('PopClick');
+                            setState(() {
+                              isLottieActivated = !isLottieActivated;
+                            });
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(12),
+                              color: isLottieActivated
+                                  ? Colors.purpleAccent.withOpacity(0.2)
+                                  : Colors.white.withOpacity(0.05),
+                              border: Border.all(
+                                color: isLottieActivated
+                                    ? Colors.purpleAccent.withOpacity(0.6)
+                                    : Colors.white.withOpacity(0.2),
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.emoji_emotions,
+                                  color: isLottieActivated ? Colors.purpleAccent : Colors.grey,
+                                  size: 22,
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  isLottieActivated ? "On" : "Off",
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ],
@@ -160,21 +207,21 @@ class GameInfoDialog extends StatelessWidget {
                         icon: Icons.settings,
                         label: "Settings",
                         gradient: const [Colors.deepPurple, Colors.purpleAccent],
-                        onTap: onSettings,
+                        onTap: widget.onSettings,
                       ),
                       _buildActionButton(
                         context: context,
                         icon: Icons.info,
                         label: "Instructions",
                         gradient: const [Colors.green, Colors.teal],
-                        onTap: onInstructions,
+                        onTap: widget.onInstructions,
                       ),
                       _buildActionButton(
                         context: context,
                         icon: Icons.exit_to_app,
                         label: "Exit",
-                        gradient: currentPlayer == 0 ? const [Colors.redAccent, Colors.deepOrange] : const [Colors.grey, Colors.black12],
-                        onTap: onExit, // ✅ use callback
+                        gradient: const [Colors.redAccent, Colors.deepOrange],
+                        onTap: widget.onExit, // ✅ use callback
                       ),
                     ],
                   ),

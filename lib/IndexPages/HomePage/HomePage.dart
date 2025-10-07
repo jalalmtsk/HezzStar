@@ -1,8 +1,6 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:hezzstar/ExperieneManager.dart';
-import 'package:hezzstar/widgets/SpiningWheel/Spiningwheel.dart';
-import 'package:lottie/lottie.dart';
+
 import 'package:provider/provider.dart';
 
 import '../../Hezz2FinalGame/Screen/GameLauncher/CardGameLauncher.dart';

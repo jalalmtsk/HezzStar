@@ -101,38 +101,9 @@ class _CardGameLauncherState extends State<CardGameLauncher>
     _applyThemeForMode();
   }
 
-  late ConnectivityService _connectivityService; // <-- store reference
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-
-    // Get the provider once and store it
-    _connectivityService = Provider.of<ConnectivityService>(context);
-    _connectivityService.addListener(_connectivityListener);
-  }
-
-  void _connectivityListener() {
-    final connectivity = Provider.of<ConnectivityService>(context, listen: false);
-
-    if (!connectivity.isConnected && !_showDisconnectedOverlay) {
-      setState(() => _showDisconnectedOverlay = true);
-
-      // Wait 1 second and navigate to MainScreen
-      Future.delayed(const Duration(seconds: 3), () {
-        if (mounted) {
-          setState(() => _showDisconnectedOverlay = false);
-          Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(builder: (_) => const MainScreen()),
-                (route) => false,
-          );
-        }
-      });
-    }
-  }
   @override
   void dispose() {
     // Use stored reference instead of calling Provider.of again
-    _connectivityService.removeListener(_connectivityListener);
 
     _pulseController.dispose();
     _handEntranceController.dispose();

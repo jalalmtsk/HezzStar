@@ -124,15 +124,9 @@ class CreditsDialog extends StatelessWidget {
               padding: const EdgeInsets.all(16),
               child: Column(
                 children: [
-                  _buildHeader("BackGround Music", Icons.music_note, [Colors.orange, Colors.orangeAccent]),
+                  _buildHeader("Sfx Music", Icons.music_note, [Colors.orange, Colors.orangeAccent]),
                   const SizedBox(height: 8),
-                  ...musicCredits.map((credit) => _buildCreditCard(credit, Icons.music_note, Colors.deepOrange)),
-
-                  const SizedBox(height: 16),
-                  _buildHeader("Sound Effects", Icons.surround_sound, [Colors.blue, Colors.lightBlueAccent]),
-                  const SizedBox(height: 8),
-                  ...sfxCredits.map((credit) => _buildCreditCard(credit, Icons.surround_sound, Colors.blue)),
-
+                  ...sfxCredits.map((credit) => _buildCreditCard(credit, Icons.music_note, Colors.deepOrange)),
                   const SizedBox(height: 20),
                   _buildFooter(),
                 ],
