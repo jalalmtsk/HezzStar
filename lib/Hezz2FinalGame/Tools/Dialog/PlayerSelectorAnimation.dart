@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:hezzstar/tools/AudioManager/AudioManager.dart';
 import 'package:provider/provider.dart';
 import 'package:lottie/lottie.dart';
 import '../../../ExperieneManager.dart';
@@ -24,6 +25,10 @@ class PlayerSelector {
   Future<void> animateSelection() async {
     final overlay = Overlay.of(context);
     if (overlay == null) return;
+
+    final audioManager = Provider.of<AudioManager>(context, listen: false);
+
+    audioManager.playSfx("assets/audios/UI/SFX/Gamification_SFX/PlayerSelectionSound.mp3");
 
     isAnimating = true;
     final activePlayers = List.generate(botCount + 1, (i) => i)
@@ -63,6 +68,7 @@ class PlayerSelector {
     final p = activePlayers[random.nextInt(activePlayers.length)];
     onPlayerSelected(p);
 
+
     final xpManager = Provider.of<ExperienceManager>(context, listen: false);
     final isYou = p == 0;
     final finalName = isYou ? xpManager.username : BotDetailsPopup.getBotInfo(p).name;
@@ -92,7 +98,7 @@ class PlayerSelector {
               mainAxisSize: MainAxisSize.min,
               children: [
                 CircleAvatar(
-                  radius: 35,
+                  radius: 38,
                   backgroundImage: AssetImage(avatarPath),
                   backgroundColor: Colors.grey[900],
                 ),
@@ -101,8 +107,9 @@ class PlayerSelector {
                   name,
                   style: const TextStyle(
                     color: Colors.white70,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    decoration: TextDecoration.none, // ✅ remove underline
                   ),
                 ),
               ],
@@ -136,8 +143,8 @@ class PlayerSelector {
                   children: [
                     // 🎉 Lottie animation behind avatar
                     SizedBox(
-                      width: 360,
-                      height: 360,
+                      width: 380,
+                      height: 380,
                       child: Lottie.asset(
                         "assets/animations/AnimationSFX/Boom.json",
                         repeat: false,
@@ -178,7 +185,9 @@ class PlayerSelector {
                 // ✨ Glowing name
                 Text(
                   "$name Selected!",
+
                   style: TextStyle(
+                    decoration: TextDecoration.none, // ✅ remove underline
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
                     letterSpacing: 1.2,

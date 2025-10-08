@@ -153,39 +153,14 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     onTap: () {
                       final audioManager = Provider.of<AudioManager>(context, listen: false);
                       audioManager.playSfx("assets/audios/UI/SFX/Voices/Hezz.ogg");
-                     /* RewardDimScreen.show(
-                        context,
-                        start: const Offset(200, 400),
-                        endKey: goldKey,
-                        amount: 50,
-                        type: RewardType.gold,
-                      );
+
                       RewardDimScreen.show(
                         context,
                         start: const Offset(200, 400),
-                        endKey: gemsKey,
-                        amount: 50,
+                        endKey: gemsKeyHome,
+                        amount: 5000,
                         type: RewardType.gem,
                       );
-
-
-
-                      FlyingRewardManager().spawnReward(
-                        start: Offset(200, 400),
-                        endKey: goldKey,
-                        amount: 50,
-                        type: RewardType.gold,
-                        context: context,
-                      );
-
-                      FlyingRewardManager().spawnReward(
-                        start: Offset(200, 400),
-                        endKey: gemsKey,
-                        amount: 10,
-                        type: RewardType.gem,
-                        context: context,
-                      );
-  */
 
                       RewardDimScreen.show(
                         context,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hezzstar/widgets/userStatut/userStatus.dart';
 import 'package:lottie/lottie.dart';
 import 'dart:async';
 
@@ -14,6 +15,8 @@ class EventsPage extends StatefulWidget {
 class _EventsPageState extends State<EventsPage> {
 
   final GlobalKey goldEventKey = GlobalKey();
+  final GlobalKey gemsEventKey = GlobalKey();
+  final GlobalKey xpEventKey = GlobalKey();
 
   bool _isLoading = false;
 
@@ -116,6 +119,12 @@ class _EventsPageState extends State<EventsPage> {
                 ),
               ),
             ),
+           Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: UserStatusBar(goldKey: goldEventKey, gemsKey: gemsEventKey, xpKey: xpEventKey),
+          ),
         ],
       ),
     );

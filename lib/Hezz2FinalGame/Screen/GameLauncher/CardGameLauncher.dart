@@ -38,6 +38,7 @@ class _CardGameLauncherState extends State<CardGameLauncher>
   int handSize = 5;
   int selectedBetIndex = 0;
 
+  bool _isSpending = false;
   bool _showDisconnectedOverlay = false;
 
   late PageController _pageController;
@@ -136,8 +137,10 @@ class _CardGameLauncherState extends State<CardGameLauncher>
     return Scaffold(
       body: Stack(
         children: [
+
           // Background image with tinted overlay that animates with mode
           Positioned.fill(child: _animatedBackground()),
+
 
           SafeArea(
             child: Column(
@@ -204,6 +207,25 @@ class _CardGameLauncherState extends State<CardGameLauncher>
                 ),
               ),
             ),
+
+          if (_isSpending)
+            Positioned.fill(
+              child: AbsorbPointer(
+                absorbing: true, // prevents taps
+                child: Container(
+                  color: Colors.black.withOpacity(0.35), // dim effect
+                  child: Center(
+                    child: Lottie.asset(
+                      'assets/animations/AnimatGamification/CoinSplash.json', // optional
+                      width: 200,
+                      height: 200,
+                      repeat: false,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+
         ],
       ),
     );
@@ -693,10 +715,14 @@ class _CardGameLauncherState extends State<CardGameLauncher>
                   ? () async {
                 final audioManager = Provider.of<AudioManager>(context, listen: false);
                 audioManager.playEventSound("sandClick");
-                // spawn flying gold
+
+                // Set spending flag
+                setState(() => _isSpending = true);
+
                 final RenderBox goldBox = goldKey.currentContext!.findRenderObject() as RenderBox;
                 final startOffset = goldBox.localToGlobal(Offset.zero);
-                expManager.spendGold(bet['gold']);
+
+                audioManager.playSfx("assets/audios/UI/SFX/Gamification_SFX/CashierMoney.mp3");
 
                 await FlyingSpendManager().spawnSpend(
                   context: context,
@@ -705,9 +731,13 @@ class _CardGameLauncherState extends State<CardGameLauncher>
                   amount: bet['gold'],
                 );
 
-                // Spend gold + XP, popup searching, navigate
+                // Add XP, search popup, navigate
                 expManager.addExperience(bet['xp']);
                 await SearchingPopup.show(context, widget.botCount);
+
+                // Reset spending flag
+                setState(() => _isSpending = false);
+
                 Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -721,6 +751,7 @@ class _CardGameLauncherState extends State<CardGameLauncher>
                   ),
                 );
               }
+
                   : () {
                 showModalBottomSheet(
                   context: context,

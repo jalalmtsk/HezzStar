@@ -1,7 +1,5 @@
 import 'dart:async';
 import 'dart:math';
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:hezzstar/ExperieneManager.dart';
 import 'package:hezzstar/Hezz2FinalGame/Models/GameCardEnums.dart';
@@ -115,7 +113,9 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     // Reset game state
     deck = Deck()..shuffle();
     BotDetailsPopup.resetBotInfos();
-    for (var h in hands) h.clear();
+    for (var h in hands) {
+      h.clear();
+    }
     discard.clear();
     currentPlayer = Random().nextInt(widget.botCount + 1);
     pendingDraw = 0;

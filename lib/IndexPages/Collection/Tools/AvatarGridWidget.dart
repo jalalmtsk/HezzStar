@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
@@ -29,61 +31,145 @@ class AvatarGridWidget extends StatelessWidget {
             child: Stack(
               alignment: Alignment.center,
               children: [
-                Container(color: Colors.black54),
+                // 🌌 Subtle blurred dark background
+                Positioned.fill(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.black.withOpacity(0.7),
+                          Colors.black.withOpacity(0.9),
+                        ],
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                      ),
+                    ),
+                  ),
+                ),
+                Positioned.fill(
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
+                    child: Container(color: Colors.black.withOpacity(0.3)),
+                  ),
+                ),
+
+                // ✨ Main column content
                 Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Lottie.asset(
-                      "assets/animations/Win/Confetti.json",
-                      width: 250,
-                      height: 250,
-                      repeat: false,
-                    ),
-                    const SizedBox(height: 20),
+                    // Reward visual stack
                     Stack(
                       alignment: Alignment.center,
                       children: [
+                        // Glowing aura
+                        Container(
+                          width: 260,
+                          height: 260,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            gradient: RadialGradient(
+                              colors: [
+                                Colors.deepOrangeAccent.withOpacity(0.5),
+                                Colors.transparent,
+                              ],
+                              radius: 0.8,
+                            ),
+                          ),
+                        ),
+
+                        // Lottie background effect
                         Lottie.asset(
                           "assets/animations/AnimationSFX/RewawrdLightEffect.json",
-                          width: 220,
-                          height: 220,
+                          width: 260,
+                          height: 260,
                           repeat: true,
+                          fit: BoxFit.contain,
                         ),
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(16),
-                          child: Image.asset(imagePath, width: 150, height: 200),
+
+                        // Avatar image card
+                        Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(24),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.deepOrangeAccent.withOpacity(0.7),
+                                blurRadius: 20,
+                                spreadRadius: 2,
+                              ),
+                            ],
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(24),
+                            child: Image.asset(
+                              imagePath,
+                              width: 160,
+                              height: 220,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        ),
+
+                        // Foreground confetti
+                        Lottie.asset(
+                          "assets/animations/Win/Confetti.json",
+                          width: 400,
+                          height: 400,
+                          repeat: false,
+                          fit: BoxFit.cover,
                         ),
                       ],
                     ),
-                    const SizedBox(height: 20),
+
+                    const SizedBox(height: 28),
+
+                    // 🎉 Title text
                     const Text(
                       "Avatar Unlocked!",
                       style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
+                        fontSize: 30,
+                        fontWeight: FontWeight.w800,
                         color: Colors.white,
+                        letterSpacing: 1.2,
+                        shadows: [
+                          Shadow(
+                            color: Colors.deepOrangeAccent,
+                            blurRadius: 16,
+                          ),
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 30),
+
+                    const SizedBox(height: 24),
+
+                    // 🧡 Button
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.deepOrange,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 40, vertical: 12),
+                        backgroundColor: Colors.deepOrangeAccent,
+                        padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 14),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius: BorderRadius.circular(30),
                         ),
+                        elevation: 10,
+                        shadowColor: Colors.deepOrangeAccent.withOpacity(0.6),
                       ),
                       onPressed: () {
                         Navigator.of(context, rootNavigator: true).pop();
                       },
-                      child:
-                      const Text("Awesome!", style: TextStyle(fontSize: 18)),
+                      child: const Text(
+                        "Awesome!",
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          letterSpacing: 1.1,
+                        ),
+                      ),
                     ),
                   ],
                 ),
               ],
-            ),
+            )
+
           ),
         ),
       );
@@ -116,15 +202,29 @@ class AvatarGridWidget extends StatelessWidget {
                   child: Image.asset(imagePath, width: 120, height: 160),
                 ),
                 const SizedBox(height: 16),
-                Text("Do you want to unlock this avatar for $cost $currencySymbol?",
-                    textAlign: TextAlign.center),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    "Unlock for $cost",
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  Image.asset(
+                    currency == CurrencyType.gold
+                        ? 'assets/UI/Icons/Gamification/GoldInGame_Icon.png'
+                        : 'assets/UI/Icons/Gamification/Gems_Icon.png',
+                    width: 24,
+                    height: 24,
+                  ),
+                ],
+              ),
                 const SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     OutlinedButton(
                       onPressed: () {
-                        audioManager.playEventSound("cancelButton");
+                        audioManager.playEventSound("sandClick");
                         Navigator.pop(context);
                       },
                       child: const Text("Cancel"),
@@ -133,8 +233,10 @@ class AvatarGridWidget extends StatelessWidget {
                       style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.deepOrange),
                       onPressed: () async {
-                        bool success = false;
+                        // Play confirm click
+                        audioManager.playEventSound("sandClick");
 
+                        bool success = false;
                         if (currency == CurrencyType.gold) {
                           success = await xpManager.spendGold(cost);
                         } else {
@@ -142,19 +244,24 @@ class AvatarGridWidget extends StatelessWidget {
                         }
 
                         if (success) {
+                          // Play purchase success sound
+                          audioManager.playSfx("assets/audios/UI/SFX/Gamification_SFX/Win1.mp3");
+
                           xpManager.unlockAvatar(imagePath);
                           xpManager.selectAvatar(imagePath);
-                          audioManager.playEventSound("clickButton");
 
                           // 🔹 Pop purchase dialog first
                           Navigator.pop(context);
 
-                          // 🔹 Delay to ensure UI updates before showing unlock popup
+                          // 🔹 Delay to show unlock popup
                           Future.delayed(const Duration(milliseconds: 100), () {
                             showUnlockPopup(parentContext, imagePath);
                           });
 
                         } else {
+                          // Play error/failed purchase sound
+                          audioManager.playEventSound("purchaseFail");
+
                           Navigator.pop(context);
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(content: Text("Not enough $currencySymbol!")),
@@ -162,7 +269,8 @@ class AvatarGridWidget extends StatelessWidget {
                         }
                       },
                       child: const Text("Unlock"),
-                    ),
+                    )
+
                   ],
                 ),
               ],

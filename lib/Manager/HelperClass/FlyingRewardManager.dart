@@ -18,12 +18,12 @@ class FlyingRewardManager {
 
   final Map<RewardType, String> _soundAssets = {
     RewardType.gold: 'assets/audios/UI/SFX/Gamification_SFX/MuchCoinsSound.mp3',
-    RewardType.gem: 'assets/sounds/gem.wav',
-    RewardType.star: 'assets/sounds/star.wav',
+    RewardType.gem: 'assets/audios/UI/SFX/Gamification_SFX/WinningGold_Sound.mp3',
+    RewardType.star: 'assets/audios/UI/SFX/Gamification_SFX/xp_Sound.mp3',
   };
 
   void init(BuildContext context) {
-    _overlayState = Overlay.of(context)!;
+    _overlayState = Overlay.of(context);
   }
 
   void spawnReward({
@@ -136,9 +136,9 @@ class FlyingRewardManager {
 
   void preloadSounds(BuildContext context) {
     final audioManager = Provider.of<AudioManager>(context, listen: false);
-    _soundAssets.values.forEach((asset) {
+    for (var asset in _soundAssets.values) {
       // Optional: preload if AudioManager supports it
       // audioManager.preloadSfx(asset);
-    });
+    }
   }
 }

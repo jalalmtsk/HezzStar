@@ -26,7 +26,7 @@ class RewardDimScreen {
         label = "Gold";
         glowColor = Colors.amberAccent;
         auraLottie = "assets/animations/AnimationSFX/RewawrdLightEffect.json";
-        audioPath = "assets/sounds/gold_sound.mp3";
+        audioPath = "assets/audios/UI/SFX/Gamification_SFX/rewardGemsOpening.mp3";
         break;
       case RewardType.gem:
         assetPath = "assets/UI/Icons/Gamification/Gems_Icon.png";
@@ -40,7 +40,7 @@ class RewardDimScreen {
         label = "XP";
         glowColor = Colors.yellowAccent;
         auraLottie = "assets/animations/AnimationSFX/RewawrdLightEffect.json";
-        audioPath = "assets/sounds/star_sound.mp3";
+        audioPath = "assets/audios/UI/SFX/Gamification_SFX/rewardGemsOpening.mp3";
         break;
     }
 
@@ -51,7 +51,7 @@ class RewardDimScreen {
     // Show dialog
     showDialog(
       context: context,
-      barrierColor: Colors.black.withOpacity(0.75), // immersive dim
+      barrierColor: Colors.black.withOpacity(0.30), // immersive dim
       barrierDismissible: false,
       builder: (_) {
         return GestureDetector(

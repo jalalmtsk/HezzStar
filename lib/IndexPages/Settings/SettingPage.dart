@@ -1,6 +1,7 @@
 // file: settings_page.dart
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:hezzstar/Hezz2FinalGame/Tools/Dialog/InstructionDialog.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import '../../ExperieneManager.dart';
@@ -299,6 +300,8 @@ class _SettingsPageState extends State<SettingsPage>
                           children: [
 
                             ListTile(
+                              leading:
+                              const Icon(Icons.language, color: Colors.white),
                               title:  Text("Language ${tr(context).add}", style: TextStyle(color: Colors.white)),
                               trailing: Text(
                                 selectedLanguage,
@@ -331,6 +334,23 @@ class _SettingsPageState extends State<SettingsPage>
                                   Provider.of<ExperienceManager>(context, listen: false)
                                       .setPreferredLanguage(_mapLangToCode(chosenLang));
                                 }
+                              },
+                            ),
+
+                            ListTile(
+                              leading:
+                              const Icon(Icons.insights, color: Colors.white),
+                              title: const Text("Instructions",
+                                  style: TextStyle(color: Colors.white)),
+                              subtitle: Text("Game Instructions",
+                                  style:
+                                  const TextStyle(color: Colors.white70)),
+                              onTap: () {
+                                // TODO: Show about dialog
+                                showDialog(
+                                  context: context,
+                                  builder: (_) => const InstructionsDialog(),
+                                );
                               },
                             ),
                           ],
@@ -403,6 +423,8 @@ class _SettingsPageState extends State<SettingsPage>
                                 );
                               },
                             ),
+
+
                             ListTile(
                               leading: const Icon(Icons.email,
                                   color: Colors.deepPurple),

@@ -60,6 +60,9 @@ class _PlayerCardState extends State<PlayerCard> with TickerProviderStateMixin {
   final List<String> _specialLotties = [
     'assets/animations/MessageAnimations/MoneyEmoji.json',
     'assets/animations/MessageAnimations/Snake.json',
+    'assets/animations/MessageAnimations/Bunny.json',
+    'assets/animations/MessageAnimations/duck.json',
+    'assets/animations/MessageAnimations/RunningBird.json'
   ];
 
   @override
@@ -126,7 +129,7 @@ class _PlayerCardState extends State<PlayerCard> with TickerProviderStateMixin {
       _isOverlayActive = true;
     });
 
-    _overlayTimer = Timer(const Duration(seconds: 2), () {
+    _overlayTimer = Timer(const Duration(seconds: 3), () {
       if (mounted) {
         setState(() {
           overlayAnimation = null;
@@ -192,7 +195,7 @@ class _PlayerCardState extends State<PlayerCard> with TickerProviderStateMixin {
           margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 3),
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [Colors.black.withOpacity(0.6), Colors.black.withOpacity(0.85)],
+              colors: [Colors.black.withOpacity(0.6), Colors.black.withValues(alpha: 0.85)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -200,7 +203,7 @@ class _PlayerCardState extends State<PlayerCard> with TickerProviderStateMixin {
             borderRadius: BorderRadius.circular(12),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.5),
+                color: Colors.black.withValues(alpha: 0.5),
                 blurRadius: 6,
                 offset: const Offset(1, 2),
               )
@@ -211,46 +214,7 @@ class _PlayerCardState extends State<PlayerCard> with TickerProviderStateMixin {
             children: [
               const SizedBox(height: 6),
               PlayerName(name: info.name, maxWidth: 60),
-              GestureDetector(
-                onTap: () {
-                  showDialog(
-                    context: context,
-                    builder: (context) => Dialog(
-                      backgroundColor: Colors.transparent,
-                      child: Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.black87,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Wrap(
-                          spacing: 10,
-                          runSpacing: 10,
-                          alignment: WrapAlignment.center,
-                          children: _specialLotties.map((animationPath) {
-                            return GestureDetector(
-                              onTap: () {
-                                Navigator.of(context).pop();
-                                _showOverlayAnimation(animationPath);
-                              },
-                              child: Lottie.asset(
-                                animationPath,
-                                width: 80,
-                                height: 80,
-                                repeat: false,
-                              ),
-                            );
-                          }).toList(),
-                        ),
-                      ),
-                    ),
-                  );
-                },
-                child: const Text(
-                  "Show",
-                  style: TextStyle(fontSize: 12, color: Colors.white),
-                ),
-              ),
+
               const SizedBox(height: 4),
               if (!widget.isEliminated)
                 _AnimatedCardContainer(
@@ -266,6 +230,54 @@ class _PlayerCardState extends State<PlayerCard> with TickerProviderStateMixin {
                 ),
               const SizedBox(height: 4),
               if (!widget.isEliminated) CardCount(count: widget.cardCount),
+
+              GestureDetector(
+                onTap: () {
+                  showDialog(
+                    context: context,
+                    builder: (context) => Dialog(
+                      backgroundColor: Colors.transparent,
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.black87,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          alignment: WrapAlignment.center,
+                          children: _specialLotties.map((animationPath) {
+                            return GestureDetector(
+                              onTap: () {
+                                Navigator.of(context).pop();
+                                _showOverlayAnimation(animationPath);
+                              },
+                              child: Lottie.asset(
+                                animationPath,
+                                width: 80,
+                                height: 80,
+                                repeat: true,
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.card_giftcard,color: Colors.white,size: 16,
+                    ),
+                    const Icon(
+                      Icons.card_giftcard,color: Colors.white,size: 16,
+                    ),
+                  ],
+                ),
+              ),
+
             ],
           ),
         ),
@@ -287,7 +299,7 @@ class _PlayerCardState extends State<PlayerCard> with TickerProviderStateMixin {
                       return CircularProgressIndicator(
                         value: value,
                         color: statusColor,
-                        backgroundColor: statusColor.withOpacity(0.2),
+                        backgroundColor: statusColor.withValues(alpha: 0.2),
                         strokeWidth: 3,
                       );
                     },
@@ -295,7 +307,7 @@ class _PlayerCardState extends State<PlayerCard> with TickerProviderStateMixin {
                 ),
               CircleAvatar(
                 radius: widget.isTurn ? 30 : 26,
-                backgroundColor: Colors.black.withOpacity(0.2),
+                backgroundColor: Colors.black.withValues(alpha: 0.2),
                 backgroundImage: AssetImage(info.avatarPath),
               ),
               if (isLottieActivated && reactionAnimation != null)
@@ -322,7 +334,7 @@ class _PlayerCardState extends State<PlayerCard> with TickerProviderStateMixin {
                       borderRadius: BorderRadius.circular(10),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.3),
+                          color: Colors.black.withValues(alpha: 0.3),
                           blurRadius: 3,
                           offset: const Offset(1, 1),
                         )
@@ -338,6 +350,9 @@ class _PlayerCardState extends State<PlayerCard> with TickerProviderStateMixin {
                     ),
                   ),
                 ),
+
+
+
             ],
           ),
         ),
@@ -362,45 +377,33 @@ class _PlayerCardState extends State<PlayerCard> with TickerProviderStateMixin {
 
 // ---------------- LottieEffect map ----------------
 final Map<String, LottieEffect> _lottieEffects = {
-  'assets/animations/MessageAnimations/AngryEmoji.json': LottieEffect(
-    color: Colors.redAccent,
-    sound: 'assets/audios/UI/SFX/MessageSound/evilLaugh.mp3',
+  'assets/animations/MessageAnimations/Bunny.json': LottieEffect(
+    color: Colors.white,
+    sound: 'assets/audios/UI/SFX/MessageSound/BunnyFunnyMessage.mp3',
     scale: 1.1,
     rotation: 0.05,
   ),
-  'assets/animations/MessageAnimations/CoolEmoji.json': LottieEffect(
-    color: Colors.blueAccent,
-    sound: 'assets/audios/UI/SFX/MessageSound/ohYeah.mp3',
+  'assets/animations/MessageAnimations/duck.json': LottieEffect(
+    color: Colors.deepOrangeAccent,
+    sound: 'assets/audios/UI/SFX/MessageSound/duckQwarkMessage.mp3',
     scale: 1.08,
     rotation: 0.03,
   ),
-  'assets/animations/MessageAnimations/LaughingCat.json': LottieEffect(
-    color: Colors.orangeAccent,
-    sound: 'assets/audios/UI/SFX/MessageSound/CatLaugh.mp3',
+  'assets/animations/MessageAnimations/RunningBird.json': LottieEffect(
+    color: Colors.blueAccent,
+    sound: 'assets/audios/UI/SFX/MessageSound/kaaaaakaaaBirdMessage.mp3',
     scale: 1.12,
     rotation: 0.07,
   ),
-  'assets/animations/MessageAnimations/cryingSmoothymon.json': LottieEffect(
-    color: Colors.lightBlueAccent,
-    sound: 'assets/audios/UI/SFX/MessageSound/CryingAziza.mp3',
-    scale: 1.08,
-    rotation: -0.03,
-  ),
-  'assets/animations/MessageAnimations/StreamOfHearts.json': LottieEffect(
-    color: Colors.pinkAccent,
-    sound: 'assets/audios/UI/SFX/HeartsSound.mp3',
-    scale: 1.1,
-    rotation: 0.04,
-  ),
   'assets/animations/MessageAnimations/MoneyEmoji.json': LottieEffect(
     color: Colors.yellowAccent,
-    sound: 'assets/audios/UI/SFX/SpecialEffect.mp3',
+    sound: 'assets/audios/UI/SFX/MessageSound/MoneyEmojiMessage.mp3',
     scale: 1.3,
     rotation: 0.08,
   ),
   'assets/animations/MessageAnimations/Snake.json': LottieEffect(
     color: Colors.green,
-    sound: 'assets/audios/UI/SFX/SpecialEffect.mp3',
+    sound: 'assets/audios/UI/SFX/MessageSound/SnakeHissMessage.mp3',
     scale: 1.5,
     rotation: 0.09,
   ),
@@ -508,5 +511,3 @@ class _AnimatedCardContainerState extends State<_AnimatedCardContainer>
     );
   }
 }
-
-

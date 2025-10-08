@@ -114,9 +114,21 @@ class CardGridWidget extends StatelessWidget {
                   child: Image.asset(imagePath, width: 120, height: 160),
                 ),
                 const SizedBox(height: 16),
-                Text(
-                  "Do you want to unlock this card for $cost $currencySymbol?",
-                  textAlign: TextAlign.center,
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      "Unlock for $cost",
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    Image.asset(
+                      currency == CurrencyType.gold
+                          ? 'assets/UI/Icons/Gamification/GoldInGame_Icon.png'
+                          : 'assets/UI/Icons/Gamification/Gems_Icon.png',
+                      width: 24,
+                      height: 24,
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 20),
                 Row(
@@ -124,7 +136,7 @@ class CardGridWidget extends StatelessWidget {
                   children: [
                     OutlinedButton(
                       onPressed: () {
-                        audioManager.playEventSound("cancelButton");
+                        audioManager.playEventSound("sandClick");
                         Navigator.of(context).pop();
                       },
                       child: const Text("Cancel"),
@@ -143,9 +155,11 @@ class CardGridWidget extends StatelessWidget {
                         }
 
                         if (success) {
+                          audioManager.playSfx("assets/audios/UI/SFX/Gamification_SFX/Win1.mp3");
+
                           xpManager.unlockCard(imagePath);
                           xpManager.selectCard(imagePath);
-                          audioManager.playEventSound("clickButton");
+                          audioManager.playEventSound("sandClick");
 
                           // Close purchase dialog
                           Navigator.of(context).pop();
