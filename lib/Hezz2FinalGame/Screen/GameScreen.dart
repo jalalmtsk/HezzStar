@@ -42,9 +42,9 @@ class GameScreen extends StatefulWidget {
     required this.mode,
     required this.gameModeType,
     required this.selectedBet,
-
     super.key
   });
+
   @override
   State<GameScreen> createState() => _GameScreenState();
 }
@@ -53,6 +53,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
 
   CenterLottieEffect? _CenteredActiveLottie;
   CenterImageEffect? _CenteredActiveImage;
+  CenterBanner? _CenteredActiveBanner;
+
 
   late Deck deck;
   final ScrollController handScrollController = ScrollController();
@@ -81,6 +83,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   final GlobalKey centerKey = GlobalKey();
   final GlobalKey handKey = GlobalKey();
   List<GlobalKey> playerCardKeys = [];
+  final GlobalKey _animStackKey = GlobalKey();
+
 
   final Duration playDur = const Duration(milliseconds: 800);
   final Duration drawDur = const Duration(milliseconds: 200);
@@ -255,8 +259,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   // Internal generic method
   Future<void> _animateCardInternal(
       PlayingCard card,
-      Offset from,
-      Offset to, {
+      Offset fromGlobal,
+      Offset toGlobal, {
         required bool faceUp,
         bool flip = false,
         bool cinematic = false,
@@ -272,12 +276,34 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     final ctrl = AnimationController(vsync: this, duration: dur);
     final curve = CurvedAnimation(parent: ctrl, curve: Curves.easeInOutCubic);
 
+    // card dimensions (single source of truth)
+    const double cardW = 70.0;
+    const double cardH = 110.0;
+    final halfW = cardW / 2;
+    final halfH = cardH / 2;
+
+    // Convert the global screen coordinates (fromGlobal,toGlobal)
+    // to local coordinates of the animation Stack so Positioned left/top align correctly.
+    Offset? start = fromGlobal;
+    Offset? end = toGlobal;
+    try {
+      final stackContext = _animStackKey.currentContext;
+      if (stackContext != null) {
+        final RenderBox stackBox = stackContext.findRenderObject() as RenderBox;
+        start = stackBox.globalToLocal(fromGlobal);
+        end = stackBox.globalToLocal(toGlobal);
+      }
+    } catch (_) {
+      // fallback - keep globals if conversion fails
+    }
+
     // Create the animated widget
-    late Widget animatedCard; // Use late to reference inside builder
+    late Widget animatedCard;
     animatedCard = AnimatedBuilder(
       animation: curve,
       builder: (_, __) {
-        final pos = Offset.lerp(from, to, curve.value)!;
+        final pos = Offset.lerp(start!, end!, curve.value)!;
+
         double scale = 1.0;
         double rotationY = 0.0;
         double opacity = 1.0;
@@ -286,17 +312,18 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
         if (flip) {
           final flipProgress = curve.value;
           rotationY = flipProgress * pi;
+          // Use small uniform scaling so center remains stable
           scale = 1.0 + 0.05 * sin(rotationY);
           final showFront = flipProgress > 0.5;
 
           child = Transform(
             alignment: Alignment.center,
             transform: Matrix4.identity()
-              ..scale(scale, 1.0)
+              ..scale(scale, scale) // uniform scale to keep center
               ..rotateY(rotationY),
             child: SizedBox(
-              width: 70,
-              height: 110,
+              width: cardW,
+              height: cardH,
               child: Image.asset(
                   showFront ? card.assetName : card.backAsset(context),
                   fit: BoxFit.cover),
@@ -307,9 +334,10 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
           opacity = cinematic ? 0.5 + curve.value * 0.5 : 1.0;
           child = Transform.scale(
             scale: scale,
+            alignment: Alignment.center,
             child: SizedBox(
-              width: 70,
-              height: 110,
+              width: cardW,
+              height: cardH,
               child: Image.asset(
                   faceUp ? card.assetName : card.backAsset(context),
                   fit: BoxFit.cover),
@@ -317,15 +345,16 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
           );
         }
 
+        // Position so the center of the card is at pos
         return Positioned(
-          left: pos.dx - 43,
-          top: pos.dy - 60,
-          child: Opacity(opacity: opacity, child: child),
+          left: pos.dx - halfW,
+          top: pos.dy - halfH,
+          child: Opacity(opacity: opacity,
+          child: child),
         );
       },
     );
 
-    // Add the animated card to the Stack
     if (!_isPageActive) return;
     setState(() {
       _animatedCardsWidgets.add(animatedCard);
@@ -334,11 +363,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
 
     try {
       await ctrl.forward();
-    } catch (_) {
-      // ignore if animation interrupted
-    }
+    } catch (_) {}
 
-    // Remove after animation ends
     if (!_isPageActive) return;
     setState(() {
       _animatedCardsWidgets.remove(animatedCard);
@@ -346,6 +372,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     });
     ctrl.dispose();
   }
+
 
 
 
@@ -437,8 +464,13 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       }
 
       // Show visual effect
-      CenterBanner(context: context, centerKey: centerKey)
-          .show("+$pendingDraw", Colors.orangeAccent);
+      setState(() {
+        _CenteredActiveBanner = CenterBanner(
+          text: "+$pendingDraw",
+          color: Colors.orangeAccent,
+          onEnd: () => setState(() => _CenteredActiveBanner = null),
+        );
+      });
 
 
       final myImage = AssetImage('assets/UI/Containers/Hezz2_Effect.png');
@@ -460,8 +492,14 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     else if (card.rank == 1) {
       skipNext = true;
       playSfxVoice("assets/audios/UI/SFX/Voices/Roppo_Voice.mp3");
-      CenterBanner(context: context, centerKey: centerKey)
-          .show("Skip", Colors.orangeAccent);
+
+      setState(() {
+        _CenteredActiveBanner = CenterBanner(
+          text: "Skip",
+          color: Colors.orangeAccent,
+          onEnd: () => setState(() => _CenteredActiveBanner = null),
+        );
+      });
 
       // Show Lottie animation
       setState(() {
@@ -492,13 +530,25 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
             discard.add(topCard!);
           });
 
-          CenterBanner(context: context, centerKey: centerKey)
-              .show('Suit: $choice', Colors.orangeAccent);
+          setState(() {
+            _CenteredActiveBanner = CenterBanner(
+              text: 'Suit: $choice',
+              color: Colors.orangeAccent,
+              onEnd: () => setState(() => _CenteredActiveBanner = null),
+            );
+          });
+
         }
       } else {
         final suit = _botPickSuit(player);
-        CenterBanner(context: context, centerKey: centerKey)
-            .show('Suit: $suit', Colors.orangeAccent);
+        setState(() {
+          _CenteredActiveBanner = CenterBanner(
+            text: 'Suit: $suit',
+            color: Colors.orangeAccent,
+            onEnd: () => setState(() => _CenteredActiveBanner = null),
+          );
+        });
+
         await Future.delayed(const Duration(milliseconds: 1200));
 
         setState(() {
@@ -639,7 +689,13 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
           }
           await Future.delayed(const Duration(milliseconds: 90));
         }
-        CenterBanner(context: context,centerKey:centerKey).show('Drew $pendingDraw cards', Colors.purpleAccent);
+        setState(() {
+          _CenteredActiveBanner = CenterBanner(
+            text: 'Drew $pendingDraw cards',
+            color: Colors.purpleAccent,
+            onEnd: () => setState(() => _CenteredActiveBanner = null),
+          );
+        });
         pendingDraw = 0;
         await Future.delayed(const Duration(milliseconds: 300));
         _advanceTurn();
@@ -667,7 +723,14 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
           d, start, botPos);
       }
 
-      CenterBanner(context: context,centerKey:centerKey).show('Drew & skipped', Colors.purpleAccent);
+      setState(() {
+        _CenteredActiveBanner = CenterBanner(
+          text: 'Drew & skipped',
+          color: Colors.purpleAccent,
+          onEnd: () => setState(() => _CenteredActiveBanner = null),
+        );
+      });
+
       await Future.delayed(const Duration(milliseconds: 300));
       _advanceTurn();
       return;
@@ -805,9 +868,16 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
           if (activePlayers == 1) {
             eliminatedPlayers[lastActivePlayer] = true;
 
-          CenterBanner(context: context,centerKey:centerKey).show('Player ${lastActivePlayer == 0
-                ? "You"
-                : "Bot $lastActivePlayer"} eliminated!', Colors.red);
+            setState(() {
+              _CenteredActiveBanner = CenterBanner(
+                text: 'Player ${lastActivePlayer == 0
+                    ? "You"
+                    : "Bot $lastActivePlayer"} eliminated!',
+                color: Colors.red,
+                onEnd: () => setState(() => _CenteredActiveBanner = null),
+              );
+            });
+
             // Check if the eliminated player is the current player
             // If so, advance the turn immediately
             if (currentPlayer == lastActivePlayer) {
@@ -1056,6 +1126,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
             if (!isBetweenRounds)
               SafeArea(
                 child: Stack(
+                  key: _animStackKey,
                   children: [
 
 
@@ -1215,6 +1286,12 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                       ),
                     ),
 
+
+
+                    if (_CenteredActiveBanner != null)
+                      Center(
+                        child: _CenteredActiveBanner!,
+                      ),
                     if (_CenteredActiveLottie != null)
                       Center(
                         child: _CenteredActiveLottie!,

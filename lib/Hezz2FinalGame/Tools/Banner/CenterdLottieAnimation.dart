@@ -10,8 +10,8 @@ class CenterLottieEffect extends StatefulWidget {
   const CenterLottieEffect({
     super.key,
     required this.lottieAsset,
-    this.size = 250,
-    this.duration = const Duration(seconds: 1),
+    this.size = 270,
+    this.duration = const Duration(milliseconds: 600),
     this.onEnd,
   });
 
@@ -30,7 +30,7 @@ class _CenterLottieEffectWidgetState extends State<CenterLottieEffect>
     super.initState();
 
     _controller = AnimationController(
-      duration: const Duration(milliseconds: 800),
+      duration: const Duration(milliseconds: 500),
       vsync: this,
     );
 

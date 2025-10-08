@@ -1,15 +1,16 @@
+// --------------------- PlayerCard.dart ----------------------
 import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:hezzstar/tools/AudioManager/AudioManager.dart';
 import 'package:lottie/lottie.dart';
-import 'package:marquee/marquee.dart';
 import 'package:provider/provider.dart';
 import '../Tools/Dialog/BotPlayerInfoDialog.dart';
+import 'BotStack_Tools/CardCount.dart';
+import 'BotStack_Tools/CardPreview.dart';
+import 'BotStack_Tools/PlayerName.dart';
 
-
-bool isLottieActivated = true; // default ON
-
+bool isLottieActivated = true;
 
 class PlayerCard extends StatefulWidget {
   final int bot;
@@ -41,7 +42,11 @@ class PlayerCard extends StatefulWidget {
 
 class _PlayerCardState extends State<PlayerCard> with TickerProviderStateMixin {
   String? reactionAnimation;
+  String? overlayAnimation;
+  LottieEffect? _overlayEffect;
+  bool _isOverlayActive = false;
   Timer? _reactionTimer;
+  Timer? _overlayTimer;
   bool _botTurnSoundPlayed = false;
 
   final Map<String, String> _reactionSounds = {
@@ -52,6 +57,10 @@ class _PlayerCardState extends State<PlayerCard> with TickerProviderStateMixin {
     'assets/animations/MessageAnimations/StreamOfHearts.json': 'assets/audios/UI/SFX/HeartsSound.mp3',
   };
 
+  final List<String> _specialLotties = [
+    'assets/animations/MessageAnimations/MoneyEmoji.json',
+    'assets/animations/MessageAnimations/Snake.json',
+  ];
 
   @override
   void initState() {
@@ -60,7 +69,7 @@ class _PlayerCardState extends State<PlayerCard> with TickerProviderStateMixin {
   }
 
   void _startRandomReactions() {
-    if (!isLottieActivated) return; // skip entirely
+    if (!isLottieActivated) return;
     final random = Random();
     _reactionTimer = Timer(
       Duration(milliseconds: 4500 + random.nextInt(10000)),
@@ -70,7 +79,6 @@ class _PlayerCardState extends State<PlayerCard> with TickerProviderStateMixin {
 
   void _playRandomReaction() {
     if (!mounted || !isLottieActivated) return;
-
     final random = Random();
     final keys = _reactionSounds.keys.toList();
     final selectedAnimation = keys[random.nextInt(keys.length)];
@@ -107,9 +115,36 @@ class _PlayerCardState extends State<PlayerCard> with TickerProviderStateMixin {
     }
   }
 
+  void _showOverlayAnimation(String animationPath) {
+    _overlayTimer?.cancel();
+
+    final effect = _lottieEffects[animationPath];
+
+    setState(() {
+      overlayAnimation = animationPath;
+      _overlayEffect = effect;
+      _isOverlayActive = true;
+    });
+
+    _overlayTimer = Timer(const Duration(seconds: 2), () {
+      if (mounted) {
+        setState(() {
+          overlayAnimation = null;
+          _isOverlayActive = false;
+          _overlayEffect = null;
+        });
+      }
+    });
+
+    // play sound associated with the effect
+    final audioManager = Provider.of<AudioManager>(context, listen: false);
+    audioManager.playSfx(effect?.sound ?? 'assets/audios/UI/SFX/SpecialEffect.mp3');
+  }
+
   @override
   void dispose() {
     _reactionTimer?.cancel();
+    _overlayTimer?.cancel();
     super.dispose();
   }
 
@@ -135,29 +170,24 @@ class _PlayerCardState extends State<PlayerCard> with TickerProviderStateMixin {
       statusText = 'TURN';
     }
 
-    // ---------------------- BOT TURN SOUND ----------------------
-// Play sound only once when bot's turn starts
     if (widget.bot > 0 && widget.isTurn && !_botTurnSoundPlayed) {
-      final audioManager =  Provider.of<AudioManager>(context, listen: false);
+      final audioManager = Provider.of<AudioManager>(context, listen: false);
       _botTurnSoundPlayed = true;
       audioManager.playSfx("assets/audios/UI/SFX/Gamification_SFX/Bot'sTurnSound.mp3");
     }
 
-// Reset the flag when turn ends
     if (!widget.isTurn && _botTurnSoundPlayed) {
       _botTurnSoundPlayed = false;
     }
-// ------------------------------------------------------------
 
     return Stack(
       clipBehavior: Clip.none,
       alignment: Alignment.topCenter,
       children: [
-        // Main container
         Container(
           key: widget.playerKey,
           width: 85,
-          height: 170,
+          height: 184,
           padding: const EdgeInsets.only(top: 36, left: 6, right: 6, bottom: 6),
           margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 3),
           decoration: BoxDecoration(
@@ -177,40 +207,75 @@ class _PlayerCardState extends State<PlayerCard> with TickerProviderStateMixin {
             ],
           ),
           child: Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        const SizedBox(height: 6),
-        _PlayerName(name: info.name, maxWidth: 60),
-        const SizedBox(height: 6),
-
-        // Show cards only if not eliminated
-        if (!widget.isEliminated)
-          _CardPreview(
-            hand: widget.hand,
-            vertical: widget.vertical,
-            scale: 1.3,
-            isEliminated: widget.isEliminated,
-            isQualified: widget.isQualified,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const SizedBox(height: 6),
+              PlayerName(name: info.name, maxWidth: 60),
+              GestureDetector(
+                onTap: () {
+                  showDialog(
+                    context: context,
+                    builder: (context) => Dialog(
+                      backgroundColor: Colors.transparent,
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.black87,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Wrap(
+                          spacing: 10,
+                          runSpacing: 10,
+                          alignment: WrapAlignment.center,
+                          children: _specialLotties.map((animationPath) {
+                            return GestureDetector(
+                              onTap: () {
+                                Navigator.of(context).pop();
+                                _showOverlayAnimation(animationPath);
+                              },
+                              child: Lottie.asset(
+                                animationPath,
+                                width: 80,
+                                height: 80,
+                                repeat: false,
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+                child: const Text(
+                  "Show",
+                  style: TextStyle(fontSize: 12, color: Colors.white),
+                ),
+              ),
+              const SizedBox(height: 4),
+              if (!widget.isEliminated)
+                _AnimatedCardContainer(
+                  isActive: _isOverlayActive,
+                  lottieEffect: _overlayEffect,
+                  child: CardPreview(
+                    hand: widget.hand,
+                    vertical: widget.vertical,
+                    scale: 1.3,
+                    isEliminated: widget.isEliminated,
+                    isQualified: widget.isQualified,
+                  ),
+                ),
+              const SizedBox(height: 4),
+              if (!widget.isEliminated) CardCount(count: widget.cardCount),
+            ],
           ),
+        ),
 
-        const SizedBox(height: 4),
-
-        // Show card count only if not eliminated
-        if (!widget.isEliminated)
-          _CardCount(count: widget.cardCount),
-      ],
-    ),
-    ),
-
-
-        // Avatar outside container
         Positioned(
           top: -22,
           child: Stack(
             alignment: Alignment.center,
             clipBehavior: Clip.none,
             children: [
-              // Turn indicator
               if (widget.isTurn && widget.handDealt)
                 SizedBox(
                   width: 64,
@@ -228,35 +293,25 @@ class _PlayerCardState extends State<PlayerCard> with TickerProviderStateMixin {
                     },
                   ),
                 ),
-
-              // Avatar
               CircleAvatar(
                 radius: widget.isTurn ? 30 : 26,
                 backgroundColor: Colors.black.withOpacity(0.2),
                 backgroundImage: AssetImage(info.avatarPath),
               ),
-
-              // Random reaction animation
-              if (isLottieActivated)
+              if (isLottieActivated && reactionAnimation != null)
                 Positioned(
                   top: 20,
                   child: SizedBox(
                     width: 58,
                     height: 58,
-                    child: reactionAnimation != null
-                        ? Lottie.asset(
+                    child: Lottie.asset(
                       reactionAnimation!,
                       key: ValueKey(reactionAnimation),
                       repeat: false,
                       fit: BoxFit.contain,
-                    )
-                        : const SizedBox.shrink(),
+                    ),
                   ),
                 ),
-
-
-
-              // Status badge
               if (statusText.isNotEmpty)
                 Positioned(
                   top: -14,
@@ -286,194 +341,172 @@ class _PlayerCardState extends State<PlayerCard> with TickerProviderStateMixin {
             ],
           ),
         ),
+
+        if (overlayAnimation != null)
+          Positioned(
+            bottom: 40,
+            child: SizedBox(
+              width: 75,
+              height: 75,
+              child: Lottie.asset(
+                overlayAnimation!,
+                repeat: false,
+                fit: BoxFit.contain,
+              ),
+            ),
+          ),
       ],
     );
   }
 }
 
-// ------------------ Other Widgets ---------------------
+// ---------------- LottieEffect map ----------------
+final Map<String, LottieEffect> _lottieEffects = {
+  'assets/animations/MessageAnimations/AngryEmoji.json': LottieEffect(
+    color: Colors.redAccent,
+    sound: 'assets/audios/UI/SFX/MessageSound/evilLaugh.mp3',
+    scale: 1.1,
+    rotation: 0.05,
+  ),
+  'assets/animations/MessageAnimations/CoolEmoji.json': LottieEffect(
+    color: Colors.blueAccent,
+    sound: 'assets/audios/UI/SFX/MessageSound/ohYeah.mp3',
+    scale: 1.08,
+    rotation: 0.03,
+  ),
+  'assets/animations/MessageAnimations/LaughingCat.json': LottieEffect(
+    color: Colors.orangeAccent,
+    sound: 'assets/audios/UI/SFX/MessageSound/CatLaugh.mp3',
+    scale: 1.12,
+    rotation: 0.07,
+  ),
+  'assets/animations/MessageAnimations/cryingSmoothymon.json': LottieEffect(
+    color: Colors.lightBlueAccent,
+    sound: 'assets/audios/UI/SFX/MessageSound/CryingAziza.mp3',
+    scale: 1.08,
+    rotation: -0.03,
+  ),
+  'assets/animations/MessageAnimations/StreamOfHearts.json': LottieEffect(
+    color: Colors.pinkAccent,
+    sound: 'assets/audios/UI/SFX/HeartsSound.mp3',
+    scale: 1.1,
+    rotation: 0.04,
+  ),
+  'assets/animations/MessageAnimations/MoneyEmoji.json': LottieEffect(
+    color: Colors.yellowAccent,
+    sound: 'assets/audios/UI/SFX/SpecialEffect.mp3',
+    scale: 1.3,
+    rotation: 0.08,
+  ),
+  'assets/animations/MessageAnimations/Snake.json': LottieEffect(
+    color: Colors.green,
+    sound: 'assets/audios/UI/SFX/SpecialEffect.mp3',
+    scale: 1.5,
+    rotation: 0.09,
+  ),
+};
 
-class _CardPreview extends StatelessWidget {
-  final List<dynamic> hand;
-  final bool vertical;
+class LottieEffect {
+  final Color color;
+  final String sound;
   final double scale;
-  final bool isEliminated;
-  final bool isQualified;
-
-  const _CardPreview({
-    required this.hand,
-    required this.vertical,
+  final double rotation;
+  LottieEffect({
+    required this.color,
+    required this.sound,
     this.scale = 1.0,
-    this.isEliminated = false,
-    this.isQualified = false,
+    this.rotation = 0.0,
+  });
+}
+
+// ---------------- AnimatedCardContainer ----------------
+class _AnimatedCardContainer extends StatefulWidget {
+  final bool isActive;
+  final LottieEffect? lottieEffect;
+  final Widget child;
+
+  const _AnimatedCardContainer({
+    required this.isActive,
+    this.lottieEffect,
+    required this.child,
   });
 
   @override
-  Widget build(BuildContext context) {
-    double cardWidth = (vertical ? 38 : 45) * scale;
-    double cardHeight = (vertical ? 54 : 60) * scale;
+  State<_AnimatedCardContainer> createState() => _AnimatedCardContainerState();
+}
 
-    return SizedBox(
-      width: cardWidth + 10,
-      height: cardHeight,
-      child: Stack(
-        children: [
-          for (int i = 0; i < hand.length && i < 3; i++)
-            Positioned(
-              left: i * 6,
-              top: i * 3,
-              child: Stack(
-                children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(6),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.3),
-                          blurRadius: 2,
-                          offset: const Offset(1, 1),
-                        )
-                      ],
-                    ),
-                    child: Image.asset(
-                      hand.isNotEmpty
-                          ? hand.first.backAsset(context)
-                          : 'assets/images/cards/backCard.png',
-                      width: cardWidth,
-                      height: cardHeight,
-                      fit: BoxFit.cover,
-                      color: (isEliminated || isQualified)
-                          ? Colors.grey.withOpacity(0.6)
-                          : null,
-                      colorBlendMode: BlendMode.saturation,
-                    ),
-                  ),
-                  if (isEliminated)
-                    Positioned.fill(
-                      child: Container(
-                        alignment: Alignment.center,
-                        color: Colors.red.withOpacity(0.4),
-                        child: const Text(
-                          "ELIMINATED",
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                    ),
-                  if (isQualified)
-                    Positioned.fill(
-                      child: Container(
-                        alignment: Alignment.center,
-                        color: Colors.blue.withOpacity(0.4),
-                        child: const Text(
-                          "QUALIFIED",
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                    ),
-                ],
-              ),
+class _AnimatedCardContainerState extends State<_AnimatedCardContainer>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+  late Animation<double> _rotationAnimation;
+  late Animation<Color?> _glowAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 300));
+    _updateAnimations();
+    if (widget.isActive) _controller.forward();
+  }
+
+  void _updateAnimations() {
+    final effect = widget.lottieEffect;
+    _scaleAnimation = Tween<double>(begin: 1.0, end: effect?.scale ?? 1.08)
+        .animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutBack));
+    _rotationAnimation = Tween<double>(begin: 0.0, end: effect?.rotation ?? 0.03)
+        .animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
+    _glowAnimation = ColorTween(
+      begin: Colors.transparent,
+      end: effect?.color.withOpacity(0.6) ?? Colors.yellowAccent.withOpacity(0.6),
+    ).animate(_controller);
+  }
+
+  @override
+  void didUpdateWidget(covariant _AnimatedCardContainer oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _updateAnimations();
+    if (widget.isActive) _controller.forward();
+    else _controller.reverse();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        return Transform(
+          alignment: Alignment.center,
+          transform: Matrix4.identity()
+            ..scale(_scaleAnimation.value)
+            ..rotateZ(_rotationAnimation.value),
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              border: widget.isActive
+                  ? Border.all(color: _glowAnimation.value ?? Colors.yellowAccent, width: 3)
+                  : null,
+              boxShadow: [
+                BoxShadow(
+                  color: _glowAnimation.value ?? Colors.transparent,
+                  blurRadius: 18,
+                  spreadRadius: 5,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
-        ],
-      ),
+            child: widget.child,
+          ),
+        );
+      },
     );
   }
 }
 
 
-class _CardCount extends StatelessWidget {
-  final int count;
-  const _CardCount({required this.count});
-
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      "$count cards",
-      style: const TextStyle(
-        fontSize: 10,
-        fontWeight: FontWeight.w600,
-        color: Colors.white,
-        shadows: [
-          Shadow(
-            blurRadius: 2,
-            color: Colors.black,
-            offset: Offset(1, 1),
-          )
-        ],
-      ),
-    );
-  }
-}
-
-class _PlayerName extends StatelessWidget {
-  final String name;
-  final double maxWidth;
-
-  const _PlayerName({required this.name, required this.maxWidth});
-
-  @override
-  Widget build(BuildContext context) {
-    final textPainter = TextPainter(
-      text: TextSpan(
-        text: name,
-        style: const TextStyle(
-          fontSize: 10,
-          fontWeight: FontWeight.bold,
-          color: Colors.white,
-          shadows: [
-            Shadow(blurRadius: 2, color: Colors.black, offset: Offset(1, 1))
-          ],
-        ),
-      ),
-      maxLines: 1,
-      textDirection: TextDirection.ltr,
-    )..layout();
-
-    final isOverflow = textPainter.width > maxWidth;
-
-    if (isOverflow) {
-      return SizedBox(
-        width: maxWidth,
-        height: 16,
-        child: Marquee(
-          text: name,
-          style: const TextStyle(
-            fontSize: 10,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-            shadows: [
-              Shadow(blurRadius: 2, color: Colors.black, offset: Offset(1, 1))
-            ],
-          ),
-          scrollAxis: Axis.horizontal,
-          blankSpace: 20,
-          velocity: 25,
-          pauseAfterRound: const Duration(seconds: 5),
-        ),
-      );
-    } else {
-      return SizedBox(
-        width: maxWidth,
-        height: 16,
-        child: Text(
-          name,
-          style: const TextStyle(
-            fontSize: 10,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-            shadows: [
-              Shadow(blurRadius: 2, color: Colors.black, offset: Offset(1, 1))
-            ],
-          ),
-          overflow: TextOverflow.ellipsis,
-          textAlign: TextAlign.center,
-        ),
-      );
-    }
-  }
-}
