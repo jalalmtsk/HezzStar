@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:hezzstar/tools/AudioManager/AudioManager.dart';
 import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
+import '../../ExperieneManager.dart';
 import '../Tools/Dialog/BotPlayerInfoDialog.dart';
 import 'BotStack_Tools/CardCount.dart';
 import 'BotStack_Tools/CardPreview.dart';
@@ -118,11 +119,24 @@ class _PlayerCardState extends State<PlayerCard> with TickerProviderStateMixin {
     }
   }
 
-  void _showOverlayAnimation(String animationPath) {
-    _overlayTimer?.cancel();
-
+  void _showOverlayAnimation(String animationPath) async {
     final effect = _lottieEffects[animationPath];
+    if (effect == null) return;
 
+    final expManager = Provider.of<ExperienceManager>(context, listen: false);
+    final bool success = await expManager.spendGold(effect.cost);
+
+    if (!success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Not enough gold to use this animation (${effect.cost} 💰)!"),
+        ),
+      );
+      return; // stop here if not enough gold
+    }
+
+    // ✅ Continue playing if cost paid
+    _overlayTimer?.cancel();
     setState(() {
       overlayAnimation = animationPath;
       _overlayEffect = effect;
@@ -139,10 +153,10 @@ class _PlayerCardState extends State<PlayerCard> with TickerProviderStateMixin {
       }
     });
 
-    // play sound associated with the effect
     final audioManager = Provider.of<AudioManager>(context, listen: false);
-    audioManager.playSfx(effect?.sound ?? 'assets/audios/UI/SFX/SpecialEffect.mp3');
+    audioManager.playSfx(effect.sound);
   }
+
 
   @override
   void dispose() {
@@ -191,7 +205,7 @@ class _PlayerCardState extends State<PlayerCard> with TickerProviderStateMixin {
           key: widget.playerKey,
           width: 85,
           height: 184,
-          padding: const EdgeInsets.only(top: 36, left: 6, right: 6, bottom: 6),
+          padding: const EdgeInsets.only(top: 30, left: 4, right: 4, bottom: 4),
           margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 3),
           decoration: BoxDecoration(
             gradient: LinearGradient(
@@ -212,10 +226,9 @@ class _PlayerCardState extends State<PlayerCard> with TickerProviderStateMixin {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const SizedBox(height: 6),
               PlayerName(name: info.name, maxWidth: 60),
 
-              const SizedBox(height: 4),
+              const SizedBox(height: 2),
               if (!widget.isEliminated)
                 _AnimatedCardContainer(
                   isActive: _isOverlayActive,
@@ -223,59 +236,84 @@ class _PlayerCardState extends State<PlayerCard> with TickerProviderStateMixin {
                   child: CardPreview(
                     hand: widget.hand,
                     vertical: widget.vertical,
-                    scale: 1.3,
+                    scale: 1.4,
                     isEliminated: widget.isEliminated,
                     isQualified: widget.isQualified,
                   ),
                 ),
               const SizedBox(height: 4),
               if (!widget.isEliminated) CardCount(count: widget.cardCount),
+              const SizedBox(height: 2,),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  GestureDetector(
+                    onTap: () {
+                      showDialog(
+                        context: context,
+                        builder: (context) => Dialog(
+                          backgroundColor: Colors.transparent,
+                          child: Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: Colors.black87,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Wrap(
+                              spacing: 2,
+                              runSpacing: 2,
+                              alignment: WrapAlignment.center,
+                              children: _specialLotties.map((animationPath) {
+                                final effect = _lottieEffects[animationPath];
+                                return GestureDetector(
+                                  onTap: () {
+                                    Navigator.of(context).pop();
+                                    _showOverlayAnimation(animationPath);
+                                  },
+                                  child: Wrap(
+                                    children: [
+                                      Lottie.asset(animationPath, width: 80, height: 80, repeat: true),
+                                      Column(
+                                        children: [
+                                          Text(
+                                            "${effect?.cost ?? 0}",
+                                            style: const TextStyle(
+                                              color: Colors.amberAccent,
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          Image.asset("assets/UI/Icons/Gamification/GoldInGame_Icon.png", height: 10, width: 10,),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }).toList(),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                    child: const Icon(
+                      Icons.card_giftcard,color: Colors.white,size: 16,),
+                  ),
 
-              GestureDetector(
-                onTap: () {
-                  showDialog(
-                    context: context,
-                    builder: (context) => Dialog(
-                      backgroundColor: Colors.transparent,
-                      child: Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.black87,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Wrap(
-                          spacing: 8,
-                          runSpacing: 8,
-                          alignment: WrapAlignment.center,
-                          children: _specialLotties.map((animationPath) {
-                            return GestureDetector(
-                              onTap: () {
-                                Navigator.of(context).pop();
-                                _showOverlayAnimation(animationPath);
-                              },
-                              child: Lottie.asset(
-                                animationPath,
-                                width: 80,
-                                height: 80,
-                                repeat: true,
-                              ),
-                            );
-                          }).toList(),
-                        ),
-                      ),
+                  GestureDetector(
+                    onTap: () {
+                      final audioManager = Provider.of<AudioManager>(context, listen: false);
+                      audioManager.playEventSound('sandClick');
+                      setState(() {
+                        isLottieActivated = !isLottieActivated;
+                      });
+                    },
+                    child: Icon(
+                      isLottieActivated ? Icons.volume_up : Icons.volume_mute_outlined,
+                      color: isLottieActivated ? Colors.orangeAccent : Colors.grey,
+                      size: 17,
                     ),
-                  );
-                },
-                child: Row(
-                  children: [
-                    const Icon(
-                      Icons.card_giftcard,color: Colors.white,size: 16,
-                    ),
-                    const Icon(
-                      Icons.card_giftcard,color: Colors.white,size: 16,
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
 
             ],
@@ -350,9 +388,6 @@ class _PlayerCardState extends State<PlayerCard> with TickerProviderStateMixin {
                     ),
                   ),
                 ),
-
-
-
             ],
           ),
         ),
@@ -382,30 +417,35 @@ final Map<String, LottieEffect> _lottieEffects = {
     sound: 'assets/audios/UI/SFX/MessageSound/BunnyFunnyMessage.mp3',
     scale: 1.1,
     rotation: 0.05,
+    cost: 500, // 💰
   ),
   'assets/animations/MessageAnimations/duck.json': LottieEffect(
     color: Colors.deepOrangeAccent,
     sound: 'assets/audios/UI/SFX/MessageSound/duckQwarkMessage.mp3',
     scale: 1.08,
     rotation: 0.03,
+    cost: 450,
   ),
   'assets/animations/MessageAnimations/RunningBird.json': LottieEffect(
     color: Colors.blueAccent,
     sound: 'assets/audios/UI/SFX/MessageSound/kaaaaakaaaBirdMessage.mp3',
     scale: 1.12,
     rotation: 0.07,
+    cost: 300,
   ),
   'assets/animations/MessageAnimations/MoneyEmoji.json': LottieEffect(
     color: Colors.yellowAccent,
     sound: 'assets/audios/UI/SFX/MessageSound/MoneyEmojiMessage.mp3',
     scale: 1.3,
     rotation: 0.08,
+    cost: 10000,
   ),
   'assets/animations/MessageAnimations/Snake.json': LottieEffect(
     color: Colors.green,
     sound: 'assets/audios/UI/SFX/MessageSound/SnakeHissMessage.mp3',
     scale: 1.5,
     rotation: 0.09,
+    cost: 2000,
   ),
 };
 
@@ -414,11 +454,15 @@ class LottieEffect {
   final String sound;
   final double scale;
   final double rotation;
+  final int cost; // 💰 cost in gold or experience
+
   LottieEffect({
     required this.color,
     required this.sound,
     this.scale = 1.0,
     this.rotation = 0.0,
+    this.cost = 0, // default 0 if free
+
   });
 }
 
