@@ -477,9 +477,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
 
       setState(() {
         _CenteredActiveImage = CenterImageEffect(
-          image: myImage,
-          duration: Duration(seconds: 1),
-          size: 200,
+          imagePath: "assets/UI/Containers/Hezz2_Effect.png",
           onEnd: () {
             setState(() {
               _CenteredActiveImage = null; // remove it when done
@@ -492,7 +490,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     else if (card.rank == 1) {
       skipNext = true;
       playSfxVoice("assets/audios/UI/SFX/Voices/Roppo_Voice.mp3");
-
+      playSfxVoice("assets/audios/UI/SFX/Gamification_SFX/SpecialCard1WhooshEffect.mp3");
       setState(() {
         _CenteredActiveBanner = CenterBanner(
           text: "Skip",
@@ -566,7 +564,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     return showDialog<String>(
       context: context,
       barrierDismissible: false,
-      barrierColor: Colors.black.withOpacity(0.6),
+      barrierColor: Colors.black.withOpacity(0.5),
       builder: (ctx) => SuitSelectionDialog(previousSuit: lastSuit),
     );
   }
@@ -1019,7 +1017,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       seconds: 3,
       lottieAsset: 'assets/animations/AnimationSFX/HezzFinal.json',
       onComplete: () {
-        Navigator.push(
+        Navigator.pushReplacement(
           context,
           MaterialPageRoute(
             builder: (context) =>

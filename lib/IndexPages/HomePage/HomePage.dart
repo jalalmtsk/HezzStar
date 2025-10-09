@@ -297,7 +297,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             final audioManager = Provider.of<AudioManager>(context, listen: false);
             audioManager.playEventSound("sandClick");
 
-            Navigator.push(
+            Navigator.pushReplacement(
               context,
               PageRouteBuilder(
                 pageBuilder: (_, __, ___) => CardGameLauncher(botCount: botCount),

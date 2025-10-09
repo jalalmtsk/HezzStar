@@ -43,7 +43,7 @@ class _SettingsDialogState extends State<SettingsDialog>
 
   void _togglePanel(String key) {
     final audioManager = Provider.of<AudioManager>(context, listen: false);
-    audioManager.playEventSound('PopClick');
+    audioManager.playEventSound('sandClick');
     setState(() {
       if (key == 'bg') _bgOpen = !_bgOpen;
       if (key == 'sfx') _sfxOpen = !_sfxOpen;
@@ -328,7 +328,7 @@ class _SettingsDialogState extends State<SettingsDialog>
                             Expanded(
                               child: TextButton.icon(
                                 onPressed: () {
-                                  audioManager.playEventSound('cancelButton');
+                                  audioManager.playEventSound('sandClick');
                                   audioManager.resetAudioSettings();
                                   setState(() {});
                                 },
@@ -348,7 +348,7 @@ class _SettingsDialogState extends State<SettingsDialog>
                             Expanded(
                               child: TextButton.icon(
                                 onPressed: () {
-                                  audioManager.playEventSound('cancelButton');
+                                  audioManager.playEventSound('sandClick');
                                   Navigator.of(context).pop();
                                 },
                                 icon: const Icon(Icons.close,

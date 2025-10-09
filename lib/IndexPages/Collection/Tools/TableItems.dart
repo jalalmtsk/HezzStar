@@ -58,10 +58,10 @@ class TableSkinItemWidget extends StatelessWidget {
         return GestureDetector(
           onTap: () {
             if (unlocked) {
-              audioManager.playEventSound("clickButton2");
+              audioManager.playEventSound("sandClick");
               onSelect();
             } else if (canBuy) {
-              audioManager.playEventSound("PopButton");
+              audioManager.playEventSound("sandClick");
               onBuy();
             } else {
               ScaffoldMessenger.of(context).showSnackBar(

@@ -260,7 +260,7 @@ class AvatarGridWidget extends StatelessWidget {
 
                         } else {
                           // Play error/failed purchase sound
-                          audioManager.playEventSound("purchaseFail");
+                          audioManager.playEventSound("sandClick");
 
                           Navigator.pop(context);
                           ScaffoldMessenger.of(context).showSnackBar(

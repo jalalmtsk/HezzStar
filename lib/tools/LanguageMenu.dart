@@ -24,10 +24,10 @@ class LanguageMenu extends StatelessWidget {
         fit: BoxFit.cover,
       ),
       onOpened: (){
-        audioManager.playEventSound('toggleButton');
+        audioManager.playEventSound('sandClick');
       },
       onCanceled: (){
-        audioManager.playEventSound('cancelButton');
+        audioManager.playEventSound('sandClick');
       },
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       color: Colors.white,
@@ -37,7 +37,7 @@ class LanguageMenu extends StatelessWidget {
         // Update locale via ExperienceManager
         Provider.of<ExperienceManager>(context, listen: false)
             .setPreferredLanguage(locale.languageCode);
-        audioManager.playEventSound('clickButton');
+        audioManager.playEventSound('sandClick');
 
         // Show dialog if Tamazight is selected
         if (locale.languageCode == 'zgh') {
@@ -61,7 +61,7 @@ class LanguageMenu extends StatelessWidget {
               actions: [
                 TextButton(
                   onPressed: () {
-                    audioManager.playEventSound('cancelButton');
+                    audioManager.playEventSound('sandClick');
                     Navigator.of(context).pop();
                   },
                   child: const Text(

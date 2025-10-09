@@ -68,6 +68,7 @@ class PlayerSelector {
     final p = activePlayers[random.nextInt(activePlayers.length)];
     onPlayerSelected(p);
 
+    audioManager.playSfx("assets/audios/UI/SFX/UI_SFX/AvatarSelected_AvatarSelection.mp3");
 
     final xpManager = Provider.of<ExperienceManager>(context, listen: false);
     final isYou = p == 0;

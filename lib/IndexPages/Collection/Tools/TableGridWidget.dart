@@ -139,7 +139,7 @@ class TableSkinGridWidget extends StatelessWidget {
                   children: [
                     OutlinedButton(
                       onPressed: () {
-                        audioManager.playEventSound("cancelButton");
+                        audioManager.playEventSound("sandClick");
                         Navigator.pop(context);
                       },
                       child: const Text("Cancel"),
@@ -161,7 +161,7 @@ class TableSkinGridWidget extends StatelessWidget {
 
                           xpManager.unlockTableSkin(imagePath);
                           xpManager.selectTableSkin(imagePath);
-                          audioManager.playEventSound("clickButton");
+                          audioManager.playEventSound("sandClick");
 
                           Navigator.pop(context);
 

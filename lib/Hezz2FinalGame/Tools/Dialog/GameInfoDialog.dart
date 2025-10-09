@@ -155,7 +155,7 @@ class _GameInfoDialogState extends State<GameInfoDialog> {
                         GestureDetector(
                           onTap: () {
                             final audioManager = Provider.of<AudioManager>(context, listen: false);
-                            audioManager.playEventSound('PopClick');
+                            audioManager.playEventSound('sandClick');
                             setState(() {
                               isLottieActivated = !isLottieActivated;
                             });

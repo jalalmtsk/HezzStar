@@ -694,16 +694,16 @@ class _CardGameLauncherState extends State<CardGameLauncher>
             onTap: () {
               final audioManager = Provider.of<AudioManager>(context, listen: false);
               audioManager.playEventSound("sandClick");
-              Navigator.of(context).pop();},
+              Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => MainScreen()));},
             child: Container(
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: Colors.black.withOpacity(0.6),
                 boxShadow: [BoxShadow(color: primaryAccent.withOpacity(0.45), blurRadius: 8, spreadRadius: 1)],
-                border: Border.all(color: Colors.yellowAccent, width: 2),
+                border: Border.all(color: Colors.orange, width: 2),
               ),
               padding: const EdgeInsets.all(10),
-              child: Icon(Icons.transit_enterexit, color: Colors.yellowAccent, size: 40),
+              child: Icon(Icons.transit_enterexit, color: Colors.deepOrange, size: 40),
             ),
           ),
           const SizedBox(width: 12),
@@ -738,7 +738,7 @@ class _CardGameLauncherState extends State<CardGameLauncher>
                 // Reset spending flag
                 setState(() => _isSpending = false);
 
-                Navigator.push(
+                Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(
                     builder: (_) => GameScreen(

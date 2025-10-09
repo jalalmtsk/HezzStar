@@ -105,6 +105,7 @@ flutter:
     - assets/audios/UI/Buttons/
     - assets/audios/UI/SFX/MessageSound/
     - assets/audios/UI/SFX/Voices/
+    - assets/audios/UI/SFX/UI_SFX/
 
 
     # ANIMATION

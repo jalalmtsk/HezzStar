@@ -1,24 +1,26 @@
 import 'package:flutter/material.dart';
 
 class CenterImageEffect extends StatefulWidget {
-  final ImageProvider image;
-  final double size;
+  final String imagePath;
   final Duration duration;
+  final double imageWidth;
+  final Color glowColor;
   final VoidCallback? onEnd;
 
   const CenterImageEffect({
     super.key,
-    required this.image,
-    this.size = 200,
-    this.duration = const Duration(seconds: 1),
+    required this.imagePath,
+    this.duration = const Duration(milliseconds: 800),
+    this.imageWidth = 200,
+    this.glowColor = Colors.orange,
     this.onEnd,
   });
 
   @override
-  State<CenterImageEffect> createState() => _CenterImageEffectState();
+  State<CenterImageEffect> createState() => _GlowingImageBannerState();
 }
 
-class _CenterImageEffectState extends State<CenterImageEffect>
+class _GlowingImageBannerState extends State<CenterImageEffect>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _scale;
@@ -29,7 +31,7 @@ class _CenterImageEffectState extends State<CenterImageEffect>
     super.initState();
 
     _controller = AnimationController(
-      duration: const Duration(milliseconds: 800),
+      duration: const Duration(milliseconds: 400),
       vsync: this,
     );
 
@@ -42,17 +44,17 @@ class _CenterImageEffectState extends State<CenterImageEffect>
     _opacity = Tween<double>(begin: 0, end: 1).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: const Interval(0.0, 0.4, curve: Curves.easeOut),
+        curve: const Interval(0.0, 0.5, curve: Curves.easeOut),
       ),
     );
 
     _controller.forward();
 
-    // Auto reverse after duration
+    // Auto reverse after given duration
     Future.delayed(widget.duration, () async {
       if (mounted) {
         await _controller.reverse();
-        if (widget.onEnd != null) widget.onEnd!();
+        widget.onEnd?.call();
       }
     });
   }
@@ -71,21 +73,11 @@ class _CenterImageEffectState extends State<CenterImageEffect>
         child: ScaleTransition(
           scale: _scale,
           child: Container(
-            width: widget.size,
-            height: widget.size,
-            decoration: BoxDecoration(
-              image: DecorationImage(
-                image: widget.image,
-                fit: BoxFit.cover,
-              ),
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.yellow.withOpacity(0.7),
-                  blurRadius: 15,
-                  spreadRadius: 3,
-                ),
-              ],
+            height: 300,
+            child: Image.asset(
+              widget.imagePath,
+              width: widget.imageWidth,
+              fit: BoxFit.contain,
             ),
           ),
         ),

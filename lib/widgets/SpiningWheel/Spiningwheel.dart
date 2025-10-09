@@ -4,13 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../Manager/HelperClass/FlyingRewardManager.dart';
-import '../../Manager/HelperClass/RewardDimScreen.dart';
 import '../../tools/AdsManager/AdsManager.dart';
+import '../../tools/AudioManager/AudioManager.dart';
 
 class SpinWheelScreen extends StatefulWidget {
-  final GlobalKey goldKey;
-  const SpinWheelScreen({super.key, required this.goldKey});
+  const SpinWheelScreen({super.key});
 
   @override
   State<SpinWheelScreen> createState() => _SpinWheelScreenState();
@@ -19,206 +17,241 @@ class SpinWheelScreen extends StatefulWidget {
 class _SpinWheelScreenState extends State<SpinWheelScreen>
     with SingleTickerProviderStateMixin {
   bool _isSpinning = false;
-  late final AnimationController _controller;
   DateTime? _lastSpin;
   Duration _remainingTime = Duration.zero;
   Timer? _timer;
+  int? _rewardAmount;
+  late final AnimationController _lottieController;
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(vsync: this);
     _loadLastSpin();
-
-    // Live countdown timer
-    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (_lastSpin != null) {
-        _updateRemainingTime();
-        setState(() {});
-      }
-    });
+    _lottieController = AnimationController(vsync: this);
+    _startTimer();
   }
 
   @override
   void dispose() {
-    _controller.dispose();
     _timer?.cancel();
+    _lottieController.dispose();
     super.dispose();
   }
 
+  // 🕓 Load last spin time from storage
   Future<void> _loadLastSpin() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    int? timestamp = prefs.getInt('last_spin');
-    if (timestamp != null) {
-      _lastSpin = DateTime.fromMillisecondsSinceEpoch(timestamp);
-      _updateRemainingTime();
+    int? lastSpinMillis = prefs.getInt('last_spin');
+    if (lastSpinMillis != null) {
+      _lastSpin = DateTime.fromMillisecondsSinceEpoch(lastSpinMillis);
     }
-    setState(() {});
+    _updateRemainingTime();
+  }
+
+  // ⏳ Update remaining time every second
+  void _startTimer() {
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) => _updateRemainingTime());
   }
 
   void _updateRemainingTime() {
-    if (_lastSpin != null) {
-      final now = DateTime.now();
-      final nextSpin = _lastSpin!.add(const Duration(hours: 24));
-      _remainingTime = nextSpin.difference(now);
-      if (_remainingTime.isNegative) {
-        _remainingTime = Duration.zero;
-        _lastSpin = null; // allow spin immediately
-      }
-    } else {
-      _remainingTime = Duration.zero;
-    }
-  }
-
-  Future<void> _spinWheel({bool isAdSpin = false}) async {
-    _updateRemainingTime();
-    if (_isSpinning) return;
-
-    // Prevent daily spin if time hasn't passed (for normal spins)
-    if (!isAdSpin && _remainingTime > Duration.zero) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(
-            'Next spin in ${_remainingTime.inHours}h ${_remainingTime.inMinutes % 60}m'),
-      ));
+    if (_lastSpin == null) {
+      setState(() => _remainingTime = Duration.zero);
       return;
     }
-
-    setState(() => _isSpinning = true);
-
-    int reward = _getRandomReward();
-
-    if (!isAdSpin) {
-      // Normal daily spin → save timestamp
-      _lastSpin = DateTime.now();
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      await prefs.setInt('last_spin', _lastSpin!.millisecondsSinceEpoch);
-    }
-
-    _controller.reset();
-
-    // Spinning wheel animation
-    await showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (_) => Dialog(
-        backgroundColor: Colors.transparent,
-        child: Lottie.asset(
-          "assets/animations/AnimationSFX/SpinWheelGame.json",
-          controller: _controller,
-          onLoaded: (composition) {
-            _controller
-              ..duration = composition.duration
-              ..forward();
-            _controller.addStatusListener((status) {
-              if (status == AnimationStatus.completed) Navigator.of(context).pop();
-            });
-          },
-          width: 400,
-          height: 400,
-        ),
-      ),
-    );
-
-    RewardDimScreen.show(
-      context,
-      start: const Offset(200, 400),
-      endKey: widget.goldKey,
-      amount: reward,
-      type: RewardType.gold,
-    );
-
-    _updateRemainingTime(); // refresh timer after spin
-    setState(() => _isSpinning = false);
+    final now = DateTime.now();
+    final difference = now.difference(_lastSpin!);
+    final remaining = Duration(hours: 24) - difference;
+    setState(() => _remainingTime = remaining.isNegative ? Duration.zero : remaining);
   }
 
+  // 🎯 Handle the spin
+  Future<void> _spinWheel() async {
+    if (_isSpinning || _remainingTime > Duration.zero) return;
 
-  int _getRandomReward() {
-    final rewards = {
-      500: 20,
-      1000: 15,
-      2000: 10,
-      3000: 8,
-      4000: 5,
-      5000: 4,
-      7000: 2,
-      10000: 1,
-    };
-
-    List<int> weightedList = [];
-    rewards.forEach((value, weight) {
-      for (int i = 0; i < weight; i++) weightedList.add(value);
+    setState(() {
+      _isSpinning = true;
+      _rewardAmount = null;
     });
 
-    return weightedList[Random().nextInt(weightedList.length)];
+  //  AudioManager.playSFX("spin_start");
+
+    _lottieController.reset();
+    _lottieController.forward();
+
+    await Future.delayed(const Duration(seconds: 3)); // simulate spin duration
+
+    final reward = _generateRandomReward();
+    setState(() {
+      _rewardAmount = reward;
+      _isSpinning = false;
+      _lastSpin = DateTime.now();
+    });
+
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('last_spin', _lastSpin!.millisecondsSinceEpoch);
+
+   // AudioManager.playSfx("spin_end");
+
+    _showRewardDialog(reward);
   }
 
-  String _formatDuration(Duration duration) {
+  // 🎁 Random reward generator
+  int _generateRandomReward() {
+    final rewards = [50, 100, 200, 300, 500];
+    return rewards[Random().nextInt(rewards.length)];
+  }
+
+  void _showRewardDialog(int reward) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('🎉 Congratulations!'),
+        content: Text('You won $reward coins!'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _formatDuration(Duration d) {
     String twoDigits(int n) => n.toString().padLeft(2, '0');
-    return '${twoDigits(duration.inHours)}:${twoDigits(duration.inMinutes.remainder(60))}:${twoDigits(duration.inSeconds.remainder(60))}';
+    return "${twoDigits(d.inHours)}:${twoDigits(d.inMinutes % 60)}:${twoDigits(d.inSeconds % 60)}";
   }
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Container(
-        width: 300,
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: Colors.blueGrey[850],
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [BoxShadow(color: Colors.black45, blurRadius: 6)],
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text('Daily Spin',
+    return Scaffold(
+      backgroundColor: const Color(0xff0c0c1e),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
+          child: Column(
+            children: [
+              const Text(
+                "🎡 Daily Spin",
                 style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            GestureDetector(
-              onTap: () => _spinWheel(),
-              child: Lottie.asset(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
+              // ✨ Decorative Lottie
+              Lottie.asset(
                 "assets/animations/AnimationSFX/SpinAnimationHomeScreen.json",
-                height: 150,
-                width: 150,
+                width: 120,
+                height: 80,
+                repeat: true,
               ),
-            ),
-            const SizedBox(height: 6),
-            if (_remainingTime > Duration.zero)
+
+              const SizedBox(height: 8),
+
               Text(
-                'Next: ${_formatDuration(_remainingTime)}',
-                style: const TextStyle(color: Colors.white60, fontSize: 12),
+                _remainingTime == Duration.zero
+                    ? "Ready to spin!"
+                    : "Next spin in ${_formatDuration(_remainingTime)}",
+                style: const TextStyle(
+                  fontSize: 16,
+                  color: Colors.white70,
+                ),
               ),
-            const SizedBox(height: 8),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () async {
+
+              const SizedBox(height: 20),
+
+              // Use Expanded to avoid unbounded height
+              Expanded(
+                child: Center(
+                  child: SizedBox(
+                    height: 250,
+                    width: 250,
+                    child: GestureDetector(
+                      onTap: _spinWheel,
+                      child: _isSpinning
+                          ? Lottie.asset(
+                        "assets/animations/AnimationSFX/SpinWheelGame.json",
+                        controller: _lottieController,
+                        onLoaded: (comp) {
+                          _lottieController.duration = comp.duration;
+                          _lottieController.forward().then((_) {
+                            _lottieController.stop();
+                          });
+                        },
+                        fit: BoxFit.contain,
+                      )
+                          : Lottie.asset(
+                        "assets/animations/AnimationSFX/SpinWheelGame.json",
+                        repeat: true,
+                        fit: BoxFit.contain,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              // Reward display
+              if (_rewardAmount != null)
+                Text(
+                  "You won $_rewardAmount coins!",
+                  style: const TextStyle(
+                    fontSize: 18,
+                    color: Colors.amberAccent,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+
+              const SizedBox(height: 20),
+
+              // Watch ad button
+              ElevatedButton.icon(
+                onPressed: _isSpinning
+                    ? null
+                    : () async {
                   bool adWatched = await AdHelper.showRewardedAd(context);
-                  if (adWatched) _spinWheel(isAdSpin: true);
+                  if (adWatched) {
+                    _lastSpin = DateTime.now();
+                    SharedPreferences prefs =
+                    await SharedPreferences.getInstance();
+                    await prefs.setInt(
+                        'last_spin', _lastSpin!.millisecondsSinceEpoch);
+                    _updateRemainingTime();
+                    setState(() {});
+
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text(
+                          "🎬 Ad watched! Timer reset — come back in 24h for your next spin!",
+                        ),
+                      ),
+                    );
+                  }
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.orangeAccent,
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  textStyle: const TextStyle(
-                      fontSize: 12, fontWeight: FontWeight.bold),
+                  padding:
+                  const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
                 ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
-                    Icon(Icons.ondemand_video, size: 16),
-                    SizedBox(width: 4),
-                    Text('Extra Spin', style: TextStyle(fontSize: 12)),
-                  ],
+                icon: const Icon(Icons.ondemand_video, size: 18),
+                label: const Text(
+                  "Watch Ad to Reset Timer",
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold, color: Colors.white),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
+
 }

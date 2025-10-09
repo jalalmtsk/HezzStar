@@ -73,7 +73,7 @@ class _InstructionsDialogState extends State<InstructionsDialog>
   void _togglePanel(String key) {
     final audioManager = Provider.of<AudioManager>(context, listen: false);
     if (!mounted) return;
-    audioManager.playEventSound('PopClick');
+    audioManager.playEventSound('sandClick');
 
     setState(() {
       switch (key) {
@@ -394,7 +394,7 @@ class _InstructionsDialogState extends State<InstructionsDialog>
                         Center(
                           child: GestureDetector(
                             onTap: () {
-                              audioManager.playEventSound('cancelButton');
+                              audioManager.playEventSound('sandClick');
                               Navigator.of(context).pop();
                             },
                             child: ScaleTransition(
