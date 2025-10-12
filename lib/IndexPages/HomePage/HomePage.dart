@@ -152,7 +152,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     child: Icon(Icons.add, color: Colors.white,),
                     onTap: () {
                       final audioManager = Provider.of<AudioManager>(context, listen: false);
-                      audioManager.playSfx("assets/audios/UI/SFX/Voices/Hezz.ogg");
+                      audioManager.playSfx("assets/audios/UI/SFX/Voices/Hezz8.mp3");
 
                       RewardDimScreen.show(
                         context,

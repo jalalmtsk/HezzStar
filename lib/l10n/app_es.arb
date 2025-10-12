@@ -1,8 +1,32 @@
 {
   "@@locale": "es",
-  "hello": "Hola",
-  "welcome": "¡Bienvenido al juego!",
-  "settings": "Configuración",
+
+  "shop": "Tienda",
   "collections": "Colecciones",
+  "home": "Inicio",
+  "events": "Eventos",
+  "settings": "Configuración",
+
+  "dataCollectionTitle": "Recopilación de datos",
+  "dataCollectionDesc": "Solo recopilamos la información necesaria para mejorar tu experiencia en la aplicación. Esto puede incluir tus patrones de uso, preferencias y configuraciones.",
+  "dataUsageTitle": "Uso de los datos",
+  "dataUsageDesc": "Tus datos se utilizan para mejorar las funciones de la aplicación, personalizar el contenido y garantizar el mejor rendimiento. No vendemos tus datos a terceros.",
+  "thirdPartyTitle": "Servicios de terceros",
+  "thirdPartyDesc": "Algunas funciones pueden utilizar servicios de terceros de confianza (como análisis o publicidad). Estos servicios siguen sus propias políticas de privacidad.",
+  "yourRightsTitle": "Tus derechos",
+  "yourRightsDesc": "Tienes derecho a solicitar la eliminación de tus datos, acceder a los datos almacenados y optar por no participar en funciones de seguimiento opcionales.",
+
+  "privacyPolicy": "Política de privacidad",
+  "creditsTitle": "Créditos",
+  "sfxMusic": "Efectos de sonido y música",
+  "ourMissionTitle": "Nuestra misión",
+  "ourMissionContent": "Llevar la emoción de los juegos de cartas tradicionales marroquíes a las plataformas móviles, con gráficos atractivos y una experiencia de juego divertida.",
+  "futurePlansTitle": "Planes futuros",
+  "futurePlansContent": "Planeamos añadir torneos multijugador, nuevas cartas y temas, y tablas de clasificación interactivas para mejorar la experiencia de juego.",
+  "followUs": "Síguenos en las redes sociales",
+  "contact": "Contacto",
+  "close": "Cerrar",
+
+
       "add": "Añadir"
 }

@@ -1,8 +1,33 @@
 {
   "@@locale": "fr",
-  "hello": "Bonjour",
-  "welcome": "Bienvenue dans le jeu!",
-  "settings": "Paramètres",
+
+  "shop": "Boutique",
   "collections": "Collections",
+  "home": "Accueil",
+  "events": "Événements",
+  "settings": "Paramètres",
+
+  "dataCollectionTitle": "Collecte de données",
+  "dataCollectionDesc": "Nous ne collectons que les informations nécessaires pour améliorer votre expérience dans l'application. Cela peut inclure vos habitudes d'utilisation, vos préférences et vos paramètres.",
+  "dataUsageTitle": "Utilisation des données",
+  "dataUsageDesc": "Vos données sont utilisées pour améliorer les fonctionnalités de l'application, personnaliser le contenu et garantir les meilleures performances. Nous ne vendons pas vos données à des tiers.",
+  "thirdPartyTitle": "Services tiers",
+  "thirdPartyDesc": "Certaines fonctionnalités peuvent utiliser des services tiers de confiance (comme les outils d'analyse ou les publicités). Ces services appliquent leurs propres politiques de confidentialité.",
+  "yourRightsTitle": "Vos droits",
+  "yourRightsDesc": "Vous avez le droit de demander la suppression de vos données, d’accéder aux informations stockées et de refuser les fonctionnalités de suivi facultatives.",
+
+  "privacyPolicy": "Politique de confidentialité",
+  "creditsTitle": "Crédits",
+  "sfxMusic": "Effets sonores et musique",
+  "ourMissionTitle": "Notre mission",
+  "ourMissionContent": "Apporter le plaisir des jeux de cartes marocains traditionnels sur les plateformes mobiles, avec des visuels attrayants et une expérience ludique et immersive.",
+  "futurePlansTitle": "Projets futurs",
+  "futurePlansContent": "Nous prévoyons d’ajouter des tournois multijoueurs, de nouvelles cartes et thèmes, ainsi que des classements interactifs pour enrichir l’expérience de jeu.",
+  "followUs": "Suivez-nous sur les réseaux sociaux",
+  "contact": "Contact",
+  "close": "Fermer",
+
+
+
       "add": "Ajouter"
 }

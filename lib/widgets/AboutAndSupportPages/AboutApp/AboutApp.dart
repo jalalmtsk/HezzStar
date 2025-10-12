@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:hezzstar/main.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -135,21 +136,21 @@ class _AboutDialogHezz2StarState extends State<AboutDialogHezz2Star> {
                   const SizedBox(height: 16),
 
                   _buildSection(
-                    "Our Mission",
-                    "To bring the excitement of traditional Moroccan card games to mobile platforms with engaging visuals and gamified experiences.",
+                    tr(context).ourMissionTitle,
+                    tr(context).ourMissionContent,
                     Icons.flag,
                     Colors.deepPurple,
                   ),
                   _buildSection(
-                    "Future Plans",
-                    "We plan to add multiplayer tournaments, new cards and themes, and interactive leaderboards to enhance the gaming experience.",
+                    tr(context).futurePlansTitle,
+                    tr(context).futurePlansContent,
                     Icons.upcoming,
                     Colors.deepPurpleAccent,
                   ),
 
                   const SizedBox(height: 12),
-                  const Text(
-                    "Follow us on Social Media",
+                   Text(
+                    tr(context).followUs,
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                   ),
                   const SizedBox(height: 8),
@@ -172,7 +173,7 @@ class _AboutDialogHezz2StarState extends State<AboutDialogHezz2Star> {
 
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text("Close", style: TextStyle(color: Colors.deepPurple)),
+            child:  Text(tr(context).close, style: TextStyle(color: Colors.deepPurple)),
           ),
         ],
       ),

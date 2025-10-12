@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../../main.dart';
 import 'CreditData.dart';
 
 class CreditsDialog extends StatelessWidget {
@@ -109,8 +110,8 @@ class CreditsDialog extends StatelessWidget {
               color: Colors.deepOrange,
               borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
             ),
-            child: const Text(
-              "Credits",
+            child:  Text(
+                tr(context).creditsTitle,
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 18,
@@ -124,7 +125,7 @@ class CreditsDialog extends StatelessWidget {
               padding: const EdgeInsets.all(16),
               child: Column(
                 children: [
-                  _buildHeader("Sfx Music", Icons.music_note, [Colors.orange, Colors.orangeAccent]),
+                  _buildHeader(tr(context).sfxMusic, Icons.music_note, [Colors.orange, Colors.orangeAccent]),
                   const SizedBox(height: 8),
                   ...sfxCredits.map((credit) => _buildCreditCard(credit, Icons.music_note, Colors.deepOrange)),
                   const SizedBox(height: 20),
@@ -137,8 +138,10 @@ class CreditsDialog extends StatelessWidget {
           // Close button
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text("Close", style: TextStyle(color: Colors.deepOrange)),
-          ),
+            child: Text(
+              tr(context).close,
+              style: const TextStyle(color: Colors.deepOrange),
+            ),          ),
         ],
       ),
     );

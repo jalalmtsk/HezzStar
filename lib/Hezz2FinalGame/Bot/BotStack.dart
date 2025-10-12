@@ -196,7 +196,6 @@ class _PlayerCardState extends State<PlayerCard> with TickerProviderStateMixin {
     if (!widget.isTurn && _botTurnSoundPlayed) {
       _botTurnSoundPlayed = false;
     }
-
     return Stack(
       clipBehavior: Clip.none,
       alignment: Alignment.topCenter,

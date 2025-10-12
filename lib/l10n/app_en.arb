@@ -1,8 +1,32 @@
 {
   "@@locale": "en",
-  "hello": "Hello",
-  "welcome": "Welcome to the game!",
-  "settings": "Settings",
+  "shop": "Shop",
   "collections": "Collections",
+  "home": "Home",
+  "events": "Events",
+  "settings": "Settings",
+
+  "dataCollectionTitle": "Data Collection",
+  "dataCollectionDesc": "We only collect information necessary to improve your app experience. This may include your app usage patterns, preferences, and settings.",
+  "dataUsageTitle": "Data Usage",
+  "dataUsageDesc": "Your data is used to enhance app functionality, personalize content, and ensure the best performance. We do not sell your data to third parties.",
+  "thirdPartyTitle": "Third-Party Services",
+  "thirdPartyDesc": "Some features may use trusted third-party services (like analytics or ads). These services follow their own privacy policies.",
+  "yourRightsTitle": "Your Rights",
+  "yourRightsDesc": "You have the right to request data deletion, access stored data, and opt out of optional tracking features.",
+
+  "privacyPolicy": "Privacy Policy",
+  "creditsTitle": "Credits",
+  "sfxMusic": "Sfx Music",
+  "ourMissionTitle": "Our Mission",
+  "ourMissionContent": "To bring the excitement of traditional Moroccan card games to mobile platforms with engaging visuals and gamified experiences.",
+  "futurePlansTitle": "Future Plans",
+  "futurePlansContent": "We plan to add multiplayer tournaments, new cards and themes, and interactive leaderboards to enhance the gaming experience.",
+  "followUs": "Follow us on Social Media",
+  "contact" : "Contact",
+  "close": "Close",
+
   "add" : "Add"
+
+
 }

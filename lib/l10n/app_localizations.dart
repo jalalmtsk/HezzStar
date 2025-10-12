@@ -101,17 +101,29 @@ abstract class AppLocalizations {
     Locale('zgh')
   ];
 
-  /// No description provided for @hello.
+  /// No description provided for @shop.
   ///
   /// In en, this message translates to:
-  /// **'Hello'**
-  String get hello;
+  /// **'Shop'**
+  String get shop;
 
-  /// No description provided for @welcome.
+  /// No description provided for @collections.
   ///
   /// In en, this message translates to:
-  /// **'Welcome to the game!'**
-  String get welcome;
+  /// **'Collections'**
+  String get collections;
+
+  /// No description provided for @home.
+  ///
+  /// In en, this message translates to:
+  /// **'Home'**
+  String get home;
+
+  /// No description provided for @events.
+  ///
+  /// In en, this message translates to:
+  /// **'Events'**
+  String get events;
 
   /// No description provided for @settings.
   ///
@@ -119,11 +131,113 @@ abstract class AppLocalizations {
   /// **'Settings'**
   String get settings;
 
-  /// No description provided for @collections.
+  /// No description provided for @dataCollectionTitle.
   ///
   /// In en, this message translates to:
-  /// **'Collections'**
-  String get collections;
+  /// **'Data Collection'**
+  String get dataCollectionTitle;
+
+  /// No description provided for @dataCollectionDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'We only collect information necessary to improve your app experience. This may include your app usage patterns, preferences, and settings.'**
+  String get dataCollectionDesc;
+
+  /// No description provided for @dataUsageTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Data Usage'**
+  String get dataUsageTitle;
+
+  /// No description provided for @dataUsageDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Your data is used to enhance app functionality, personalize content, and ensure the best performance. We do not sell your data to third parties.'**
+  String get dataUsageDesc;
+
+  /// No description provided for @thirdPartyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Third-Party Services'**
+  String get thirdPartyTitle;
+
+  /// No description provided for @thirdPartyDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Some features may use trusted third-party services (like analytics or ads). These services follow their own privacy policies.'**
+  String get thirdPartyDesc;
+
+  /// No description provided for @yourRightsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Rights'**
+  String get yourRightsTitle;
+
+  /// No description provided for @yourRightsDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'You have the right to request data deletion, access stored data, and opt out of optional tracking features.'**
+  String get yourRightsDesc;
+
+  /// No description provided for @privacyPolicy.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy Policy'**
+  String get privacyPolicy;
+
+  /// No description provided for @creditsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Credits'**
+  String get creditsTitle;
+
+  /// No description provided for @sfxMusic.
+  ///
+  /// In en, this message translates to:
+  /// **'Sfx Music'**
+  String get sfxMusic;
+
+  /// No description provided for @ourMissionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Our Mission'**
+  String get ourMissionTitle;
+
+  /// No description provided for @ourMissionContent.
+  ///
+  /// In en, this message translates to:
+  /// **'To bring the excitement of traditional Moroccan card games to mobile platforms with engaging visuals and gamified experiences.'**
+  String get ourMissionContent;
+
+  /// No description provided for @futurePlansTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Future Plans'**
+  String get futurePlansTitle;
+
+  /// No description provided for @futurePlansContent.
+  ///
+  /// In en, this message translates to:
+  /// **'We plan to add multiplayer tournaments, new cards and themes, and interactive leaderboards to enhance the gaming experience.'**
+  String get futurePlansContent;
+
+  /// No description provided for @followUs.
+  ///
+  /// In en, this message translates to:
+  /// **'Follow us on Social Media'**
+  String get followUs;
+
+  /// No description provided for @contact.
+  ///
+  /// In en, this message translates to:
+  /// **'Contact'**
+  String get contact;
+
+  /// No description provided for @close.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get close;
 
   /// No description provided for @add.
   ///

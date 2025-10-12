@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../main.dart';
+
 class PrivacyPolicyDialog extends StatelessWidget {
   const PrivacyPolicyDialog({super.key});
 
@@ -66,8 +68,8 @@ class PrivacyPolicyDialog extends StatelessWidget {
               color: Colors.deepOrange,
               borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
             ),
-            child: const Text(
-              "Privacy Policy",
+            child:  Text(
+              tr(context).privacyPolicy,
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 18,
@@ -78,34 +80,35 @@ class PrivacyPolicyDialog extends StatelessWidget {
 
           Flexible(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
+              padding:  EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _buildSection(
-                    "Data Collection",
-                    "We only collect information necessary to improve your app experience. This may include your app usage patterns, preferences, and settings.",
+                    tr(context).dataCollectionTitle,
+                    tr(context).dataCollectionDesc,
                     Icons.storage,
                     [Colors.blue, Colors.lightBlueAccent],
                   ),
                   _buildSection(
-                    "Data Usage",
-                    "Your data is used to enhance app functionality, personalize content, and ensure the best performance. We do not sell your data to third parties.",
+                    tr(context).dataUsageTitle,
+                    tr(context).dataUsageDesc,
                     Icons.verified_user,
                     [Colors.green, Colors.lightGreen],
                   ),
                   _buildSection(
-                    "Third-Party Services",
-                    "Some features may use trusted third-party services (like analytics or ads). These services follow their own privacy policies.",
+                    tr(context).thirdPartyTitle,
+                    tr(context).thirdPartyDesc,
                     Icons.handshake,
                     [Colors.orange, Colors.deepOrangeAccent],
                   ),
                   _buildSection(
-                    "Your Rights",
-                    "You have the right to request data deletion, access stored data, and opt out of optional tracking features.",
+                    tr(context).yourRightsTitle,
+                    tr(context).yourRightsDesc,
                     Icons.security,
                     [Colors.purple, Colors.deepPurpleAccent],
                   ),
+
                   const SizedBox(height: 20),
                   _buildFooter(),
                 ],
@@ -116,7 +119,7 @@ class PrivacyPolicyDialog extends StatelessWidget {
           // Close button
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text("Close", style: TextStyle(color: Colors.deepOrange)),
+            child:  Text(tr(context).close, style: TextStyle(color: Colors.deepOrange)),
           ),
         ],
       ),

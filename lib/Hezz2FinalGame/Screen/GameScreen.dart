@@ -450,13 +450,13 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
           playSfxVoice("assets/audios/UI/SFX/Voices/Hezz2.mp3");
           break;
         case 4:
-          playSfxVoice("assets/audios/UI/SFX/Voices/Hezz4Test.ogg");
+          playSfxVoice("assets/audios/UI/SFX/Voices/Hezz4.mp3");
           break;
         case 6:
-          playSfxVoice("assets/audios/UI/SFX/Voices/Hezz6.ogg");
+          playSfxVoice("assets/audios/UI/SFX/Voices/Hezz6.mp3");
           break;
         case 8:
-          playSfxVoice("assets/audios/UI/SFX/Voices/Hezz8.ogg");
+          playSfxVoice("assets/audios/UI/SFX/Voices/Hezz8.mp3");
           break;
         default:
           playSfxVoice("assets/audios/UI/SFX/Voices/Hezz2.mp3");
@@ -471,9 +471,6 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
           onEnd: () => setState(() => _CenteredActiveBanner = null),
         );
       });
-
-
-      final myImage = AssetImage('assets/UI/Containers/Hezz2_Effect.png');
 
       setState(() {
         _CenteredActiveImage = CenterImageEffect(
@@ -558,8 +555,6 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     }
   }
 
-
-
   Future<String?> _askSuit(String lastSuit) {
     return showDialog<String>(
       context: context,
@@ -568,8 +563,6 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       builder: (ctx) => SuitSelectionDialog(previousSuit: lastSuit),
     );
   }
-
-
 
   String _botPickSuit(int bot) {
     final counts = {'Coins': 0, 'Cups': 0, 'Swords': 0, 'Clubs': 0};
@@ -864,6 +857,9 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
 
           // If only one player remains who hasn't qualified, eliminate them
           if (activePlayers == 1) {
+            if (!eliminationOrder.contains(lastActivePlayer)) {
+              eliminationOrder.add(lastActivePlayer);
+            }
             eliminatedPlayers[lastActivePlayer] = true;
 
             setState(() {
@@ -930,6 +926,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   }
 
 
+  List<int> eliminationOrder = []; // 0 = first eliminated, last = winner
+
   void _startNextRound() {
     setState(() {
       isBetweenRounds = true;
@@ -992,6 +990,51 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   }
 
 
+  List<Map<String, dynamic>> _computePlayerRanks() {
+    final List<Map<String, dynamic>> ranks = [];
+
+    for (int i = 0; i <= widget.botCount; i++) {
+      String name;
+      String? avatar;
+      if (i == 0) {
+        name = "You";
+        avatar = Provider.of<ExperienceManager>(context, listen: false).selectedAvatar;
+      } else {
+        name = BotDetailsPopup.getBotInfo(i).name;
+        avatar = BotDetailsPopup.getBotInfo(i).avatarPath;
+      }
+
+      int rank;
+      if (widget.gameModeType == GameModeType.elimination) {
+        // Assign rank based on elimination order
+        if (eliminationOrder.contains(i)) {
+          rank = eliminationOrder.indexOf(i) + 1;
+        } else {
+          // Winner is last one remaining
+          rank = eliminationOrder.length + 1;
+        }
+      } else {
+        // PlayToWin mode - fewer cards = better rank
+        rank = hands[i].length;
+      }
+
+      ranks.add({
+        'playerIndex': i,
+        'name': name,
+        'avatar': avatar,
+        'rank': rank,
+        'eliminated': eliminatedPlayers[i],
+      });
+    }
+
+    // Sort by rank (ascending)
+    ranks.sort((a, b) => a['rank'].compareTo(b['rank']));
+    return ranks;
+  }
+
+
+
+
 
   void _showEnd() {
     int winnerIndex = -1;
@@ -1003,7 +1046,6 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     }
 
     if (winnerIndex == -1) {
-      // Find the last non-eliminated player (for elimination mode)
       for (int i = 0; i < eliminatedPlayers.length; i++) {
         if (!eliminatedPlayers[i]) {
           winnerIndex = i;
@@ -1011,6 +1053,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
         }
       }
     }
+
+    final playerRanks = _computePlayerRanks().map((e) => e['score'] as int).toList();
 
     LoadingScreenDim.show(
       context,
@@ -1020,17 +1064,16 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) =>
-                EndGameScreen(
-                  hands: hands,
-                  winnerIndex: winnerIndex,
-                  gameModeType: widget.gameModeType,
-                  currentRound: currentRound,
-                  betAmount: widget.selectedBet,
-                  winnerName: BotDetailsPopup.getBotInfo(winnerIndex).name,
-                  winnerAvatar: BotDetailsPopup.getBotInfo(winnerIndex).avatarPath,
-                ),
-
+            builder: (context) => EndGameScreen(
+              hands: hands,
+              winnerIndex: winnerIndex,
+              gameModeType: widget.gameModeType,
+              currentRound: currentRound,
+              betAmount: widget.selectedBet,
+              winnerName: BotDetailsPopup.getBotInfo(winnerIndex).name,
+              winnerAvatar: BotDetailsPopup.getBotInfo(winnerIndex).avatarPath,
+              playerRanks: playerRanks, // pass full ranks
+            ),
           ),
         );
       },

@@ -8,6 +8,7 @@ import 'IndexPages/Collection/MainCollectionPage.dart';
 import 'IndexPages/EventsPage/EventPage.dart';
 import 'IndexPages/HomePage/HomePage.dart';
 import 'IndexPages/ShopPage/ShopPage.dart';
+import 'main.dart';
 
 
 final GlobalKey<_MainScreenState> mainScreenKey = GlobalKey<_MainScreenState>();
@@ -162,31 +163,31 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
 
                       _buildNavItem(
                         index: 0,
-                        label: "Shop",
+                        label: tr(context).shop,
                         selectedIcon: 'assets/UI/Icons/Shop_Icon.png',
                         unselectedIcon: 'assets/UI/Icons/Shop_Icon.png',
                       ),
                       _buildNavItem(
                         index: 1,
-                        label: "Collections",
+                        label: tr(context).collections,
                         selectedIcon: 'assets/UI/Icons/Collection_Icon.png',
                         unselectedIcon: 'assets/UI/Icons/Collection_Icon.png',
                       ),
                       _buildNavItem(
                         index: 2,
-                        label: "Home",
+                        label: tr(context).home,
                         selectedIcon: 'assets/UI/Icons/Home_Icon.png',
                         unselectedIcon: 'assets/UI/Icons/Home_Icon.png',
                       ),
                       _buildNavItem(
                         index: 3,
-                        label: "Events",
+                        label: tr(context).events,
                         selectedIcon: 'assets/UI/Icons/Events_Icon.png',
                         unselectedIcon: 'assets/UI/Icons/Events_Icon.png',
                       ),
                       _buildNavItem(
                         index: 4,
-                        label: "Settings",
+                        label: tr(context).settings,
                         selectedIcon: 'assets/UI/Icons/Settings_Icon.png',
                         unselectedIcon: 'assets/UI/Icons/Settings_Icon.png',
                       ),
