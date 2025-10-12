@@ -385,5 +385,4 @@ class _PlayerActionPanelState extends State<PlayerActionPanel> {
       },
     );
   }
-
 }

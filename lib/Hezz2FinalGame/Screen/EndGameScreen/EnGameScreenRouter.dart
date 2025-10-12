@@ -59,7 +59,6 @@ class EndGameRouter extends StatelessWidget {
           betAmount: betAmount,
           winnerName: winnerName,
           winnerAvatar: winnerAvatar,
-          playerRanks: [],
         );
     }
   }

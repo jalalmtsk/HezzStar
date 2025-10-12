@@ -846,7 +846,6 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
           // Check if we should eliminate someone
           int activePlayers = 0;
           int lastActivePlayer = -1;
-
           for (int i = 0; i <= widget.botCount; i++) {
             if (!eliminatedPlayers[i] && !qualifiedPlayers.contains(i) &&
                 hands[i].isNotEmpty) {
@@ -854,14 +853,10 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
               lastActivePlayer = i;
             }
           }
-
           // If only one player remains who hasn't qualified, eliminate them
-          if (activePlayers == 1) {
-            if (!eliminationOrder.contains(lastActivePlayer)) {
-              eliminationOrder.add(lastActivePlayer);
-            }
-            eliminatedPlayers[lastActivePlayer] = true;
 
+          if (activePlayers == 1) {
+            eliminatedPlayers[lastActivePlayer] = true;
             setState(() {
               _CenteredActiveBanner = CenterBanner(
                 text: 'Player ${lastActivePlayer == 0
@@ -873,24 +868,24 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
             });
 
             // Check if the eliminated player is the current player
+
             // If so, advance the turn immediately
             if (currentPlayer == lastActivePlayer) {
               WidgetsBinding.instance.addPostFrameCallback((_) {
                 _advanceTurn();
+
               });
             }
-
             // Check if game is over (only one player remains)
+
             int remainingPlayers = 0;
             int winnerIndex = -1;
-
             for (int i = 0; i <= widget.botCount; i++) {
               if (!eliminatedPlayers[i]) {
                 remainingPlayers++;
                 winnerIndex = i;
               }
             }
-
             if (remainingPlayers == 1) {
               gameOver = true;
               winner = winnerIndex == 0 ? 'You' : 'Bot $winnerIndex';
@@ -926,7 +921,6 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   }
 
 
-  List<int> eliminationOrder = []; // 0 = first eliminated, last = winner
 
   void _startNextRound() {
     setState(() {
@@ -990,51 +984,6 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   }
 
 
-  List<Map<String, dynamic>> _computePlayerRanks() {
-    final List<Map<String, dynamic>> ranks = [];
-
-    for (int i = 0; i <= widget.botCount; i++) {
-      String name;
-      String? avatar;
-      if (i == 0) {
-        name = "You";
-        avatar = Provider.of<ExperienceManager>(context, listen: false).selectedAvatar;
-      } else {
-        name = BotDetailsPopup.getBotInfo(i).name;
-        avatar = BotDetailsPopup.getBotInfo(i).avatarPath;
-      }
-
-      int rank;
-      if (widget.gameModeType == GameModeType.elimination) {
-        // Assign rank based on elimination order
-        if (eliminationOrder.contains(i)) {
-          rank = eliminationOrder.indexOf(i) + 1;
-        } else {
-          // Winner is last one remaining
-          rank = eliminationOrder.length + 1;
-        }
-      } else {
-        // PlayToWin mode - fewer cards = better rank
-        rank = hands[i].length;
-      }
-
-      ranks.add({
-        'playerIndex': i,
-        'name': name,
-        'avatar': avatar,
-        'rank': rank,
-        'eliminated': eliminatedPlayers[i],
-      });
-    }
-
-    // Sort by rank (ascending)
-    ranks.sort((a, b) => a['rank'].compareTo(b['rank']));
-    return ranks;
-  }
-
-
-
-
 
   void _showEnd() {
     int winnerIndex = -1;
@@ -1046,39 +995,43 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     }
 
     if (winnerIndex == -1) {
+      // Find the last non-eliminated player (for elimination mode)
       for (int i = 0; i < eliminatedPlayers.length; i++) {
         if (!eliminatedPlayers[i]) {
           winnerIndex = i;
           break;
         }
-      }
-    }
 
-    final playerRanks = _computePlayerRanks().map((e) => e['score'] as int).toList();
+      }
+
+    }
 
     LoadingScreenDim.show(
       context,
       seconds: 3,
       lottieAsset: 'assets/animations/AnimationSFX/HezzFinal.json',
+
       onComplete: () {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => EndGameScreen(
-              hands: hands,
-              winnerIndex: winnerIndex,
-              gameModeType: widget.gameModeType,
-              currentRound: currentRound,
-              betAmount: widget.selectedBet,
-              winnerName: BotDetailsPopup.getBotInfo(winnerIndex).name,
-              winnerAvatar: BotDetailsPopup.getBotInfo(winnerIndex).avatarPath,
-              playerRanks: playerRanks, // pass full ranks
-            ),
-          ),
-        );
-      },
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) =>
+                    EndGameScreen(
+                      hands: hands,
+                      winnerIndex: winnerIndex,
+                      gameModeType: widget.gameModeType,
+                      currentRound: currentRound,
+                      betAmount: widget.selectedBet,
+                      winnerName: BotDetailsPopup.getBotInfo(winnerIndex).name,
+                      winnerAvatar: BotDetailsPopup.getBotInfo(winnerIndex).avatarPath,
+                    ),
+              ),
+            );
+        },
     );
   }
+
+
 
   final List<OverlayEntry> _activeOverlays = [];
   @override
@@ -1343,7 +1296,6 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                       ),
 
                     ..._animatedCardsWidgets,    // Animated cards being played
-
                   ],
                 ),
               ),
