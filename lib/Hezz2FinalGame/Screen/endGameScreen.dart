@@ -6,7 +6,6 @@ import 'package:provider/provider.dart';
 import '../../ExperieneManager.dart';
 import 'package:hezzstar/Hezz2FinalGame/Models/Cards.dart';
 import 'package:hezzstar/Hezz2FinalGame/Models/GameCardEnums.dart';
-
 import '../../Manager/HelperClass/FlyingRewardManager.dart';
 import '../../Manager/HelperClass/RewardDimScreen.dart';
 
@@ -18,6 +17,8 @@ class EndGameScreen extends StatefulWidget {
   final int betAmount;
   final String winnerName;
   final String winnerAvatar;
+  final String rewardMessage;
+  final List<int> playerScores;
 
   const EndGameScreen({
     super.key,
@@ -28,6 +29,8 @@ class EndGameScreen extends StatefulWidget {
     required this.betAmount,
     required this.winnerName,
     required this.winnerAvatar,
+    required this.rewardMessage,
+    required this.playerScores,
   });
 
   @override
@@ -36,7 +39,6 @@ class EndGameScreen extends StatefulWidget {
 
 class _EndGameScreenLuxState extends State<EndGameScreen>
     with TickerProviderStateMixin {
-
   final GlobalKey goldKeyEnd = GlobalKey();
   final GlobalKey gemsKeyEnd = GlobalKey();
   final GlobalKey xpKeyEnd = GlobalKey();
@@ -48,7 +50,7 @@ class _EndGameScreenLuxState extends State<EndGameScreen>
   Color primaryAccent = Colors.orangeAccent;
   Color secondaryAccent = Colors.deepOrange;
 
-  Map<int, int> prizes = {}; // Stores rewards per player
+  Map<int, int> prizes = {}; // reward per player (index → gold)
 
   @override
   void initState() {
@@ -58,9 +60,8 @@ class _EndGameScreenLuxState extends State<EndGameScreen>
       vsync: this,
       duration: const Duration(milliseconds: 900),
     );
-    _fadeAnim = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(parent: _fadeController, curve: Curves.easeOut),
-    );
+    _fadeAnim = Tween<double>(begin: 0, end: 1)
+        .animate(CurvedAnimation(parent: _fadeController, curve: Curves.easeOut));
     _fadeController.forward();
 
     _applyTheme();
@@ -87,10 +88,19 @@ class _EndGameScreenLuxState extends State<EndGameScreen>
     final xpManager = Provider.of<ExperienceManager>(context, listen: false);
     final int totalPool = widget.hands.length * widget.betAmount;
 
-    // Only the winner gets the pool
-    prizes[widget.winnerIndex] = totalPool;
+    if (widget.gameModeType == GameModeType.playToWin) {
+      // Only the winner takes all
+      prizes[widget.winnerIndex] = totalPool;
+    } else {
+      // Elimination mode — split by score ratio
+      final totalScore = widget.playerScores.fold<int>(0, (a, b) => a + (b > 0 ? b : 0));
+      for (int i = 0; i < widget.playerScores.length; i++) {
+        final score = widget.playerScores[i];
+        prizes[i] = totalScore > 0 ? ((score / totalScore) * totalPool).round() : 0;
+      }
+    }
 
-    // Animate reward for local player (index 0)
+    // Reward animation for the local player
     final int playerReward = prizes[0] ?? 0;
     if (playerReward > 0) {
       RewardDimScreen.show(
@@ -100,8 +110,7 @@ class _EndGameScreenLuxState extends State<EndGameScreen>
         amount: playerReward,
         type: RewardType.gold,
       );
-
-      xpManager.addWin(widget.hands.length); // Add win for player
+      xpManager.addWin(widget.hands.length);
     }
 
     setState(() {});
@@ -115,7 +124,9 @@ class _EndGameScreenLuxState extends State<EndGameScreen>
 
   @override
   Widget build(BuildContext context) {
-    final int playerCount = widget.hands.length;
+    // Sort players by score (descending)
+    final List<int> sortedIndices = List.generate(widget.playerScores.length, (i) => i);
+    sortedIndices.sort((a, b) => widget.playerScores[b].compareTo(widget.playerScores[a]));
 
     return Scaffold(
       body: Stack(
@@ -139,11 +150,12 @@ class _EndGameScreenLuxState extends State<EndGameScreen>
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: ListView.builder(
-                        itemCount: playerCount,
-                        itemBuilder: (context, index) {
+                        itemCount: sortedIndices.length,
+                        itemBuilder: (context, rank) {
+                          final index = sortedIndices[rank];
                           final gold = prizes[index] ?? 0;
                           final isWinner = index == widget.winnerIndex;
-                          return _luxPlayerCard(index, isWinner, gold);
+                          return _luxPlayerCard(index, isWinner, gold, rank + 1);
                         },
                       ),
                     ),
@@ -193,6 +205,8 @@ class _EndGameScreenLuxState extends State<EndGameScreen>
 
   Widget _luxTitle() {
     final winnerName = widget.winnerIndex == 0 ? 'You' : 'Player ${widget.winnerIndex + 1}';
+    final bool isElimination = widget.gameModeType == GameModeType.elimination;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Container(
@@ -208,41 +222,63 @@ class _EndGameScreenLuxState extends State<EndGameScreen>
             )
           ],
         ),
-        child: Text(
-          '$winnerName Wins!',
-          style: const TextStyle(
-            fontSize: 28,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-            shadows: [Shadow(color: Colors.black26, blurRadius: 4, offset: Offset(1, 1))],
-          ),
+        child: Column(
+          children: [
+            Text(
+              isElimination ? "Final Scoreboard" : "$winnerName Wins!",
+              style: const TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+                shadows: [Shadow(color: Colors.black26, blurRadius: 4)],
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              isElimination
+                  ? "Rewards shared by score ratio"
+                  : widget.rewardMessage,
+              style: const TextStyle(fontSize: 18, color: Colors.white70),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _luxPlayerCard(int index, bool isWinner, int gold) {
+  Widget _luxPlayerCard(int index, bool isWinner, int gold, int rank) {
     final xpManager = Provider.of<ExperienceManager>(context, listen: false);
+    final String avatarPath = (index == 0)
+        ? (xpManager.selectedAvatar ??
+        'assets/images/Skins/AvatarSkins/DefaultUser.png')
+        : (isWinner && widget.winnerAvatar.isNotEmpty)
+        ? widget.winnerAvatar
+        : 'assets/images/Skins/AvatarSkins/CardMaster/CardMaster${index % 6 + 1}.png';
 
-    final String avatarPath;
-    if (index == 0) {
-      avatarPath = xpManager.selectedAvatar ?? 'assets/images/Skins/AvatarSkins/DefaultUser.png';
-    } else if (isWinner && widget.winnerAvatar.isNotEmpty) {
-      avatarPath = widget.winnerAvatar;
-    } else {
-      avatarPath = 'assets/images/Skins/AvatarSkins/CardMaster/CardMaster${index % 6 + 1}.png';
-    }
+    final int score = widget.playerScores[index];
 
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      color: isWinner ? primaryAccent.withOpacity(0.8) : Colors.white,
+      color: isWinner ? primaryAccent.withOpacity(0.85) : Colors.white,
       elevation: isWinner ? 8 : 3,
       margin: const EdgeInsets.symmetric(vertical: 8),
       child: ListTile(
-        leading: CircleAvatar(
-          radius: 26,
-          backgroundColor: isWinner ? Colors.white : Colors.grey[300],
-          backgroundImage: AssetImage(avatarPath),
+        leading: Stack(
+          alignment: Alignment.bottomRight,
+          children: [
+            CircleAvatar(
+              radius: 26,
+              backgroundImage: AssetImage(avatarPath),
+            ),
+            CircleAvatar(
+              radius: 10,
+              backgroundColor: Colors.black,
+              child: Text(
+                '$rank',
+                style: const TextStyle(color: Colors.white, fontSize: 12),
+              ),
+            ),
+          ],
         ),
         title: Text(
           index == 0 ? 'You' : 'Player ${index + 1}',
@@ -251,8 +287,15 @@ class _EndGameScreenLuxState extends State<EndGameScreen>
             color: isWinner ? Colors.white : Colors.black87,
           ),
         ),
+        subtitle: Text(
+          'Score: $score pts',
+          style: TextStyle(
+            color: isWinner ? Colors.white70 : Colors.black54,
+            fontSize: 16,
+          ),
+        ),
         trailing: Text(
-          '+$gold Gold',
+          '+$gold 💰',
           style: TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 18,

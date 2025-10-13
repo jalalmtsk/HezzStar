@@ -83,6 +83,9 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   List<GlobalKey> playerCardKeys = [];
   final GlobalKey _animStackKey = GlobalKey();
 
+  List<int> playerScores = [];
+
+
 
   final Duration playDur = const Duration(milliseconds: 800);
   final Duration drawDur = const Duration(milliseconds: 200);
@@ -99,6 +102,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     super.initState();
     hands = List.generate(widget.botCount + 1, (_) => []);
     eliminatedPlayers = List.generate(widget.botCount + 1, (_) => false);
+    playerScores = List.generate(widget.botCount + 1, (_) => 0); // Initialize scores
 
     if (widget.mode == GameMode.online) {
 
@@ -435,7 +439,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
 
     await _handleSpecial(player, card);
     isAnimating = false;
-    _checkWin(player);
+    checkWin(player);
     if (!gameOver && !isBetweenRounds) _advanceTurn();
   }
 
@@ -829,7 +833,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
 
 
 
-  void _checkWin(int p) {
+  void checkWin(int p) {
     if (hands[p].isEmpty) {
       if (widget.gameModeType == GameModeType.playToWin) {
         // Play To Win mode - first to finish wins
@@ -841,8 +845,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
         setState(() {
           if (!qualifiedPlayers.contains(p)) {
             qualifiedPlayers.add(p);
+            playerScores[p] += 1; // Increment score for qualifying
           }
-
           // Check if we should eliminate someone
           int activePlayers = 0;
           int lastActivePlayer = -1;
@@ -854,30 +858,24 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
             }
           }
           // If only one player remains who hasn't qualified, eliminate them
-
           if (activePlayers == 1) {
             eliminatedPlayers[lastActivePlayer] = true;
             setState(() {
               _CenteredActiveBanner = CenterBanner(
-                text: 'Player ${lastActivePlayer == 0
-                    ? "You"
-                    : "Bot $lastActivePlayer"} eliminated!',
+                text: 'Player ${lastActivePlayer == 0 ? "You" : "Bot $lastActivePlayer"} eliminated!',
                 color: Colors.red,
                 onEnd: () => setState(() => _CenteredActiveBanner = null),
               );
+              // No score increment as the player is eliminated
             });
-
             // Check if the eliminated player is the current player
-
-            // If so, advance the turn immediately
             if (currentPlayer == lastActivePlayer) {
-              WidgetsBinding.instance.addPostFrameCallback((_) {
+              WidgetsBinding.instance.addPostFrameCallback((Duration timeStamp) {
                 _advanceTurn();
-
               });
             }
-            // Check if game is over (only one player remains)
 
+            // Check if game is over (only one player remains)
             int remainingPlayers = 0;
             int winnerIndex = -1;
             for (int i = 0; i <= widget.botCount; i++) {
@@ -899,6 +897,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       }
     }
   }
+
 
   bool isSpectating = false;
 
@@ -986,50 +985,51 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
 
 
   void _showEnd() {
+    // Find the winner based on the highest score
+    int highestScore = -1;
     int winnerIndex = -1;
-    for (int i = 0; i < hands.length; i++) {
-      if (hands[i].isEmpty && !eliminatedPlayers[i]) {
+    for (int i = 0; i < playerScores.length; i++) {
+      if (playerScores[i] > highestScore) {
+        highestScore = playerScores[i];
         winnerIndex = i;
-        break;
       }
     }
-
     if (winnerIndex == -1) {
-      // Find the last non-eliminated player (for elimination mode)
+      // Handle case with no qualified players
+      // Consider the last non-eliminated player as the winner if everyone else is eliminated
       for (int i = 0; i < eliminatedPlayers.length; i++) {
         if (!eliminatedPlayers[i]) {
           winnerIndex = i;
           break;
         }
-
       }
-
     }
-
-    LoadingScreenDim.show(
-      context,
-      seconds: 3,
-      lottieAsset: 'assets/animations/AnimationSFX/HezzFinal.json',
-
+    // Implement reward logic here based on the highest score
+    // For example:
+    String rewardMessage = "Player ${winnerIndex == 0 ? "You" : "Bot $winnerIndex"} wins with $highestScore points!";
+    // Show your end game screen or alert here
+    LoadingScreenDim.show(context, seconds: 3, lottieAsset: 'assets/animations/AnimationSFX/HezzFinal.json',
       onComplete: () {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: (context) =>
-                    EndGameScreen(
-                      hands: hands,
-                      winnerIndex: winnerIndex,
-                      gameModeType: widget.gameModeType,
-                      currentRound: currentRound,
-                      betAmount: widget.selectedBet,
-                      winnerName: BotDetailsPopup.getBotInfo(winnerIndex).name,
-                      winnerAvatar: BotDetailsPopup.getBotInfo(winnerIndex).avatarPath,
-                    ),
-              ),
-            );
-        },
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => EndGameScreen(
+                hands: hands,
+                winnerIndex: winnerIndex,
+                gameModeType: widget.gameModeType,
+                currentRound: currentRound,
+                betAmount: widget.selectedBet,
+                winnerName: BotDetailsPopup.getBotInfo(winnerIndex).name,
+                winnerAvatar: BotDetailsPopup.getBotInfo(winnerIndex).avatarPath,
+                rewardMessage: "Player ${winnerIndex == 0 ? "You" : "Bot $winnerIndex"} wins with ${playerScores[winnerIndex]} points!",
+              playerScores: playerScores, // Example reward message // Pass the reward message
+            ),
+          ),
+        );
+      },
     );
   }
+
 
 
 
