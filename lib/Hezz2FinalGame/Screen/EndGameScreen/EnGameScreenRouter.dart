@@ -60,6 +60,7 @@ class EndGameRouter extends StatelessWidget {
           winnerName: winnerName,
           winnerAvatar: winnerAvatar, rewardMessage: '',
           playerScores: [],
+          playerNames: [], playerAvatars: [],
         );
     }
   }

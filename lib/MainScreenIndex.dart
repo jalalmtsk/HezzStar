@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:hezzstar/IndexPages/Settings/SettingPage.dart';
 import 'package:hezzstar/tools/AudioManager/AudioManager.dart';
+import 'package:hezzstar/widgets/LoadingScreen/LoadinScreenDim.dart';
 import 'package:provider/provider.dart';
 import 'IndexPages/Collection/MainCollectionPage.dart';
 import 'IndexPages/EventsPage/EventPage.dart';

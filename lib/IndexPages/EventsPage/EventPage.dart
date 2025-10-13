@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../Manager/HelperClass/FlyingRewardManager.dart';
 import '../../Manager/HelperClass/RewardDimScreen.dart';
 import '../../tools/AdsManager/AdsManager.dart';
+import '../../widgets/LoadingScreen/LoadinScreenDim.dart';
 import '../../widgets/SpiningWheel/Spiningwheel.dart';
 import 'package:hezzstar/widgets/userStatut/userStatus.dart';
 
@@ -37,8 +38,22 @@ class _EventsPageState extends State<EventsPage> {
   @override
   void initState() {
     super.initState();
-    _loadLastSpinTime();
-    _startCountdownTimer();
+
+    // Show dim loading screen for 3 second on page load
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      LoadingScreenDim.show(
+        lottieAsset: "assets/animations/AnimationSFX/HezzFinal.json",
+        context,
+        seconds: 3,
+        dimColor: Colors.black54,
+      );
+
+      // Load last spin time and start countdown after 1 second
+      Future.delayed(const Duration(seconds: 1), () async {
+        await _loadLastSpinTime();
+        _startCountdownTimer();
+      });
+    });
   }
 
   // Load the last spin time from SharedPreferences

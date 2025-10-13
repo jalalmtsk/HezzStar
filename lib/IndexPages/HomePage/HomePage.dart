@@ -3,6 +3,7 @@ import 'package:hezzstar/ExperieneManager.dart';
 
 import 'package:provider/provider.dart';
 
+import '../../Hezz2FinalGame/Offline/GameLauncher_Offline.dart';
 import '../../Hezz2FinalGame/Screen/GameLauncher/CardGameLauncher.dart';
 import '../../Manager/HelperClass/FlyingRewardManager.dart';
 import '../../Manager/HelperClass/RewardDimScreen.dart';
@@ -300,8 +301,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             Navigator.pushReplacement(
               context,
               PageRouteBuilder(
-                pageBuilder: (_, __, ___) => CardGameLauncher(botCount: botCount),
-                transitionsBuilder: (_, anim, __, child) {
+                pageBuilder: (_, __, ___) => isOfflineMode
+                    ? OfflineCardGameLauncher()  // <-- go to offline page
+                    : CardGameLauncher(botCount: botCount),                transitionsBuilder: (_, anim, __, child) {
                   return ScaleTransition(
                     scale: CurvedAnimation(parent: anim, curve: Curves.easeOutBack),
                     child: child,

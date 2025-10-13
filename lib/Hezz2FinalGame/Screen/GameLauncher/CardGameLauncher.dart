@@ -724,12 +724,14 @@ class _CardGameLauncherState extends State<CardGameLauncher>
 
                 audioManager.playSfx("assets/audios/UI/SFX/Gamification_SFX/CashierMoney.mp3");
 
+                expManager.spendGold(bet['gold']);
                 await FlyingSpendManager().spawnSpend(
                   context: context,
                   start: startOffset,
                   endKey: startButtonKey,
                   amount: bet['gold'],
                 );
+                //SpendGold
 
                 // Add XP, search popup, navigate
                 expManager.addExperience(bet['xp']);

@@ -71,6 +71,57 @@ class _PlayerActionPanelState extends State<PlayerActionPanel> {
     _lastTurnPlayer = widget.currentPlayer;
   }
 
+
+
+  Widget _buildStatusBanner() {
+    Color bannerColor = Colors.transparent;
+    String bannerText = '';
+
+    if (widget.eliminated) {
+      bannerColor = Colors.redAccent;
+      bannerText = 'OUT';
+    } else if (widget.gameModeType == GameModeType.elimination &&
+        widget.hand.isEmpty) {
+      bannerColor = Colors.blueAccent;
+      bannerText = 'QUAL';
+    } else if (widget.currentPlayer == 0 && !widget.eliminated) {
+      bannerColor = Colors.greenAccent;
+      bannerText = 'TURN';
+    }
+
+    if (bannerText.isEmpty) return const SizedBox.shrink();
+
+    return Positioned(
+      bottom: -1,
+      left: 0,
+      right: 0,
+      child: Container(
+        alignment: Alignment.center,
+        height: 14,
+        width: 10,
+        decoration: BoxDecoration(
+          color: bannerColor,
+          borderRadius: BorderRadius.circular(8),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.4),
+              blurRadius: 4,
+              offset: const Offset(1, 1),
+            )
+          ],
+        ),
+        child: Text(
+          bannerText,
+          style: const TextStyle(
+            fontSize: 10,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final audioManager = Provider.of<AudioManager>(context, listen: false);
@@ -148,7 +199,6 @@ class _PlayerActionPanelState extends State<PlayerActionPanel> {
                     Stack(
                       alignment: Alignment.center,
                       children: [
-
                         CircleAvatar(
                           radius: 28,
                           backgroundColor: Colors.deepPurple,
@@ -219,6 +269,9 @@ class _PlayerActionPanelState extends State<PlayerActionPanel> {
 
                             ),
                           ),
+
+                        _buildStatusBanner(), // <-- This shows TURN / QUAL / ELIM
+
                         // Avatar
                       ],
                     ),

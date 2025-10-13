@@ -995,8 +995,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       }
     }
     if (winnerIndex == -1) {
-      // Handle case with no qualified players
-      // Consider the last non-eliminated player as the winner if everyone else is eliminated
+      // fallback: the last non-eliminated player
       for (int i = 0; i < eliminatedPlayers.length; i++) {
         if (!eliminatedPlayers[i]) {
           winnerIndex = i;
@@ -1004,31 +1003,61 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
         }
       }
     }
-    // Implement reward logic here based on the highest score
-    // For example:
-    String rewardMessage = "Player ${winnerIndex == 0 ? "You" : "Bot $winnerIndex"} wins with $highestScore points!";
-    // Show your end game screen or alert here
-    LoadingScreenDim.show(context, seconds: 3, lottieAsset: 'assets/animations/AnimationSFX/HezzFinal.json',
+
+    // Build playerNames list (player 0 from ExperienceManager, others from BotDetails)
+    final xpManager = Provider.of<ExperienceManager>(context, listen: false);
+    final playerNames = List<String>.generate(
+      hands.length,
+          (i) => i == 0 ? (xpManager.username ?? "You") : BotDetailsPopup.getBotInfo(i).name,
+    );
+
+    // (optional) Build playerAvatars if you want to pass all avatars too
+    final playerAvatars = List<String>.generate(
+      hands.length,
+          (i) => i == 0 ? (xpManager.selectedAvatar ?? "") : BotDetailsPopup.getBotInfo(i).avatarPath,
+    );
+
+    // reward message
+    String rewardMessage = "${winnerIndex == 0 ? xpManager.username : "Bot $winnerIndex"} wins";
+
+
+
+
+    LoadingScreenDim.show(
+      context,
+      seconds: 3,
+      lottieAsset: 'assets/animations/AnimationSFX/HezzFinal.json',
       onComplete: () {
+
+        final playerAvatars = List<String>.generate(
+          hands.length,
+              (i) => i == 0
+              ? (xpManager.selectedAvatar ?? "")
+              : BotDetailsPopup.getBotInfo(i).avatarPath,
+        );
+
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
             builder: (context) => EndGameScreen(
-                hands: hands,
-                winnerIndex: winnerIndex,
-                gameModeType: widget.gameModeType,
-                currentRound: currentRound,
-                betAmount: widget.selectedBet,
-                winnerName: BotDetailsPopup.getBotInfo(winnerIndex).name,
-                winnerAvatar: BotDetailsPopup.getBotInfo(winnerIndex).avatarPath,
-                rewardMessage: "Player ${winnerIndex == 0 ? "You" : "Bot $winnerIndex"} wins with ${playerScores[winnerIndex]} points!",
-              playerScores: playerScores, // Example reward message // Pass the reward message
+              hands: hands,
+              winnerIndex: winnerIndex,
+              gameModeType: widget.gameModeType,
+              currentRound: currentRound,
+              betAmount: widget.selectedBet,
+              winnerName: BotDetailsPopup.getBotInfo(winnerIndex).name,
+              winnerAvatar: BotDetailsPopup.getBotInfo(winnerIndex).avatarPath,
+              rewardMessage: rewardMessage,
+              playerScores: playerScores,
+              playerNames: playerNames,
+              playerAvatars: playerAvatars,
             ),
           ),
         );
       },
     );
   }
+
 
 
 

@@ -19,6 +19,8 @@ class EndGameScreen extends StatefulWidget {
   final String winnerAvatar;
   final String rewardMessage;
   final List<int> playerScores;
+  final List<String> playerNames;
+  final List<String>? playerAvatars; // optional
 
   const EndGameScreen({
     super.key,
@@ -31,6 +33,8 @@ class EndGameScreen extends StatefulWidget {
     required this.winnerAvatar,
     required this.rewardMessage,
     required this.playerScores,
+    required this.playerNames,
+    required this.playerAvatars,
   });
 
   @override
@@ -51,6 +55,8 @@ class _EndGameScreenLuxState extends State<EndGameScreen>
   Color secondaryAccent = Colors.deepOrange;
 
   Map<int, int> prizes = {}; // reward per player (index → gold)
+
+
 
   @override
   void initState() {
@@ -89,28 +95,33 @@ class _EndGameScreenLuxState extends State<EndGameScreen>
     final int totalPool = widget.hands.length * widget.betAmount;
 
     if (widget.gameModeType == GameModeType.playToWin) {
-      // Only the winner takes all
+      // ✅ Only the winner takes all
+      prizes.clear();
       prizes[widget.winnerIndex] = totalPool;
+
     } else {
-      // Elimination mode — split by score ratio
-      final totalScore = widget.playerScores.fold<int>(0, (a, b) => a + (b > 0 ? b : 0));
+      // 🏆 Elimination mode — split by score ratio
+      prizes.clear();
+      final totalScore =
+      widget.playerScores.fold<int>(0, (a, b) => a + (b > 0 ? b : 0));
+
       for (int i = 0; i < widget.playerScores.length; i++) {
         final score = widget.playerScores[i];
         prizes[i] = totalScore > 0 ? ((score / totalScore) * totalPool).round() : 0;
       }
-    }
 
-    // Reward animation for the local player
-    final int playerReward = prizes[0] ?? 0;
-    if (playerReward > 0) {
-      RewardDimScreen.show(
-        context,
-        start: const Offset(200, 400),
-        endKey: goldKeyEnd,
-        amount: playerReward,
-        type: RewardType.gold,
-      );
-      xpManager.addWin(widget.hands.length);
+      // ✅ Give reward animation if local player earned something
+      final int playerReward = prizes[0] ?? 0;
+      if (playerReward > 0) {
+        RewardDimScreen.show(
+          context,
+          start: const Offset(200, 400),
+          endKey: goldKeyEnd,
+          amount: playerReward,
+          type: RewardType.gold,
+        );
+        xpManager.addWin(widget.hands.length);
+      }
     }
 
     setState(() {});
@@ -127,6 +138,15 @@ class _EndGameScreenLuxState extends State<EndGameScreen>
     // Sort players by score (descending)
     final List<int> sortedIndices = List.generate(widget.playerScores.length, (i) => i);
     sortedIndices.sort((a, b) => widget.playerScores[b].compareTo(widget.playerScores[a]));
+
+
+    final Map<int, bool> isTied = {};
+    for (int i = 0; i < widget.playerScores.length; i++) {
+      final score = widget.playerScores[i];
+      final countSameScore =
+          widget.playerScores.where((s) => s == score).length;
+      isTied[i] = countSameScore > 1;
+    }
 
     return Scaffold(
       body: Stack(
@@ -155,7 +175,8 @@ class _EndGameScreenLuxState extends State<EndGameScreen>
                           final index = sortedIndices[rank];
                           final gold = prizes[index] ?? 0;
                           final isWinner = index == widget.winnerIndex;
-                          return _luxPlayerCard(index, isWinner, gold, rank + 1);
+                          final tied = isTied[index] ?? false;
+                          return _luxPlayerCard(index, isWinner, gold, rank + 1, tied);
                         },
                       ),
                     ),
@@ -246,17 +267,12 @@ class _EndGameScreenLuxState extends State<EndGameScreen>
     );
   }
 
-  Widget _luxPlayerCard(int index, bool isWinner, int gold, int rank) {
+  Widget _luxPlayerCard(int index, bool isWinner, int gold, int rank, bool isTied)
+  {
     final xpManager = Provider.of<ExperienceManager>(context, listen: false);
-    final String avatarPath = (index == 0)
-        ? (xpManager.selectedAvatar ??
-        'assets/images/Skins/AvatarSkins/DefaultUser.png')
-        : (isWinner && widget.winnerAvatar.isNotEmpty)
-        ? widget.winnerAvatar
-        : 'assets/images/Skins/AvatarSkins/CardMaster/CardMaster${index % 6 + 1}.png';
 
     final int score = widget.playerScores[index];
-
+    final avatarPath = widget.playerAvatars?[index];
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       color: isWinner ? primaryAccent.withOpacity(0.85) : Colors.white,
@@ -268,7 +284,7 @@ class _EndGameScreenLuxState extends State<EndGameScreen>
           children: [
             CircleAvatar(
               radius: 26,
-              backgroundImage: AssetImage(avatarPath),
+              backgroundImage: AssetImage(avatarPath!),
             ),
             CircleAvatar(
               radius: 10,
@@ -281,27 +297,51 @@ class _EndGameScreenLuxState extends State<EndGameScreen>
           ],
         ),
         title: Text(
-          index == 0 ? 'You' : 'Player ${index + 1}',
+          widget.playerNames[index],
           style: TextStyle(
             fontWeight: FontWeight.bold,
             color: isWinner ? Colors.white : Colors.black87,
           ),
         ),
         subtitle: Text(
-          'Score: $score pts',
+          'Hezz 2 Star',
+          //'Score: $score pts',
           style: TextStyle(
             color: isWinner ? Colors.white70 : Colors.black54,
             fontSize: 16,
           ),
         ),
-        trailing: Text(
-          '+$gold 💰',
+        trailing:(widget.gameModeType == GameModeType.elimination && isTied)
+            ? Text(
+          '⏳ Playing',
           style: TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 18,
-            color: isWinner ? Colors.white : Colors.black54,
+            color: isWinner
+                ? Colors.white
+                : Colors.orangeAccent,
           ),
+        )
+            : Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              '+$gold ',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+                color: isWinner ? Colors.white : Colors.black54,
+              ),
+            ),
+            Image.asset(
+              'assets/UI/Icons/Gamification/GoldInGame_Icon.png', // 👈 replace with your actual asset path
+              height: 23,
+              width: 23,
+            ),
+          ],
         ),
+
+
       ),
     );
   }
