@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:math';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:hezzstar/ExperieneManager.dart';
 import 'package:hezzstar/Hezz2FinalGame/Models/GameCardEnums.dart';
@@ -12,6 +13,7 @@ import 'package:hezzstar/tools/AudioManager/AudioManager.dart';
 import 'package:hezzstar/widgets/userStatut/SimpleUserStatusBar.dart';
 import 'package:provider/provider.dart';
 
+import '../../tools/ConnectivityManager/ConnectivityManager.dart';
 import '../../widgets/LoadingScreen/LoadinScreenDim.dart';
 import '../Models/Cards.dart';
 import '../Models/Deck.dart';
@@ -99,6 +101,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   int currentRound = 1;
   bool isBetweenRounds = false;
 
+  bool _showDisconnectedOverlay = false;
+
 
   @override
   void initState() {
@@ -107,6 +111,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     eliminatedPlayers = List.generate(widget.botCount + 1, (_) => false);
     playerScores = List.generate(widget.botCount + 1, (_) => 0); // Initialize scores
 
+
     if (widget.mode == GameMode.online) {
       _start();
       GameMode.online;
@@ -114,7 +119,110 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       _start();
       GameMode.local;
     }
+
+
+    if (widget.mode == GameMode.online) {
+      final connectivityService = context.read<ConnectivityService>();
+      _showDisconnectedOverlay = !connectivityService.isConnected;
+
+      // Immediately trigger reconnect attempt if offline at start
+      if (!connectivityService.isConnected) {
+        WidgetsBinding.instance.addPostFrameCallback((_) async {
+          if (!mounted) return;
+          setState(() => _showDisconnectedOverlay = true);
+          await _attemptReconnect();
+        });
+      }
+
+      // Listen for connectivity changes
+      connectivityService.addListener(() async {
+        if (!mounted) return;
+
+        if (connectivityService.isConnected) {
+          setState(() => _showDisconnectedOverlay = false);
+        } else {
+          setState(() => _showDisconnectedOverlay = true);
+          await _attemptReconnect();
+        }
+      });
+    }
   }
+
+
+
+  Future<void> _attemptReconnect() async {
+    const int totalTime = 20; // seconds
+    int remaining = totalTime;
+
+    final connectivityService = context.read<ConnectivityService>();
+    OverlayEntry? countdownOverlay;
+
+    // Reactive widget builder
+    countdownOverlay = OverlayEntry(
+      builder: (context) {
+        return Positioned.fill(
+          child: Container(
+            color: Colors.black.withValues(alpha: 0.9),
+            child: Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.wifi_off, size: 80, color: Colors.white),
+                  const SizedBox(height: 20),
+                  Text(
+                    'Disconnected',
+                    style: const TextStyle(
+                        decoration: TextDecoration.none, // <-- explicitly remove underline
+                        color: Colors.white,
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold),
+
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    'Redirecting in $remaining',
+
+                    style: const TextStyle(
+                        decoration: TextDecoration.none, // <-- explicitly remove underline
+                        color: Colors.white70,
+                        fontSize: 22,
+                        fontWeight: FontWeight.normal),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+
+    Overlay.of(context)?.insert(countdownOverlay);
+
+    Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted || connectivityService.isConnected) {
+        timer.cancel();
+        countdownOverlay?.remove();
+        return;
+      }
+
+      remaining--;
+      // Force rebuild of the overlay
+      countdownOverlay?.markNeedsBuild();
+
+      if (remaining <= 0) {
+        timer.cancel();
+        countdownOverlay?.remove();
+        if (mounted) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => MainScreen()),
+          );
+        }
+      }
+    });
+  }
+
+
 
   Future<void> _start() async {
     isAnimating = true;
@@ -673,7 +781,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       final chainable = hands[bot].indexWhere((c) => c.rank == 2);
       if (chainable != -1) {
         await Future.delayed(
-            Duration(milliseconds: 400 + Random().nextInt(400)));
+            Duration(milliseconds: 600 + Random().nextInt(1200)));
         await _playCard(bot, chainable);
         return;
       } else {
@@ -688,7 +796,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
             await _animateMoveFaceDown(
               d, start, botPos);
           }
-          await Future.delayed(const Duration(milliseconds: 90));
+          await Future.delayed(const Duration(milliseconds: 160));
         }
         setState(() {
           _CenteredActiveBanner = CenterBanner(
@@ -698,7 +806,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
           );
         });
         pendingDraw = 0;
-        await Future.delayed(const Duration(milliseconds: 300));
+        await Future.delayed(const Duration(milliseconds: 1000));
         _advanceTurn();
         return;
       }
@@ -732,7 +840,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
         );
       });
 
-      await Future.delayed(const Duration(milliseconds: 300));
+      await Future.delayed(const Duration(milliseconds: 800));
       _advanceTurn();
       return;
     }
@@ -746,8 +854,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       }
     }
 
-    int minDelay = 300; // minimum milliseconds
-    int maxDelay = 2000; // maximum milliseconds
+    int minDelay = 700; // minimum milliseconds
+    int maxDelay = 4000; // maximum milliseconds
     await Future.delayed(Duration(milliseconds: minDelay + Random().nextInt(maxDelay - minDelay)));
     await _playCard(bot, choice);
   }
@@ -1108,6 +1216,12 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       canPop: false,
       onPopInvokedWithResult: (didPop, result) async {
         if (!didPop) {
+
+          if (_showDisconnectedOverlay) {
+            // No Wi-Fi, do nothing
+            return;
+          }
+
           final quit = await showDialog<bool>(
             context: context,
             builder: (ctx) => AlertDialog(
@@ -1372,9 +1486,15 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                       ),
 
                     ..._animatedCardsWidgets,    // Animated cards being played
+
                   ],
+
+
                 ),
               ),
+
+
+
           ],
         ),
       ),

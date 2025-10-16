@@ -317,7 +317,7 @@ class _EventsPageState extends State<EventsPage> {
                         const SizedBox(height: 20),
 
                         // Reset Timer Button
-                        ElevatedButton(
+                       /* ElevatedButton(
                           onPressed: _resetCooldown,
                           style: ElevatedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(horizontal: 45, vertical: 14),
@@ -333,6 +333,8 @@ class _EventsPageState extends State<EventsPage> {
                             style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                           ),
                         ),
+
+                        */
                         const SizedBox(height: 16),
 
 

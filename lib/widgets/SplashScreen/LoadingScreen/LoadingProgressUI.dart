@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../../../tools/AudioManager/AudioManager.dart';
 
 class GoldenProgressBar extends StatefulWidget {
   final double progress; // 0.0 - 1.0
@@ -16,10 +19,16 @@ class _GoldenProgressBarState extends State<GoldenProgressBar>
   @override
   void initState() {
     super.initState();
+    playSfx("assets/audios/UI/SplashScreen_Audio/GameStart.mp3");
     _shimmerController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 2),
     )..repeat();
+  }
+
+  void playSfx(String asset){
+    final audioManager = Provider.of<AudioManager>(context, listen: false);
+    audioManager.playAlert(asset);
   }
 
   @override

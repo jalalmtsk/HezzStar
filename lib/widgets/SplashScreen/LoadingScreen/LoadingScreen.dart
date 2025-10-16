@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
+import 'package:provider/provider.dart';
+
+import '../../../tools/AudioManager/AudioManager.dart';
 
 class LoadingScreen extends StatefulWidget {
   final double progress; // 0.0 - 1.0
@@ -16,6 +19,14 @@ class LoadingScreen extends StatefulWidget {
 }
 
 class _LoadingScreenState extends State<LoadingScreen> {
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+
+  }
+
   @override
   Widget build(BuildContext context) {
     final progressPercent = (widget.progress * 100).clamp(0, 100).toInt();

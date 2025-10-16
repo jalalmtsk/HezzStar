@@ -276,10 +276,10 @@ class _InstructionsDialogState extends State<InstructionsDialog>
                                     children: [
                                       _specialCardPage(
                                           imagePath:
-                                          'assets/images/Tutorials/setup1.png',
+                                          'assets/images/Tutorials/PlayToWinVsElim.png',
                                           title: 'Player Mode',
                                           description:
-                                          '• 1 human + 1–5 bots\n• Choose mode: PlayToWin or Elimination'),
+                                          '•• Choose mode:\n PlayToWin or Elimination'),
 
                                       _specialCardPage(
                                           imagePath:
@@ -287,13 +287,6 @@ class _InstructionsDialogState extends State<InstructionsDialog>
                                           title: 'Suits/Ranks',
                                           description:
                                           '• 4 Suits / 10 Ranks\n• Choose The Same Suit Or Same Rank'),
-
-                                      _specialCardPage(
-                                          imagePath:
-                                          'assets/images/Tutorials/setup2.png',
-                                          title: 'Controls',
-                                          description:
-                                          '• Tap card to play if valid\n• Draw if no valid moves\n• Turn-based system'),
                                     ],
                                   ),
                                 ),
@@ -364,19 +357,19 @@ class _InstructionsDialogState extends State<InstructionsDialog>
                                     children: [
                                       _specialCardPage(
                                           imagePath:
-                                          'assets/images/Tutorials/tip1.png',
+                                          'assets/images/Tutorials/Tip1.png',
                                           title: 'Tip #1',
                                           description:
                                           'Aim to empty your hand first in PlayToWin mode.'),
                                       _specialCardPage(
                                           imagePath:
-                                          'assets/images/Tutorials/tip2.png',
+                                          'assets/images/Tutorials/Tip2.png',
                                           title: 'Tip #2',
                                           description:
                                           'In Elimination mode, avoid being last to finish.'),
                                       _specialCardPage(
                                           imagePath:
-                                          'assets/images/Tutorials/tip3.png',
+                                          'assets/images/Tutorials/SpecialCards.png',
                                           title: 'Tip #3',
                                           description:
                                           'Watch for special combos (1,2,7) to control the flow.'),

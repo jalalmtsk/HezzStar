@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hezzstar/widgets/LoadingScreen/LoadinScreenDim.dart';
+import 'package:lottie/lottie.dart';
 import '../../../IndexPages/Settings/SettingDialog.dart';
 import '../../../MainScreenIndex.dart';
 import 'GameInfoDialog.dart';
@@ -64,63 +65,114 @@ class _MenuOverlayButtonState extends State<MenuOverlayButton> {
                       builder: (_) => const InstructionsDialog(),
                     );
                   },
-                  onExit: () async {
-                    _closeOverlay(); // Close the overlay first
 
-                    final shouldExit = await showDialog<bool>(
-                      context: context,
-                      barrierDismissible: false,
-                      builder: (ctx) => AlertDialog(
-                        backgroundColor: Colors.black87,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20)),
-                        title: const Text(
-                          "Exit Game?",
-                          style: TextStyle(
-                              color: Colors.white, fontWeight: FontWeight.bold),
-                        ),
-                        content: const Text(
-                          "Are you sure you want to exit and return to the launcher?",
-                          style: TextStyle(color: Colors.white70),
-                        ),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.of(ctx).pop(false),
-                            child: const Text("Cancel",
-                                style: TextStyle(color: Colors.white)),
-                          ),
-                          ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.redAccent,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
+                    onExit: () async {
+                      _closeOverlay();
+
+                      final shouldExit = await showDialog<bool>(
+                        context: context,
+                        barrierDismissible: false,
+                        builder: (ctx) => Dialog(
+                          backgroundColor: Colors.transparent,
+                          insetPadding: const EdgeInsets.all(45),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.6),
+                              borderRadius: BorderRadius.circular(25),
+                              border: Border.all(color: Colors.white.withOpacity(0.1), width: 1),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.white.withOpacity(0.5),
+                                  blurRadius: 15,
+                                  offset: const Offset(0, 8),
+                                ),
+                              ],
                             ),
-                            onPressed: () {
-                              LoadingScreenDim.show(
-                                ctx,
-                                seconds: 2,
-                                lottieAsset:
-                                'assets/animations/AnimationSFX/HezzFinal.json',
-                                onComplete: () {
-                                  Navigator.of(ctx).pop(true);
-                                },
-                              );
-                            },
-                            child: const Text("Exit"),
-                          ),
-                        ],
-                      ),
-                    );
+                            padding: const EdgeInsets.all(20),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                // Icon / Animation
+                                Lottie.asset(
+                                  'assets/animations/Win/SwordBattle.json',
+                                  width: 120,
+                                  height: 120,
+                                  repeat: false,
+                                ),
+                                const SizedBox(height: 10),
+                                const Text(
+                                  "Exit Game?",
+                                  style: TextStyle(
+                                    color: Colors.black,
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                                const SizedBox(height: 10),
+                                const Text(
+                                  "Do you really want to leave the game\n and return to the launcher?",
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(color: Colors.black, fontSize: 15),
+                                ),
+                                const SizedBox(height: 25),
 
-                    if (shouldExit == true) {
-                      await Future.delayed(
-                          const Duration(milliseconds: 200));
-                      Navigator.of(context).pushReplacement(
-                        MaterialPageRoute(builder: (_) => MainScreen()),
+                                // Buttons Row
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                  children: [
+                                    // Cancel
+                                    ElevatedButton.icon(
+                                      icon: const Icon(Icons.close, color: Colors.white),
+                                      label: const Text("Cancel", style: TextStyle(color: Colors.white)),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.yellow.withOpacity(0.7),
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 20, vertical: 12),
+                                        shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(15)),
+                                      ),
+                                      onPressed: () => Navigator.of(ctx).pop(false),
+                                    ),
+
+                                    // Exit
+                                    ElevatedButton.icon(
+                                      icon: const Icon(Icons.exit_to_app, color: Colors.white),
+                                      label: const Text("Exit", style: TextStyle(color: Colors.white),),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.redAccent,
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 25, vertical: 12),
+                                        shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(15)),
+                                      ),
+                                      onPressed: () {
+                                        LoadingScreenDim.show(
+                                          ctx,
+                                          seconds: 2,
+                                          lottieAsset:
+                                          'assets/animations/AnimationSFX/HezzFinal.json',
+                                          onComplete: () {
+                                            Navigator.of(ctx).pop(true);
+                                          },
+                                        );
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
                       );
-                    }
-                  },
+
+                      if (shouldExit == true) {
+                        await Future.delayed(const Duration(milliseconds: 200));
+                        Navigator.of(context).pushReplacement(
+                          MaterialPageRoute(builder: (_) => MainScreen()),
+                        );
+                      }
+                    },
                 ),
               ),
             ),

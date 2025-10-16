@@ -53,7 +53,7 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
 
   void _startIntro() async {
     final audioManager = Provider.of<AudioManager>(context, listen: false);
-    audioManager.playSfx("assets/audios/UI/SplashScreen_Audio/modern_logo.mp3");
+    audioManager.playAlert("assets/audios/UI/SplashScreen_Audio/modern_logo.mp3");
     audioManager.playSfx("assets/audios/UI/SplashScreen_Audio/openingZoom.mp3");
 
     _logoFadeController.forward();

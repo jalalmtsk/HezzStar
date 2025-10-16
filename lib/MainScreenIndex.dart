@@ -47,6 +47,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   void initState() {
     super.initState();
 
+    playSfx("assets/audios/UI/SplashScreen_Audio/moroccanDrum.mp3");
     _pulseController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 700),
@@ -58,6 +59,13 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
       vsync: this,
       duration: const Duration(seconds: 2),
     )..repeat();
+  }
+
+  void playSfx(String asset) async{
+    final audioManager = Provider.of<AudioManager>(context, listen: false);
+    await audioManager.playAlert(asset);
+     audioManager.playBackgroundMusic(asset,loop: true);
+
   }
 
   @override

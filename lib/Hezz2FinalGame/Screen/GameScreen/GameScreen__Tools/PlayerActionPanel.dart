@@ -152,7 +152,7 @@ class _PlayerActionPanelState extends State<PlayerActionPanel> {
                             widget.currentPlayer == 0)
                             ? widget.onDraw
                             : null,
-                        child: const Text('Draw'),
+                        child: const Text('Draw', style: TextStyle(color: Colors.black),),
                       ),
                     const SizedBox(width: 6),
                     if (widget.gameModeType == GameModeType.elimination &&
@@ -230,15 +230,6 @@ class _PlayerActionPanelState extends State<PlayerActionPanel> {
                               },
                               builder: (context, value, child) {
                                 final bool showRedAlert = value <= 5 && value > 0;
-
-                                // Play ticking sound at 5 seconds remaining, once
-                                if (!_playedFiveSecSound && value <= 5 && value > 0) {
-                                  audioManager.playSfx(
-                                      "assets/audios/UI/SFX/Gamification_SFX/TimerTicking.mp3");
-                                  _playedFiveSecSound = true; // mark as played
-                                }
-
-
                                 // Build the circular timer + flash effect
                                 return Stack(
                                   alignment: Alignment.center,
@@ -263,6 +254,8 @@ class _PlayerActionPanelState extends State<PlayerActionPanel> {
                                               0.2 + 0.3 * ((value * 4) % 1)), // pulsating effect
                                         ),
                                       ),
+                                    if(showRedAlert)
+                                      Lottie.asset('assets/animations/AnimationSFX/redAlert.json')
                                   ],
                                 );
                               },

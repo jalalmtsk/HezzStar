@@ -137,7 +137,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                 text: "",
                                 sparkleAsset: "assets/animations/AnimationSFX/RewawrdLightEffect.json",
                                 boxAsset: "assets/animations/AnimatGamification/AdsBox.json",
-                                rewardAmount: 5,
+                                rewardAmount: 2,
                                 gemsKey: gemsKeyHome,
                                 backgroundImage: 'assets/UI/Containers/ImageCard2.jpg',
                               ),
@@ -149,12 +149,11 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     ),
                   ),
 
-                  const SizedBox(height: 40),
                   GestureDetector(
                     child: Icon(Icons.add, color: Colors.white,),
                     onTap: () {
                       final audioManager = Provider.of<AudioManager>(context, listen: false);
-                      audioManager.playSfx("assets/audios/UI/SFX/Voices/Hezz8.mp3");
+                      audioManager.playSfx("assets/audios/UI/SplashScreen_Audio/LoadindSound.mp3");
 
                       RewardDimScreen.show(
                         context,
@@ -178,45 +177,39 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         amount: 50,
                         type: RewardType.star,
                       );
-
-
                     },
-
                   ),
-
-
 
                   Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
+
                       IconButton(onPressed: (){
-                        xpManager.addExperience(
-                          10,              // XP amount
-                          context: context, // needed for dimmed reward screen
-                          gemsKey: gemsKeyHome, // where the flying gems fly to
-                        );
+                        /*   xpManager.addExperience(
+                              10,              // XP amount
+                              context: context, // needed for dimmed reward screen
+                              gemsKey: gemsKeyHome, // where the flying gems fly to
+
+
+                            );
+
+                          */
                       }, icon: Image.asset(
                           height: 60,
                           width: 60,
                           "assets/UI/Icons/Locked_Icon.png")),
+
                       Row(
                         children: [
                           IconButton(onPressed: (){
-                            xpManager.addExperience(
+                         /*   xpManager.addExperience(
                               10,              // XP amount
                               context: context, // needed for dimmed reward screen
                               gemsKey: gemsKeyHome, // where the flying gems fly to
-                            );
-                          }, icon: Image.asset(
-                              height: 60,
-                              width: 60,
-                              "assets/UI/Icons/Locked_Icon.png")),
 
-                          IconButton(onPressed: (){
-                            xpManager.addExperience(
-                              10,              // XP amount
-                              context: context, // needed for dimmed reward screen
-                              gemsKey: gemsKeyHome, // where the flying gems fly to
+
                             );
+
+                          */
                           }, icon: Image.asset(
                               height: 60,
                               width: 60,
@@ -257,7 +250,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                     return Transform.scale(
                                       scale: scale,
                                       child: Padding(
-                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 20),
+                                        padding: const EdgeInsets.only(right: 10,left: 10, bottom: 80, top: 50),
                                         child: _modeCard(
                                           mode['title']!,
                                           mode['botCount']!,
@@ -341,13 +334,13 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(25),
                 gradient: LinearGradient(
-                  colors: [Colors.deepPurple.withOpacity(0.8), Colors.black87],
+                  colors: [Colors.lightGreen.withOpacity(0.8), Colors.black87],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.deepPurple.withOpacity(0.5),
+                    color: Colors.green.withOpacity(0.5),
                     blurRadius: 20,
                     offset: const Offset(0, 10),
                   ),

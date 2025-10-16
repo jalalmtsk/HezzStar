@@ -66,7 +66,7 @@ class AudioManager extends ChangeNotifier with WidgetsBindingObserver{
   double _bgVolume = 0.1;
   double _sfxVolume = 0.5;
   double _buttonVolume = 0.4;
-  double _alertVolume = 0.6;
+  double _alertVolume = 0.5;
 
   // SharedPreferences keys
   static const String _prefBgVolumeKey = 'bgVolume';

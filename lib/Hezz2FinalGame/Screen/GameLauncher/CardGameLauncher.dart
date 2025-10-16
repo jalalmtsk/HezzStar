@@ -41,6 +41,8 @@ class _CardGameLauncherState extends State<CardGameLauncher>
   bool _isSpending = false;
   bool _showDisconnectedOverlay = false;
 
+
+
   late PageController _pageController;
   late AnimationController _pulseController; // for pulses
   late AnimationController _handEntranceController; // animate hand entrance
@@ -100,7 +102,50 @@ class _CardGameLauncherState extends State<CardGameLauncher>
     FlyingSpendManager().init(context);
     // initial theme
     _applyThemeForMode();
+
+    // === CONNECTIVITY MONITOR ===
+    final connectivityService = context.read<ConnectivityService>();
+    final audioManager = Provider.of<AudioManager>(context, listen: false);
+    _showDisconnectedOverlay = !connectivityService.isConnected;
+
+    connectivityService.addListener(() async {
+      if (!mounted) return;
+      if (connectivityService.isConnected) {
+        setState(() => _showDisconnectedOverlay = false);
+      } else {
+        setState(() => _showDisconnectedOverlay = true);
+        await _attemptReconnect();
+      }
+    });
   }
+
+  Future<void> _attemptReconnect() async {
+    const int totalTime = 20; // seconds
+    const int interval = 2;
+    int elapsed = 0;
+
+    final connectivityService = context.read<ConnectivityService>();
+
+    while (elapsed < totalTime) {
+      await Future.delayed(const Duration(seconds: interval));
+      if (!mounted) return;
+
+      if (connectivityService.isConnected) {
+        setState(() => _showDisconnectedOverlay = false);
+        return;
+      }
+
+      elapsed += interval;
+    }
+
+    if (mounted) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => MainScreen()),
+      );
+    }
+  }
+
 
   @override
   void dispose() {
@@ -711,7 +756,7 @@ class _CardGameLauncherState extends State<CardGameLauncher>
           Expanded(
             child: GestureDetector(
               key: startButtonKey,
-              onTap: enough
+              onTap: (enough && !_showDisconnectedOverlay)
                   ? () async {
                 final audioManager = Provider.of<AudioManager>(context, listen: false);
                 audioManager.playEventSound("sandClick");
@@ -735,7 +780,7 @@ class _CardGameLauncherState extends State<CardGameLauncher>
 
                 // Add XP, search popup, navigate
                 // expManager.addExperience(bet['xp']);
-                await SearchingPopup.show(context, widget.botCount);
+                await SearchingPopup.show(context, widget.botCount, GameMode.online);
 
                 // Reset spending flag
                 setState(() => _isSpending = false);
@@ -815,11 +860,17 @@ class _CardGameLauncherState extends State<CardGameLauncher>
                   children: [
                     ScaleTransition(
                       scale: _pulseAnimation,
-                      child: Icon(enough ? Icons.play_arrow_rounded : Icons.lock_outline, size: 30, color: Colors.white),
+                      child: Icon(
+                        !_showDisconnectedOverlay
+                            ? (enough ? Icons.play_arrow_rounded : Icons.lock_outline)
+                            : Icons.wifi_off_rounded,
+                        size: 30,
+                        color: Colors.white,
+                      ),
                     ),
                     const SizedBox(width: 10),
                     Text(
-                      label,
+                      !_showDisconnectedOverlay ? label : "No Connection",
                       style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
                     ),
                     const SizedBox(width: 12),

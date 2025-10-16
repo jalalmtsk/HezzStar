@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
 
 class CardPreview extends StatelessWidget {
   final List<dynamic> hand;
@@ -6,6 +7,7 @@ class CardPreview extends StatelessWidget {
   final double scale;
   final bool isEliminated;
   final bool isQualified;
+  final bool showQualificationLottie; // ✅ Add this
 
   const CardPreview({
     required this.hand,
@@ -13,6 +15,7 @@ class CardPreview extends StatelessWidget {
     this.scale = 1.0,
     this.isEliminated = false,
     this.isQualified = false,
+    this.showQualificationLottie = false, // ✅ Default to false
   });
 
   @override
@@ -51,6 +54,7 @@ class CardPreview extends StatelessWidget {
                       colorBlendMode: BlendMode.saturation,
                     ),
                   ),
+
                   if (isEliminated)
                     Positioned.fill(
                       child: Container(
@@ -62,6 +66,7 @@ class CardPreview extends StatelessWidget {
                         ),
                       ),
                     ),
+
                   if (isQualified)
                     Positioned.fill(
                       child: Container(
@@ -81,4 +86,3 @@ class CardPreview extends StatelessWidget {
     );
   }
 }
-

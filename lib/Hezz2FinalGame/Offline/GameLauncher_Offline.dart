@@ -189,31 +189,33 @@ class _OfflineCardGameLauncherState extends State<OfflineCardGameLauncher>
         animation: _handEntranceController,
         builder: (context, _) {
           double entrance = Curves.elasticOut.transform(_handEntranceController.value);
-          return Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: List.generate(handSize, (index) {
-              double tilt = (index - (handSize - 1) / 2) * 0.1 * entrance;
-              return Transform.rotate(
-                angle: tilt,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 6),
-                  child: Container(
-                    width: cardWidth,
-                    height: cardHeight,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8),
-                      gradient: LinearGradient(colors: [primaryAccent, secondaryAccent]),
-                    ),
-                    child: Center(
-                      child: Text(
-                        "${index + 1}",
-                        style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
+          return SingleChildScrollView(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(handSize, (index) {
+                double tilt = (index - (handSize - 1) / 2) * 0.1 * entrance;
+                return Transform.rotate(
+                  angle: tilt,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 6),
+                    child: Container(
+                      width: cardWidth,
+                      height: cardHeight,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(8),
+                        gradient: LinearGradient(colors: [primaryAccent, secondaryAccent]),
+                      ),
+                      child: Center(
+                        child: Text(
+                          "${index + 1}",
+                          style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
+                        ),
                       ),
                     ),
                   ),
-                ),
-              );
-            }),
+                );
+              }),
+            ),
           );
         },
       ),

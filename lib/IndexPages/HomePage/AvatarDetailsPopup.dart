@@ -183,7 +183,7 @@ class AvatarDetailsPopup {
         title: const Text("Edit Username", style: TextStyle(color: Colors.white)),
         content: TextField(
           controller: controller,
-          maxLength: 12, // Limit input to 12 characters
+          maxLength: 9, // Limit input to 9 characters
           style: const TextStyle(color: Colors.white),
           decoration: const InputDecoration(
             hintText: "Enter new username",
@@ -205,7 +205,7 @@ class AvatarDetailsPopup {
             onPressed: () async {
               String newName = controller.text.trim();
               if (newName.isNotEmpty) {
-                if (newName.length > 12) newName = newName.substring(0, 12); // truncate if somehow exceeded
+                if (newName.length > 9) newName = newName.substring(0, 9); // truncate if somehow exceeded
                 await xpManager.setUsername(newName);
               }
               Navigator.pop(context); // close edit dialog
