@@ -2,6 +2,7 @@
 import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:hezzstar/Hezz2FinalGame/Models/GameCardEnums.dart';
 import 'package:hezzstar/tools/AudioManager/AudioManager.dart';
 import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
@@ -23,6 +24,8 @@ class PlayerCard extends StatefulWidget {
   final int cardCount;
   final List<dynamic> hand;
   final Key? playerKey;
+  final GameMode mode;
+
 
   const PlayerCard({
     super.key,
@@ -35,6 +38,8 @@ class PlayerCard extends StatefulWidget {
     required this.cardCount,
     required this.hand,
     this.playerKey,
+    required this.mode,
+
   });
 
   @override
@@ -93,7 +98,7 @@ class _PlayerCardState extends State<PlayerCard> with TickerProviderStateMixin {
 
     final audioManager = Provider.of<AudioManager>(context, listen: false);
     final soundPath = _reactionSounds[selectedAnimation];
-    if (soundPath != null && isLottieActivated) {
+    if (soundPath != null && isLottieActivated && widget.mode == GameMode.online) {
       audioManager.playSfx(soundPath);
     }
 
@@ -225,7 +230,7 @@ class _PlayerCardState extends State<PlayerCard> with TickerProviderStateMixin {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              PlayerName(name: info.name, maxWidth: 60),
+              PlayerName(name: info.name, maxWidth: 60, mode: widget.mode,),
 
               const SizedBox(height: 2),
               if (!widget.isEliminated)
@@ -246,7 +251,9 @@ class _PlayerCardState extends State<PlayerCard> with TickerProviderStateMixin {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  GestureDetector(
+
+                  if(widget.mode == GameMode.online)
+                    GestureDetector(
                     onTap: () {
                       showDialog(
                         context: context,
@@ -298,6 +305,7 @@ class _PlayerCardState extends State<PlayerCard> with TickerProviderStateMixin {
                       Icons.card_giftcard,color: Colors.white,size: 16,),
                   ),
 
+                  if(widget.mode == GameMode.online)
                   GestureDetector(
                     onTap: () {
                       final audioManager = Provider.of<AudioManager>(context, listen: false);
@@ -345,9 +353,9 @@ class _PlayerCardState extends State<PlayerCard> with TickerProviderStateMixin {
               CircleAvatar(
                 radius: widget.isTurn ? 30 : 26,
                 backgroundColor: Colors.black.withValues(alpha: 0.2),
-                backgroundImage: AssetImage(info.avatarPath),
+                backgroundImage: widget.mode == GameMode.online ? AssetImage(info.avatarPath) : AssetImage("assets/images/Skins/AvatarSkins/DefaultUser.png"),
               ),
-              if (isLottieActivated && reactionAnimation != null)
+              if (isLottieActivated && reactionAnimation != null && widget.mode == GameMode.online)
                 Positioned(
                   top: 20,
                   child: SizedBox(

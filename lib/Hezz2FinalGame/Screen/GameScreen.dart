@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:hezzstar/ExperieneManager.dart';
 import 'package:hezzstar/Hezz2FinalGame/Models/GameCardEnums.dart';
+import 'package:hezzstar/Hezz2FinalGame/Offline/BotInfoDialog_Offline.dart';
 import 'package:hezzstar/Hezz2FinalGame/Tools/Banner/CenterdLottieAnimation.dart';
 import 'package:hezzstar/Hezz2FinalGame/Tools/Banner/CenteredImageEffect.dart';
 import 'package:hezzstar/MainScreenIndex.dart';
@@ -33,6 +34,7 @@ class GameScreen extends StatefulWidget {
   final GameMode mode;
   final GameModeType gameModeType;
   final int selectedBet; // added
+  final int xpReward;
 
   const GameScreen({
     required this.startHandSize,
@@ -40,6 +42,7 @@ class GameScreen extends StatefulWidget {
     required this.mode,
     required this.gameModeType,
     required this.selectedBet,
+    required this.xpReward, // new
     super.key
   });
 
@@ -105,9 +108,11 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     playerScores = List.generate(widget.botCount + 1, (_) => 0); // Initialize scores
 
     if (widget.mode == GameMode.online) {
-
+      _start();
+      GameMode.online;
     } else {
       _start();
+      GameMode.local;
     }
   }
 
@@ -133,12 +138,14 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       isBetweenRounds = false;
     }
 
-    await PlayerSelector(
+    if(widget.mode == GameMode.online) {
+      await PlayerSelector(
       context: context,
       botCount: widget.botCount,
       eliminatedPlayers: eliminatedPlayers,
       onPlayerSelected: (selectedPlayer) => currentPlayer = selectedPlayer,
     ).animateSelection();
+    }
 
     await _precacheAssets(context);
 
@@ -633,7 +640,6 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     }
 
     if (currentPlayer == 0) return;
-    if (widget.mode == GameMode.online) return;
     if (currentPlayer > widget.botCount) return;
 
     Future.delayed(
@@ -839,7 +845,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
         // Play To Win mode - first to finish wins
         gameOver = true;
         winner = p == 0 ? 'You' : 'Bot $p';
-        _showEnd();
+        // Force the winner index so _showEnd uses the player who finished
+        _showEnd(forceWinnerIndex: p);
       } else {
         // Elimination mode - player qualifies
         setState(() {
@@ -887,7 +894,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
             if (remainingPlayers == 1) {
               gameOver = true;
               winner = winnerIndex == 0 ? 'You' : 'Bot $winnerIndex';
-              _showEnd();
+              // Here we can also force the final winner index
+              _showEnd(forceWinnerIndex: winnerIndex);
             } else {
               // Start next round
               _startNextRound();
@@ -984,22 +992,28 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
 
 
 
-  void _showEnd() {
-    // Find the winner based on the highest score
-    int highestScore = -1;
+  void _showEnd({int? forceWinnerIndex}) {
+    // Determine winner index: prefer forced index (for playToWin or explicit calls)
     int winnerIndex = -1;
-    for (int i = 0; i < playerScores.length; i++) {
-      if (playerScores[i] > highestScore) {
-        highestScore = playerScores[i];
-        winnerIndex = i;
-      }
-    }
-    if (winnerIndex == -1) {
-      // fallback: the last non-eliminated player
-      for (int i = 0; i < eliminatedPlayers.length; i++) {
-        if (!eliminatedPlayers[i]) {
+
+    if (forceWinnerIndex != null && forceWinnerIndex >= 0 && forceWinnerIndex < hands.length) {
+      winnerIndex = forceWinnerIndex;
+    } else {
+      // Fallback: find the highest score (used in elimination mode)
+      int highestScore = -1;
+      for (int i = 0; i < playerScores.length; i++) {
+        if (playerScores[i] > highestScore) {
+          highestScore = playerScores[i];
           winnerIndex = i;
-          break;
+        }
+      }
+      if (winnerIndex == -1) {
+        // fallback: the last non-eliminated player
+        for (int i = 0; i < eliminatedPlayers.length; i++) {
+          if (!eliminatedPlayers[i]) {
+            winnerIndex = i;
+            break;
+          }
         }
       }
     }
@@ -1011,24 +1025,20 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
           (i) => i == 0 ? (xpManager.username ?? "You") : BotDetailsPopup.getBotInfo(i).name,
     );
 
-    // (optional) Build playerAvatars if you want to pass all avatars too
+    // Build playerAvatars
     final playerAvatars = List<String>.generate(
       hands.length,
           (i) => i == 0 ? (xpManager.selectedAvatar ?? "") : BotDetailsPopup.getBotInfo(i).avatarPath,
     );
 
-    // reward message
-    String rewardMessage = "${winnerIndex == 0 ? xpManager.username : "Bot $winnerIndex"} wins";
-
-
-
+    // reward message (use winnerIndex resolved above)
+    String rewardMessage = "${winnerIndex == 0 ? (xpManager.username ?? "You") : "Bot $winnerIndex"} wins";
 
     LoadingScreenDim.show(
       context,
       seconds: 3,
       lottieAsset: 'assets/animations/AnimationSFX/HezzFinal.json',
       onComplete: () {
-
         final playerAvatars = List<String>.generate(
           hands.length,
               (i) => i == 0
@@ -1045,12 +1055,14 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
               gameModeType: widget.gameModeType,
               currentRound: currentRound,
               betAmount: widget.selectedBet,
-              winnerName: BotDetailsPopup.getBotInfo(winnerIndex).name,
-              winnerAvatar: BotDetailsPopup.getBotInfo(winnerIndex).avatarPath,
+              xpWin: widget.xpReward,
+              winnerName: winnerIndex == 0 ? (xpManager.username ?? "You") : BotDetailsPopup.getBotInfo(winnerIndex).name,
+              winnerAvatar: winnerIndex == 0 ? (xpManager.selectedAvatar ?? "") : BotDetailsPopup.getBotInfo(winnerIndex).avatarPath,
               rewardMessage: rewardMessage,
               playerScores: playerScores,
               playerNames: playerNames,
               playerAvatars: playerAvatars,
+              mode: widget.mode,
             ),
           ),
         );
@@ -1164,9 +1176,17 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                           children: [
                             if (widget.botCount >= 2)
                               GestureDetector(
-                                onTap: () => BotDetailsPopup.show(
+                                onTap: () {
+
+                                  if(widget.mode == GameMode.online){
+                                    BotDetailsPopup.show(
                                   context, 2, xpManager, hands, eliminatedPlayers, qualifiedPlayers, currentPlayer,
-                                ),
+                                );
+                                  }else{
+                                    OfflineBotPopup.show(context, "assets/images/Skins/AvatarSkins/DefaultUser.png");
+
+                                  };
+                                  },
                                 child: PlayerCard(
                                   bot: 2,
                                   vertical: false,
@@ -1177,13 +1197,21 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                                   hand: hands[2],
                                   playerKey: botKeys[2],
                                   handDealt: handDealt,
+                                  mode: widget.mode,
                                 ),
                               ),
                             if (widget.botCount >= 3)
                               GestureDetector(
-                                onTap: () => BotDetailsPopup.show(
+                                onTap: () {
+
+                                  if(widget.mode == GameMode.online){BotDetailsPopup.show(
                                   context, 3,xpManager, hands, eliminatedPlayers, qualifiedPlayers, currentPlayer,
-                                ),
+                                );
+                                  }else{
+                                    OfflineBotPopup.show(context, "assets/images/Skins/AvatarSkins/DefaultUser.png");
+
+                                  };
+                                },
                                 child: PlayerCard(
                                   bot: 3,
                                   vertical: false,
@@ -1194,6 +1222,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                                   hand: hands[3],
                                   playerKey: botKeys[3],
                                   handDealt: handDealt,
+                                  mode: widget.mode,
+
                                 ),
                               ),
                           ],
@@ -1206,9 +1236,15 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                         left: 2,
                         top: MediaQuery.of(context).size.height * 0.42,
                         child: GestureDetector(
-                          onTap: () => BotDetailsPopup.show(
-                            context, 1,xpManager, hands, eliminatedPlayers, qualifiedPlayers, currentPlayer,
-                          ),
+                          onTap: () {
+                            if(widget.mode == GameMode.online) {
+                              BotDetailsPopup.show(
+                            context, 1,xpManager, hands, eliminatedPlayers, qualifiedPlayers, currentPlayer);
+                            }
+                            else{
+                              OfflineBotPopup.show(context, "assets/images/Skins/AvatarSkins/DefaultUser.png");
+                            }
+    },
                           child: PlayerCard(
                             bot: 1,
                             vertical: true,
@@ -1219,6 +1255,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                             hand: hands[1],
                             playerKey: botKeys[1],
                             handDealt: handDealt,
+                            mode: widget.mode,
+
                           ),
                         ),
                       ),
@@ -1227,9 +1265,16 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                         right: 2,
                         top: MediaQuery.of(context).size.height * 0.42,
                         child: GestureDetector(
-                          onTap: () => BotDetailsPopup.show(
+                          onTap: () {
+                            if(widget.mode == GameMode.online){
+                              BotDetailsPopup.show(
                             context, 4,xpManager, hands, eliminatedPlayers, qualifiedPlayers, currentPlayer,
-                          ),
+                          );
+                            }
+                             else{
+                        OfflineBotPopup.show(context, "assets/images/Skins/AvatarSkins/DefaultUser.png");
+                        }
+                             },
                           child: PlayerCard(
                             bot: 4,
                             vertical: true,
@@ -1240,6 +1285,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                             hand: hands[4],
                             playerKey: botKeys[4],
                             handDealt: handDealt,
+                            mode: widget.mode,
+
                           ),
                         ),
                       ),

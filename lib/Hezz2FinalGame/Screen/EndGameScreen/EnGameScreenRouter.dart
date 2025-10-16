@@ -61,6 +61,8 @@ class EndGameRouter extends StatelessWidget {
           winnerAvatar: winnerAvatar, rewardMessage: '',
           playerScores: [],
           playerNames: [], playerAvatars: [],
+          mode: GameMode.online,
+          xpWin: 0,
         );
     }
   }

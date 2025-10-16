@@ -3,6 +3,7 @@ import 'package:hezzstar/ExperieneManager.dart';
 
 import 'package:provider/provider.dart';
 
+import '../../Hezz2FinalGame/Models/GameCardEnums.dart';
 import '../../Hezz2FinalGame/Offline/GameLauncher_Offline.dart';
 import '../../Hezz2FinalGame/Screen/GameLauncher/CardGameLauncher.dart';
 import '../../Manager/HelperClass/FlyingRewardManager.dart';
@@ -257,13 +258,19 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                       scale: scale,
                                       child: Padding(
                                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 20),
-                                        child: _modeCard(mode['title']!, mode['botCount']!, index),
+                                        child: _modeCard(
+                                          mode['title']!,
+                                          mode['botCount']!,
+                                          mode['mode'], // <-- Pass the GameMode here
+                                          index,
+                                        ),
                                       ),
                                     );
                                   },
                                 );
                               },
                             );
+
                           },
                         );
                       },
@@ -279,33 +286,37 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   }
 
   final List<Map<String, dynamic>> _modes = [
-    {'title': '⚡ 1 vs 1', 'botCount': 1},
-    {'title': '👥 3 Players', 'botCount': 2},
-    {'title': '🎯 4 Players', 'botCount': 3},
-    {'title': '🔥 5 Players', 'botCount': 4},
-    {'title': '🛰 Offline Mode', 'botCount': 4},
+    {'title': '⚡ 1 vs 1', 'botCount': 1, 'mode': GameMode.online},
+    {'title': '👥 3 Players', 'botCount': 2, 'mode': GameMode.online},
+    {'title': '🎯 4 Players', 'botCount': 3, 'mode': GameMode.online},
+    {'title': '🔥 5 Players', 'botCount': 4, 'mode': GameMode.online},
+    {'title': '🛰 Offline Mode', 'botCount': 4, 'mode': GameMode.local},
   ];
 
-  Widget _modeCard(String title, int botCount, int index) {
+
+  Widget _modeCard(String title, int botCount, GameMode mode, int index) {
     return Consumer<ConnectivityService>(
       builder: (context, connectivity, _) {
         final bool connected = connectivity.isConnected;
-        final bool isOfflineMode = title.contains("Offline");
+        final bool isOfflineMode = mode == GameMode.local;
 
         return GestureDetector(
           onTap: (connected || isOfflineMode)
               ? () {
-            final audioManager = Provider.of<AudioManager>(context, listen: false);
+            final audioManager =
+            Provider.of<AudioManager>(context, listen: false);
             audioManager.playEventSound("sandClick");
 
             Navigator.pushReplacement(
               context,
               PageRouteBuilder(
                 pageBuilder: (_, __, ___) => isOfflineMode
-                    ? OfflineCardGameLauncher()  // <-- go to offline page
-                    : CardGameLauncher(botCount: botCount),                transitionsBuilder: (_, anim, __, child) {
+                    ? OfflineCardGameLauncher()
+                    : CardGameLauncher(botCount: botCount),
+                transitionsBuilder: (_, anim, __, child) {
                   return ScaleTransition(
-                    scale: CurvedAnimation(parent: anim, curve: Curves.easeOutBack),
+                    scale: CurvedAnimation(
+                        parent: anim, curve: Curves.easeOutBack),
                     child: child,
                   );
                 },
@@ -386,8 +397,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     left: 0,
                     right: 0,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 8),
+                      padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                       decoration: BoxDecoration(
                         color: Colors.black.withOpacity(0.6),
                         borderRadius: const BorderRadius.vertical(

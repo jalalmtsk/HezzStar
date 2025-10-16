@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:hezzstar/MainScreenIndex.dart';
@@ -15,12 +16,14 @@ class EndGameScreen extends StatefulWidget {
   final GameModeType gameModeType;
   final int currentRound;
   final int betAmount;
+  final int xpWin;
   final String winnerName;
   final String winnerAvatar;
   final String rewardMessage;
   final List<int> playerScores;
   final List<String> playerNames;
   final List<String>? playerAvatars; // optional
+  final GameMode mode;
 
   const EndGameScreen({
     super.key,
@@ -29,12 +32,14 @@ class EndGameScreen extends StatefulWidget {
     required this.gameModeType,
     required this.currentRound,
     required this.betAmount,
+    required this.xpWin,
     required this.winnerName,
     required this.winnerAvatar,
     required this.rewardMessage,
     required this.playerScores,
     required this.playerNames,
     required this.playerAvatars,
+    required this.mode
   });
 
   @override
@@ -94,23 +99,59 @@ class _EndGameScreenLuxState extends State<EndGameScreen>
     final xpManager = Provider.of<ExperienceManager>(context, listen: false);
     final int totalPool = widget.hands.length * widget.betAmount;
 
+    RewardDimScreen.show(
+      context,
+      start: const Offset(200, 400),
+      endKey: xpKeyEnd,
+      amount: widget.xpWin,
+      type: RewardType.star,
+    );
+
+    prizes.clear();
+
     if (widget.gameModeType == GameModeType.playToWin) {
       // ✅ Only the winner takes all
-      prizes.clear();
       prizes[widget.winnerIndex] = totalPool;
 
-    } else {
-      // 🏆 Elimination mode — split by score ratio
-      prizes.clear();
-      final totalScore =
-      widget.playerScores.fold<int>(0, (a, b) => a + (b > 0 ? b : 0));
+      // 🎁 If YOU are the winner, show reward animation and update stats
+      if (widget.winnerIndex == 0) {
+        RewardDimScreen.show(
+          context,
+          start: const Offset(200, 400),
+          endKey: goldKeyEnd,
+          amount: totalPool,
+          type: RewardType.gold,
+        );
+        xpManager.addWin(widget.hands.length);
+        xpManager.addGold(totalPool);
 
-      for (int i = 0; i < widget.playerScores.length; i++) {
-        final score = widget.playerScores[i];
-        prizes[i] = totalScore > 0 ? ((score / totalScore) * totalPool).round() : 0;
+
+      }
+    } else {
+      // 🏆 Elimination mode — Weighted reward distribution by rank
+      final int playerCount = widget.playerScores.length;
+
+      // Sort players by score descending to determine rank order
+      final List<int> sortedIndices =
+      List.generate(playerCount, (i) => i)
+        ..sort((a, b) => widget.playerScores[b].compareTo(widget.playerScores[a]));
+
+      // Assign exponential weights based on rank (e.g., 8, 4, 2, 1 for 4 players)
+      final List<int> weights = List.generate(
+        playerCount,
+            (i) => pow(2, playerCount - i - 1).toInt(),
+      );
+
+      final int sumWeights = weights.reduce((a, b) => a + b);
+
+      // Calculate weighted rewards
+      for (int rank = 0; rank < playerCount; rank++) {
+        final int playerIndex = sortedIndices[rank];
+        prizes[playerIndex] =
+            ((totalPool * weights[rank]) / sumWeights).round();
       }
 
-      // ✅ Give reward animation if local player earned something
+      // 🎁 Give reward animation if local player earned something
       final int playerReward = prizes[0] ?? 0;
       if (playerReward > 0) {
         RewardDimScreen.show(
@@ -121,6 +162,7 @@ class _EndGameScreenLuxState extends State<EndGameScreen>
           type: RewardType.gold,
         );
         xpManager.addWin(widget.hands.length);
+        xpManager.addGold(playerReward);
       }
     }
 
@@ -258,7 +300,7 @@ class _EndGameScreenLuxState extends State<EndGameScreen>
             Text(
               isElimination
                   ? "Rewards shared by score ratio"
-                  : widget.rewardMessage,
+                  : "Congratulations!",
               style: const TextStyle(fontSize: 18, color: Colors.white70),
             ),
           ],
@@ -284,7 +326,7 @@ class _EndGameScreenLuxState extends State<EndGameScreen>
           children: [
             CircleAvatar(
               radius: 26,
-              backgroundImage: AssetImage(avatarPath!),
+              backgroundImage: widget.mode == GameMode.online ?AssetImage(avatarPath!) : AssetImage("assets/images/Skins/AvatarSkins/DefaultUser.png"),
             ),
             CircleAvatar(
               radius: 10,
@@ -297,7 +339,7 @@ class _EndGameScreenLuxState extends State<EndGameScreen>
           ],
         ),
         title: Text(
-          widget.playerNames[index],
+          widget.mode == GameMode.online ? widget.playerNames[index] : "Bot",
           style: TextStyle(
             fontWeight: FontWeight.bold,
             color: isWinner ? Colors.white : Colors.black87,

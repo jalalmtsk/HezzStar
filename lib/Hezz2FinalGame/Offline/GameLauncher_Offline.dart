@@ -2,6 +2,7 @@
 import 'dart:math';
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:hezzstar/MainScreenIndex.dart';
 import 'package:provider/provider.dart';
 import 'package:hezzstar/ExperieneManager.dart';
 import 'package:hezzstar/Hezz2FinalGame/Screen/GameScreen.dart';
@@ -23,12 +24,12 @@ class _OfflineCardGameLauncherState extends State<OfflineCardGameLauncher>
   // Offline settings
   int handSize = 5;
   final List<Map<String, dynamic>> handOptions = [
-    {"label": "Quick", "size": 1},
+    {"label": "Quick", "size": 3},
     {"label": "Medium", "size": 5},
     {"label": "Long", "size": 7},
   ];
 
-  final List<int> playerCounts = [2, 3, 4, 5, 6]; // total players
+  final List<int> playerCounts = [2, 3, 4, 5]; // total players
   int selectedPlayerCount = 2;
 
   Color primaryAccent = Colors.orangeAccent;
@@ -79,15 +80,16 @@ class _OfflineCardGameLauncherState extends State<OfflineCardGameLauncher>
                   showPlusButton: false,
                 ),
                 const SizedBox(height: 28),
-                _title(),
-                const SizedBox(height: 14),
-                _handSizeSelectorRow(),
+                _title("🎴 Offline Lobby 🎴"),
                 const SizedBox(height: 14),
                 _playerSelectorRow(),
                 const SizedBox(height: 14),
+                _title("Cards"),
+                const SizedBox(height: 14),
+                _handSizeSelectorRow(),
                 Expanded(child: _animatedHandPreview()),
-                _offlineStartButton(expManager, audioManager),
-                const SizedBox(height: 24),
+                _offlineStartRowButtons(expManager, audioManager),
+                const SizedBox(height: 40),
               ],
             ),
           ),
@@ -96,7 +98,7 @@ class _OfflineCardGameLauncherState extends State<OfflineCardGameLauncher>
     );
   }
 
-  Widget _title() {
+  Widget _title(String title) {
     return Center(
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
@@ -104,8 +106,8 @@ class _OfflineCardGameLauncherState extends State<OfflineCardGameLauncher>
           borderRadius: BorderRadius.circular(30),
           gradient: LinearGradient(colors: [primaryAccent, secondaryAccent]),
         ),
-        child: const Text(
-          "🎴 Offline Lobby",
+        child:  Text(
+          title,
           style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.white),
         ),
       ),
@@ -148,8 +150,7 @@ class _OfflineCardGameLauncherState extends State<OfflineCardGameLauncher>
   }
 
   Widget _playerSelectorRow() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
+    return Wrap(
       children: playerCounts.map((count) {
         bool isSelected = selectedPlayerCount == count;
         return Padding(
@@ -219,47 +220,103 @@ class _OfflineCardGameLauncherState extends State<OfflineCardGameLauncher>
     );
   }
 
-  Widget _offlineStartButton(ExperienceManager expManager, AudioManager audioManager) {
+  Widget _offlineStartRowButtons(ExperienceManager expManager, AudioManager audioManager) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: GestureDetector(
-        onTap: () async {
-          audioManager.playEventSound("sandClick");
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
 
-          // Add XP for offline mode
-          expManager.addExperience(1);
 
-          // Optional searching popup for fun
-          await SearchingPopup.show(context, selectedPlayerCount - 1);
-
-          // Navigate to GameScreen
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (_) => GameScreen(
-                startHandSize: handSize,
-                botCount: selectedPlayerCount - 1,
-                mode: GameMode.local,
-                gameModeType: GameModeType.playToWin,
-                selectedBet: 0, // no gold in offline
+          Expanded(
+            child: GestureDetector(
+              onTap: () {
+                audioManager.playEventSound("sandClick");
+                Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => MainScreen()));
+                // your logic for online button
+              },
+              child: Container(
+                height: 60,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(colors: [Colors.redAccent, Colors.deepOrange]),
+                  borderRadius: BorderRadius.circular(18),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.orangeAccent.withOpacity(0.4),
+                      blurRadius: 12,
+                      offset: const Offset(0, 6),
+                    )
+                  ],
+                ),
+                child: const Center(
+                  child: Text(
+                    "Exit",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
               ),
             ),
-          );
-        },
-        child: Container(
-          height: 60,
-          decoration: BoxDecoration(
-            gradient: LinearGradient(colors: [primaryAccent, secondaryAccent]),
-            borderRadius: BorderRadius.circular(18),
-            boxShadow: [BoxShadow(color: primaryAccent.withOpacity(0.4), blurRadius: 12, offset: const Offset(0, 6))],
           ),
-          child: const Center(
-            child: Text(
-              "Start Offline Game",
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
+          const SizedBox(width: 16),
+
+          // Offline Start Button
+          Expanded(
+            child: GestureDetector(
+              onTap: () async {
+                audioManager.playEventSound("sandClick");
+
+                // Add XP for offline mode
+                expManager.addExperience(1);
+
+                // Navigate to GameScreen
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => GameScreen(
+                      startHandSize: handSize,
+                      botCount: selectedPlayerCount - 1,
+                      mode: GameMode.local,
+                      gameModeType: GameModeType.playToWin,
+                      selectedBet: 0, // no gold in offline
+                      xpReward: 0,
+                    ),
+                  ),
+                );
+              },
+              child: Container(
+                height: 60,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(colors: [primaryAccent, secondaryAccent]),
+                  borderRadius: BorderRadius.circular(18),
+                  boxShadow: [
+                    BoxShadow(
+                      color: primaryAccent.withOpacity(0.4),
+                      blurRadius: 12,
+                      offset: const Offset(0, 6),
+                    )
+                  ],
+                ),
+                child: const Center(
+                  child: Text(
+                    "Start Game",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
             ),
           ),
-        ),
+
+
+          // Example: Second button (e.g. Online Mode)
+        ],
       ),
     );
   }

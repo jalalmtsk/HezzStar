@@ -1,17 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:hezzstar/Hezz2FinalGame/Models/GameCardEnums.dart';
 import 'package:marquee/marquee.dart';
 
 class PlayerName extends StatelessWidget {
   final String name;
   final double maxWidth;
+  final GameMode mode;
 
-  const PlayerName({required this.name, required this.maxWidth});
+  const PlayerName({required this.name, required this.maxWidth, required this.mode});
 
   @override
   Widget build(BuildContext context) {
     final textPainter = TextPainter(
       text: TextSpan(
-        text: name,
+        text: GameMode == GameMode.online ? name : "Bot",
         style: const TextStyle(
           fontSize: 10,
           fontWeight: FontWeight.bold,
@@ -30,7 +32,7 @@ class PlayerName extends StatelessWidget {
         width: maxWidth,
         height: 16,
         child: Marquee(
-          text: name,
+          text: GameMode == GameMode.online ? name : "Bot",
           style: const TextStyle(
             fontSize: 10,
             fontWeight: FontWeight.bold,
@@ -48,7 +50,7 @@ class PlayerName extends StatelessWidget {
         width: maxWidth,
         height: 16,
         child: Text(
-          name,
+          mode == GameMode.online ? name : "Bot",
           style: const TextStyle(
             fontSize: 10,
             fontWeight: FontWeight.bold,

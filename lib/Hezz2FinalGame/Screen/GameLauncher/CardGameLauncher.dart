@@ -734,7 +734,7 @@ class _CardGameLauncherState extends State<CardGameLauncher>
                 //SpendGold
 
                 // Add XP, search popup, navigate
-                expManager.addExperience(bet['xp']);
+                // expManager.addExperience(bet['xp']);
                 await SearchingPopup.show(context, widget.botCount);
 
                 // Reset spending flag
@@ -746,9 +746,10 @@ class _CardGameLauncherState extends State<CardGameLauncher>
                     builder: (_) => GameScreen(
                       startHandSize: handSize,
                       botCount: widget.botCount,
-                      mode: GameMode.local,
+                      mode: GameMode.online,
                       gameModeType: gameMode,
                       selectedBet: bet['gold'],
+                      xpReward: bet['xp'],
                     ),
                   ),
                 );
