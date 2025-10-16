@@ -326,7 +326,7 @@ class _EndGameScreenLuxState extends State<EndGameScreen>
           children: [
             CircleAvatar(
               radius: 26,
-              backgroundImage: widget.mode == GameMode.online ?AssetImage(avatarPath!) : AssetImage("assets/images/Skins/AvatarSkins/DefaultUser.png"),
+              backgroundImage: widget.mode == GameMode.online ?AssetImage(avatarPath!) : (index == 0 ? AssetImage(widget.playerAvatars![0]):AssetImage("assets/images/Skins/AvatarSkins/DefaultUser.png")),
             ),
             CircleAvatar(
               radius: 10,
@@ -339,7 +339,7 @@ class _EndGameScreenLuxState extends State<EndGameScreen>
           ],
         ),
         title: Text(
-          widget.mode == GameMode.online ? widget.playerNames[index] : "Bot",
+          widget.mode == GameMode.online ? widget.playerNames[index] : (index == 0 ? xpManager.username :"Bot"),
           style: TextStyle(
             fontWeight: FontWeight.bold,
             color: isWinner ? Colors.white : Colors.black87,
