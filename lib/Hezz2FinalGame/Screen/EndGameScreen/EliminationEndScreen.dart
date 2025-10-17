@@ -8,7 +8,6 @@ import '../../../Manager/HelperClass/FlyingRewardManager.dart';
 import '../../../Manager/HelperClass/RewardDimScreen.dart';
 import '../../../widgets/userStatut/userStatus.dart';
 import '../../../Hezz2FinalGame/Models/Cards.dart';
-import '../../../Hezz2FinalGame/Models/GameCardEnums.dart';
 
 class EliminationEndPage extends StatefulWidget {
   final List<List<PlayingCard>> hands;
