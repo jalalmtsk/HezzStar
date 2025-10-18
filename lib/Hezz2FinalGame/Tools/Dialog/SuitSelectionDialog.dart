@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:hezzstar/main.dart';
 
 class SuitSelectionDialog extends StatefulWidget {
   final String previousSuit;
@@ -69,8 +70,8 @@ class _SuitSelectionDialogState extends State<SuitSelectionDialog> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  "Choose a Suit",
+                 Text(
+                  tr(context).chooseASuit,
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,

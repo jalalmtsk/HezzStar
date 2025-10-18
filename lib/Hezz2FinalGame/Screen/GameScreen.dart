@@ -13,6 +13,7 @@ import 'package:hezzstar/tools/AudioManager/AudioManager.dart';
 import 'package:hezzstar/widgets/userStatut/SimpleUserStatusBar.dart';
 import 'package:provider/provider.dart';
 
+import '../../main.dart';
 import '../../tools/ConnectivityManager/ConnectivityManager.dart';
 import '../../widgets/LoadingScreen/LoadinScreenDim.dart';
 import '../Models/Cards.dart';
@@ -170,7 +171,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                   const Icon(Icons.wifi_off, size: 80, color: Colors.white),
                   const SizedBox(height: 20),
                   Text(
-                    'Disconnected',
+                    tr(context).disconnected,
                     style: const TextStyle(
                         decoration: TextDecoration.none, // <-- explicitly remove underline
                         color: Colors.white,
@@ -180,7 +181,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                   ),
                   const SizedBox(height: 10),
                   Text(
-                    'Redirecting in $remaining',
+                    '${tr(context).redirectingIn} $remaining',
 
                     style: const TextStyle(
                         decoration: TextDecoration.none, // <-- explicitly remove underline
@@ -516,7 +517,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     if (idx < 0 || idx >= hands[0].length) return;
     final card = hands[0][idx];
     if (!_isPlayable(card)) {
-      _showSnack('Card not playable');
+      _showSnack(tr(context).cardNotPlayable);
       return;
     }
     await _playCard(0, idx);
@@ -609,7 +610,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       playSfxVoice("assets/audios/UI/SFX/Gamification_SFX/SpecialCard1WhooshEffect.mp3");
       setState(() {
         _CenteredActiveBanner = CenterBanner(
-          text: "Skip",
+          text: tr(context).skip,
           color: Colors.orangeAccent,
           onEnd: () => setState(() => _CenteredActiveBanner = null),
         );
@@ -644,24 +645,11 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
             discard.add(topCard!);
           });
 
-          setState(() {
-            _CenteredActiveBanner = CenterBanner(
-              text: 'Suit: $choice',
-              color: Colors.orangeAccent,
-              onEnd: () => setState(() => _CenteredActiveBanner = null),
-            );
-          });
 
         }
       } else {
         final suit = _botPickSuit(player);
-        setState(() {
-          _CenteredActiveBanner = CenterBanner(
-            text: 'Suit: $suit',
-            color: Colors.orangeAccent,
-            onEnd: () => setState(() => _CenteredActiveBanner = null),
-          );
-        });
+
 
         await Future.delayed(const Duration(milliseconds: 1200));
 
@@ -800,7 +788,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
         }
         setState(() {
           _CenteredActiveBanner = CenterBanner(
-            text: 'Drew $pendingDraw cards',
+            text: '${tr(context).drew} $pendingDraw ${tr(context).cards}',
             color: Colors.purpleAccent,
             onEnd: () => setState(() => _CenteredActiveBanner = null),
           );
@@ -834,7 +822,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
 
       setState(() {
         _CenteredActiveBanner = CenterBanner(
-          text: 'Drew & skipped',
+          text: tr(context).drewAndSkipped,
           color: Colors.purpleAccent,
           onEnd: () => setState(() => _CenteredActiveBanner = null),
         );
@@ -882,7 +870,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
 
     if (deck.isEmpty) _recycle();
     if (deck.isEmpty) {
-      _showSnack('Deck empty');
+      _showSnack('${tr(context).empty}');
       return;
     }
 
@@ -941,18 +929,18 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
 
     if (isAnimating || gameOver || isBetweenRounds) return;
 
-    _showSnack('Drew $drawCount card${drawCount > 1 ? 's' : ''} & skipped');
     _advanceTurn();
   }
 
 
 
   void checkWin(int p) {
+    final xpManager = Provider.of<ExperienceManager>(context, listen: false);
     if (hands[p].isEmpty) {
       if (widget.gameModeType == GameModeType.playToWin) {
         // Play To Win mode - first to finish wins
         gameOver = true;
-        winner = p == 0 ? 'You' : 'Bot $p';
+        winner = p == 0 ? xpManager.username : '${tr(context).player} $p';
         // Force the winner index so _showEnd uses the player who finished
         _showEnd(forceWinnerIndex: p);
       } else {
@@ -977,7 +965,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
             eliminatedPlayers[lastActivePlayer] = true;
             setState(() {
               _CenteredActiveBanner = CenterBanner(
-                text: 'Player ${lastActivePlayer == 0 ? "You" : "Bot $lastActivePlayer"} eliminated!',
+                text: '${tr(context).player} ${lastActivePlayer == 0 ? "${xpManager.username}" : "${tr(context).player} $lastActivePlayer"} ${tr(context).eliminated}!',
                 color: Colors.red,
                 onEnd: () => setState(() => _CenteredActiveBanner = null),
               );
@@ -1001,7 +989,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
             }
             if (remainingPlayers == 1) {
               gameOver = true;
-              winner = winnerIndex == 0 ? 'You' : 'Bot $winnerIndex';
+              winner = winnerIndex == 0 ? '${xpManager.username}' : '${tr(context).player} $winnerIndex';
               // Here we can also force the final winner index
               _showEnd(forceWinnerIndex: winnerIndex);
             } else {
@@ -1140,7 +1128,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     );
 
     // reward message (use winnerIndex resolved above)
-    String rewardMessage = "${winnerIndex == 0 ? (xpManager.username ?? "You") : "Bot $winnerIndex"} wins";
+    String rewardMessage = "${winnerIndex == 0 ? (xpManager.username ?? "You") : "${tr(context).player} $winnerIndex"} ${tr(context).wins}";
 
     LoadingScreenDim.show(
       context,
@@ -1154,6 +1142,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
               : BotDetailsPopup.getBotInfo(i).avatarPath,
         );
 
+        isGameEnded = true;
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
@@ -1212,290 +1201,299 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
 
     final w = MediaQuery.of(context).size.width;
     final h = MediaQuery.of(context).size.height;
-    return PopScope(
-      canPop: false,
-      onPopInvokedWithResult: (didPop, result) async {
-        if (!didPop) {
+    return Directionality(
+      textDirection: TextDirection.ltr,
+      child: PopScope(
+        canPop: false,
+        onPopInvokedWithResult: (didPop, result) async {
+          if (!didPop) {
 
-          if (_showDisconnectedOverlay) {
-            // No Wi-Fi, do nothing
-            return;
-          }
+            if (_showDisconnectedOverlay) {
+              // No Wi-Fi, do nothing
+              return;
+            }
 
-          final quit = await showDialog<bool>(
-            context: context,
-            builder: (ctx) => AlertDialog(
-              title: const Text("Quit Game?"),
-              content: const Text("Are you sure you want to leave the match?"),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(ctx, false),
-                  child: const Text("Cancel"),
-                ),
-                TextButton(
-                  onPressed: () async {
-                    Navigator.pop(ctx, true); // close the dialog first
+            final quit = await showDialog<bool>(
+              context: context,
+              builder: (ctx) => AlertDialog(
+                title:  Text("Quit Game?"),
+                content:  Text(tr(context).confirmLeaveMatch),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(ctx, false),
+                    child:  Text(tr(context).cancel),
+                  ),
+                  TextButton(
+                    onPressed: () async {
+                      Navigator.pop(ctx, true); // close the dialog first
 
-                    // Wait until all animations finish
-                    await _waitForAllAnimations();
+                      // Wait until all animations finish
+                      await _waitForAllAnimations();
 
-                    // Then exit the game screen
-                    if (context.mounted) {
-                      Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_)=> MainScreen())); // pop the GameScreen
-                    }
-                  },
-                  child: const Text("Quit"),
-                ),
+                      // Then exit the game screen
+                      if (context.mounted) {
+                        isGameEnded = true;
+                        Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_)=> MainScreen())); // pop the GameScreen
+                      }
+                    },
+                    child:  Text(tr(context).exit),
+                  ),
 
-              ],
-            ),
-          );
-
-          if (quit == true && context.mounted) {
-            Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_)=> MainScreen())); // pop the GameScreen
-          }
-        }
-      },
-      child: Scaffold(
-        body: Stack(
-          children: [
-            // Full-screen background
-            Positioned.fill(child: TableBackground()),
-
-            // Optional overlay between rounds
-            if (isBetweenRounds)
-              Positioned.fill(
-                child: RoundCompleteOverlay(
-                  currentRound: currentRound,
-                  qualifiedPlayers: qualifiedPlayers,
-                ),
+                ],
               ),
+            );
 
-            // Main game UI
-            if (!isBetweenRounds)
-              SafeArea(
-                child: Stack(
-                  key: _animStackKey,
-                  children: [
+            if (quit == true && context.mounted) {
+              isGameEnded = true;
+              Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_)=> MainScreen())); // pop the GameScreen
+            }
+          }
+        },
+        child: Scaffold(
+          body: Stack(
+            children: [
+              // Full-screen background
+              Positioned.fill(child: TableBackground()),
+
+              // Optional overlay between rounds
+              if (isBetweenRounds)
+                Positioned.fill(
+                  child: RoundCompleteOverlay(
+                    currentRound: currentRound,
+                    qualifiedPlayers: qualifiedPlayers,
+                  ),
+                ),
+
+              // Main game UI
+              if (!isBetweenRounds)
+                SafeArea(
+                  child: Stack(
+                    key: _animStackKey,
+                    children: [
 
 
-                    // Top row of horizontal bots
-                    if (widget.botCount >= 2 || widget.botCount >= 3)
-                      Positioned(
-                        top: 110,
-                        left: 0,
-                        right: 0,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          children: [
-                            if (widget.botCount >= 2)
-                              GestureDetector(
-                                onTap: () {
+                      // Top row of horizontal bots
+                      if (widget.botCount >= 2 || widget.botCount >= 3)
+                        Positioned(
+                          top: 110,
+                          left: 0,
+                          right: 0,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            children: [
+                              if (widget.botCount >= 2)
+                                GestureDetector(
+                                  onTap: () {
 
-                                  if(widget.mode == GameMode.online){
-                                    BotDetailsPopup.show(
-                                  context, 2, xpManager, hands, eliminatedPlayers, qualifiedPlayers, currentPlayer,
-                                );
-                                  }else{
-                                    OfflineBotPopup.show(context, "assets/images/Skins/AvatarSkins/DefaultUser.png");
+                                    if(widget.mode == GameMode.online){
+                                      BotDetailsPopup.show(
+                                    context, 2, xpManager, hands, eliminatedPlayers, qualifiedPlayers, currentPlayer,
+                                  );
+                                    }else{
+                                      OfflineBotPopup.show(context, "assets/images/Skins/AvatarSkins/DefaultUser.png");
 
-                                  };
+                                    };
+                                    },
+                                  child: PlayerCard(
+                                    bot: 2,
+                                    vertical: false,
+                                    isEliminated: eliminatedPlayers[2],
+                                    isQualified: qualifiedPlayers.contains(2),
+                                    isTurn: currentPlayer == 2,
+                                    cardCount: hands[2].length,
+                                    hand: hands[2],
+                                    playerKey: botKeys[2],
+                                    handDealt: handDealt,
+                                    mode: widget.mode,
+                                  ),
+                                ),
+                              if (widget.botCount >= 3)
+                                GestureDetector(
+                                  onTap: () {
+
+                                    if(widget.mode == GameMode.online){BotDetailsPopup.show(
+                                    context, 3,xpManager, hands, eliminatedPlayers, qualifiedPlayers, currentPlayer,
+                                  );
+                                    }else{
+                                      OfflineBotPopup.show(context, "assets/images/Skins/AvatarSkins/DefaultUser.png");
+
+                                    };
                                   },
-                                child: PlayerCard(
-                                  bot: 2,
-                                  vertical: false,
-                                  isEliminated: eliminatedPlayers[2],
-                                  isQualified: qualifiedPlayers.contains(2),
-                                  isTurn: currentPlayer == 2,
-                                  cardCount: hands[2].length,
-                                  hand: hands[2],
-                                  playerKey: botKeys[2],
-                                  handDealt: handDealt,
-                                  mode: widget.mode,
+                                  child: PlayerCard(
+                                    bot: 3,
+                                    vertical: false,
+                                    isEliminated: eliminatedPlayers[3],
+                                    isQualified: qualifiedPlayers.contains(3),
+                                    isTurn: currentPlayer == 3,
+                                    cardCount: hands[3].length,
+                                    hand: hands[3],
+                                    playerKey: botKeys[3],
+                                    handDealt: handDealt,
+                                    mode: widget.mode,
+
+                                  ),
                                 ),
-                              ),
-                            if (widget.botCount >= 3)
-                              GestureDetector(
-                                onTap: () {
-
-                                  if(widget.mode == GameMode.online){BotDetailsPopup.show(
-                                  context, 3,xpManager, hands, eliminatedPlayers, qualifiedPlayers, currentPlayer,
-                                );
-                                  }else{
-                                    OfflineBotPopup.show(context, "assets/images/Skins/AvatarSkins/DefaultUser.png");
-
-                                  };
-                                },
-                                child: PlayerCard(
-                                  bot: 3,
-                                  vertical: false,
-                                  isEliminated: eliminatedPlayers[3],
-                                  isQualified: qualifiedPlayers.contains(3),
-                                  isTurn: currentPlayer == 3,
-                                  cardCount: hands[3].length,
-                                  hand: hands[3],
-                                  playerKey: botKeys[3],
-                                  handDealt: handDealt,
-                                  mode: widget.mode,
-
-                                ),
-                              ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
 
-                    // Side bots
-                    if (widget.botCount >= 1)
-                      Positioned(
-                        left: 2,
+                      // Side bots
+                      if (widget.botCount >= 1)
+                        Positioned(
+                          left: 2,
+                          top: MediaQuery.of(context).size.height * 0.42,
+                          child: GestureDetector(
+                            onTap: () {
+                              if(widget.mode == GameMode.online) {
+                                BotDetailsPopup.show(
+                              context, 1,xpManager, hands, eliminatedPlayers, qualifiedPlayers, currentPlayer);
+                              }
+                              else{
+                                OfflineBotPopup.show(context, "assets/images/Skins/AvatarSkins/DefaultUser.png");
+                              }
+      },
+                            child: PlayerCard(
+                              bot: 1,
+                              vertical: true,
+                              isEliminated: eliminatedPlayers[1],
+                              isQualified: qualifiedPlayers.contains(1),
+                              isTurn: currentPlayer == 1,
+                              cardCount: hands[1].length,
+                              hand: hands[1],
+                              playerKey: botKeys[1],
+                              handDealt: handDealt,
+                              mode: widget.mode,
+
+                            ),
+                          ),
+                        ),
+                      if (widget.botCount >= 4)
+                        Positioned(
+                          right: 2,
+                          top: MediaQuery.of(context).size.height * 0.42,
+                          child: GestureDetector(
+                            onTap: () {
+                              if(widget.mode == GameMode.online){
+                                BotDetailsPopup.show(
+                              context, 4,xpManager, hands, eliminatedPlayers, qualifiedPlayers, currentPlayer,
+                            );
+                              }
+                               else{
+                          OfflineBotPopup.show(context, "assets/images/Skins/AvatarSkins/DefaultUser.png");
+                          }
+                               },
+                            child: PlayerCard(
+                              bot: 4,
+                              vertical: true,
+                              isEliminated: eliminatedPlayers[4],
+                              isQualified: qualifiedPlayers.contains(4),
+                              isTurn: currentPlayer == 4,
+                              cardCount: hands[4].length,
+                              hand: hands[4],
+                              playerKey: botKeys[4],
+                              handDealt: handDealt,
+                              mode: widget.mode,
+
+                            ),
+                          ),
+                        ),
+
+                      // Center deck
+                      DeckCenterPanel(
                         top: MediaQuery.of(context).size.height * 0.42,
-                        child: GestureDetector(
-                          onTap: () {
-                            if(widget.mode == GameMode.online) {
-                              BotDetailsPopup.show(
-                            context, 1,xpManager, hands, eliminatedPlayers, qualifiedPlayers, currentPlayer);
-                            }
-                            else{
-                              OfflineBotPopup.show(context, "assets/images/Skins/AvatarSkins/DefaultUser.png");
-                            }
-    },
-                          child: PlayerCard(
-                            bot: 1,
-                            vertical: true,
-                            isEliminated: eliminatedPlayers[1],
-                            isQualified: qualifiedPlayers.contains(1),
-                            isTurn: currentPlayer == 1,
-                            cardCount: hands[1].length,
-                            hand: hands[1],
-                            playerKey: botKeys[1],
-                            handDealt: handDealt,
-                            mode: widget.mode,
-
-                          ),
-                        ),
+                        left: MediaQuery.of(context).size.width * 0.18,
+                        right: MediaQuery.of(context).size.width * 0.18,
+                        onDraw: _playerDraw,
+                        deck: deck,
+                        topCard: topCard,
+                        discard: discard,
+                        deckKey: deckKey,
+                        centerKey: centerKey,
                       ),
-                    if (widget.botCount >= 4)
+
+                      // Player action panel
+                      PlayerActionPanel(
+                        eliminated: eliminatedPlayers[0],
+                        isSpectating: isSpectating,
+                        isAnimating: isAnimating,
+                        handDealt: handDealt,
+                        currentPlayer: currentPlayer,
+                        hand: hands[0],
+                        selectedAvatar: xpManager.selectedAvatar,
+                        username: xpManager.username,
+                        onDraw: _playerDraw,
+                        handKey: handKey,
+                        handScrollController: handScrollController,
+                        playerCardKeys: playerCardKeys,
+                        onPlayCard: _playCardByHuman,
+                        gameModeType: widget.gameModeType,
+                        onLeaveGame: () => _showEnd(),
+                        onEmojiSelected: (filePath) {
+                          setState(() => _shownEmoji = filePath);
+                          Future.delayed(const Duration(seconds: 2), () {
+                            setState(() => _shownEmoji = null);
+                          });
+                        },
+                      ),
+
+                      // Top AppBar
                       Positioned(
-                        right: 2,
-                        top: MediaQuery.of(context).size.height * 0.42,
-                        child: GestureDetector(
-                          onTap: () {
-                            if(widget.mode == GameMode.online){
-                              BotDetailsPopup.show(
-                            context, 4,xpManager, hands, eliminatedPlayers, qualifiedPlayers, currentPlayer,
-                          );
-                            }
-                             else{
-                        OfflineBotPopup.show(context, "assets/images/Skins/AvatarSkins/DefaultUser.png");
-                        }
-                             },
-                          child: PlayerCard(
-                            bot: 4,
-                            vertical: true,
-                            isEliminated: eliminatedPlayers[4],
-                            isQualified: qualifiedPlayers.contains(4),
-                            isTurn: currentPlayer == 4,
-                            cardCount: hands[4].length,
-                            hand: hands[4],
-                            playerKey: botKeys[4],
-                            handDealt: handDealt,
-                            mode: widget.mode,
-
+                        top: 8,
+                        left: 8,
+                        right: 8,
+                        child: Directionality(
+                          textDirection: TextDirection.ltr, // Force LTR
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                flex: 1,
+                                child: handDealt
+                                    ? MenuOverlayButton(
+                                  gameModeName: widget.gameModeType.name,
+                                  botCount: widget.botCount,
+                                  selectedBet: widget.selectedBet,
+                                )
+                                    : const SizedBox.shrink(key: ValueKey("empty-menu")),
+                              ),
+                              const SizedBox(width: 30,),
+                              Expanded(
+                                flex: 4,
+                                child: SimpleUserStatusBar(),
+                              ),
+                            ],
                           ),
                         ),
                       ),
 
-                    // Center deck
-                    DeckCenterPanel(
-                      top: MediaQuery.of(context).size.height * 0.42,
-                      left: MediaQuery.of(context).size.width * 0.18,
-                      right: MediaQuery.of(context).size.width * 0.18,
-                      onDraw: _playerDraw,
-                      deck: deck,
-                      topCard: topCard,
-                      discard: discard,
-                      deckKey: deckKey,
-                      centerKey: centerKey,
-                    ),
-
-                    // Player action panel
-                    PlayerActionPanel(
-                      eliminated: eliminatedPlayers[0],
-                      isSpectating: isSpectating,
-                      isAnimating: isAnimating,
-                      handDealt: handDealt,
-                      currentPlayer: currentPlayer,
-                      hand: hands[0],
-                      selectedAvatar: xpManager.selectedAvatar,
-                      username: xpManager.username,
-                      onDraw: _playerDraw,
-                      handKey: handKey,
-                      handScrollController: handScrollController,
-                      playerCardKeys: playerCardKeys,
-                      onPlayCard: _playCardByHuman,
-                      gameModeType: widget.gameModeType,
-                      onLeaveGame: () => _showEnd(),
-                      onEmojiSelected: (filePath) {
-                        setState(() => _shownEmoji = filePath);
-                        Future.delayed(const Duration(seconds: 2), () {
-                          setState(() => _shownEmoji = null);
-                        });
-                      },
-                    ),
-
-                    // Top AppBar
-                    Positioned(
-                      top: 8,
-                      left: 8,
-                      right: 8,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Expanded(
-                            flex: 1,
-                            child: handDealt
-                                ? MenuOverlayButton(
-                              gameModeName: widget.gameModeType.name,
-                              botCount: widget.botCount,
-                              selectedBet: widget.selectedBet,
-                            )
-                                : const SizedBox.shrink(key: ValueKey("empty-menu")),
-                          ),
-                          const SizedBox(width: 30,),
-                          Expanded(
-                            flex: 4,
-                            child: SimpleUserStatusBar()
-                          ),
-                        ],
-                      ),
-                    ),
 
 
 
-                    if (_CenteredActiveBanner != null)
-                      Center(
-                        child: _CenteredActiveBanner!,
-                      ),
-                    if (_CenteredActiveLottie != null)
-                      Center(
-                        child: _CenteredActiveLottie!,
-                      ),
-                    if (_CenteredActiveImage != null)
-                      Center(
-                        child: _CenteredActiveImage!,
-                      ),
+                      if (_CenteredActiveBanner != null)
+                        Center(
+                          child: _CenteredActiveBanner!,
+                        ),
+                      if (_CenteredActiveLottie != null)
+                        Center(
+                          child: _CenteredActiveLottie!,
+                        ),
+                      if (_CenteredActiveImage != null)
+                        Center(
+                          child: _CenteredActiveImage!,
+                        ),
 
-                    ..._animatedCardsWidgets,    // Animated cards being played
+                      ..._animatedCardsWidgets,    // Animated cards being played
 
-                  ],
+                    ],
 
 
+                  ),
                 ),
-              ),
 
 
 
-          ],
+            ],
+          ),
         ),
       ),
     );

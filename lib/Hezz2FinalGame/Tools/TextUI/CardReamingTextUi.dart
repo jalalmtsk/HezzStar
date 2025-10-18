@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../main.dart';
+
 class CardCountBadge extends StatelessWidget {
   final int remaining;
   final Color accentColor; // optional accent line color
@@ -36,7 +38,7 @@ class CardCountBadge extends StatelessWidget {
             border: Border.all(color: Colors.white24, width: 1),
           ),
           child: Text(
-            '$remaining Cards',
+            '$remaining ${tr(context).cards}',
             style: TextStyle(
               fontSize: fontSize,
               fontWeight: FontWeight.bold,

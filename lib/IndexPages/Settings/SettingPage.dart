@@ -21,7 +21,7 @@ class SettingsPage extends StatefulWidget {
 class _SettingsPageState extends State<SettingsPage>
     with TickerProviderStateMixin {
 
-  String selectedLanguage = "English"; // Default language
+  String selectedLanguage = "Francais"; // Default language
 
   bool darkMode = false;
   bool notificationsOn = true;
@@ -108,8 +108,8 @@ class _SettingsPageState extends State<SettingsPage>
         ),
         child: Row(
           children: [
-            const Text(
-              "⚙️ Settings",
+             Text(
+              "⚙️ ${tr(context).settings}",
               style: TextStyle(
                   fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
             ),
@@ -293,7 +293,7 @@ class _SettingsPageState extends State<SettingsPage>
                       _buildPanel(
                         id: "general",
                         icon: Icons.settings,
-                        title: "General",
+                        title: tr(context).general,
                         accent: Colors.amber,
                         open: _generalOpen,
                         child: Column(
@@ -302,7 +302,7 @@ class _SettingsPageState extends State<SettingsPage>
                             ListTile(
                               leading:
                               const Icon(Icons.language, color: Colors.white),
-                              title:  Text("Language ${tr(context).add}", style: TextStyle(color: Colors.white)),
+                              title:  Text(tr(context).language, style: TextStyle(color: Colors.white)),
                               trailing: Text(
                                 selectedLanguage,
                                 style: const TextStyle(color: Colors.white70, fontWeight: FontWeight.w600),
@@ -312,7 +312,7 @@ class _SettingsPageState extends State<SettingsPage>
                                   context: context,
                                   builder: (context) {
                                     return AlertDialog(
-                                      title: const Text("Select Language"),
+                                      title:  Text(tr(context).selectLanguage),
                                       content: Column(
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
@@ -340,9 +340,9 @@ class _SettingsPageState extends State<SettingsPage>
                             ListTile(
                               leading:
                               const Icon(Icons.insights, color: Colors.white),
-                              title: const Text("Instructions",
+                              title:  Text(tr(context).instructions,
                                   style: TextStyle(color: Colors.white)),
-                              subtitle: Text("Game Instructions",
+                              subtitle: Text(tr(context).gameInstructions,
                                   style:
                                   const TextStyle(color: Colors.white70)),
                               onTap: () {
@@ -361,7 +361,7 @@ class _SettingsPageState extends State<SettingsPage>
                       _buildPanel(
                         id: "bg",
                         icon: Icons.music_note,
-                        title: "Background Music",
+                        title: tr(context).backgroundMusic,
                         accent: Colors.deepOrange,
                         open: _bgOpen,
                         child: _sliderRow(
@@ -381,7 +381,7 @@ class _SettingsPageState extends State<SettingsPage>
                       _buildPanel(
                         id: "sfx",
                         icon: Icons.speaker,
-                        title: "Sound Effects",
+                        title: tr(context).soundEffects,
                         accent: Colors.cyan,
                         open: _sfxOpen,
                         child: _sliderRow(
@@ -402,7 +402,7 @@ class _SettingsPageState extends State<SettingsPage>
                       _buildPanel(
                         id: "about",
                         icon: Icons.info_outline,
-                        title: "About & Support",
+                        title: tr(context).aboutAndSupport,
                         accent: Colors.blue,
                         open: true,
                         child: Column(
@@ -410,7 +410,7 @@ class _SettingsPageState extends State<SettingsPage>
                             ListTile(
                               leading:
                               const Icon(Icons.info, color: Colors.blue),
-                              title: const Text("About App",
+                              title:  Text(tr(context).aboutApp,
                                   style: TextStyle(color: Colors.white)),
                               subtitle: Text(appVersion,
                                   style:
@@ -428,7 +428,7 @@ class _SettingsPageState extends State<SettingsPage>
                             ListTile(
                               leading: const Icon(Icons.email,
                                   color: Colors.deepPurple),
-                              title: const Text("Contact Support",
+                              title:  Text(tr(context).contactSupport,
                                   style: TextStyle(color: Colors.white)),
                               onTap: () {
                                 // TODO: Open email launcher
@@ -438,7 +438,7 @@ class _SettingsPageState extends State<SettingsPage>
                             ListTile(
                               leading: const Icon(Icons.privacy_tip_outlined,
                                   color: Colors.amber),
-                              title: const Text("Privacy Policy",
+                              title:  Text(tr(context).privacyPolicy,
                                   style: TextStyle(color: Colors.white)),
                               onTap: () {
                                 // TODO: Navigate to Privacy Policy
@@ -451,7 +451,7 @@ class _SettingsPageState extends State<SettingsPage>
                             ListTile(
                               leading:
                               const Icon(Icons.gavel, color: Colors.amber),
-                              title: const Text("Credits",
+                              title:  Text(tr(context).credits,
                                   style: TextStyle(color: Colors.white)),
                               onTap: () {
                                 // TODO: Navigate to Terms of Use
@@ -464,7 +464,7 @@ class _SettingsPageState extends State<SettingsPage>
                             ListTile(
                               leading:
                               const Icon(Icons.star_rate, color: Colors.amber),
-                              title: const Text("Rate App",
+                              title:  Text(tr(context).rateApp,
                                   style: TextStyle(color: Colors.white)),
                               onTap: () {
                                 // TODO: Open app store rating

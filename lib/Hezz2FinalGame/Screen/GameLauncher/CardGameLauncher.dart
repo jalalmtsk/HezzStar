@@ -10,8 +10,10 @@ import 'package:hezzstar/Hezz2FinalGame/Models/GameCardEnums.dart';
 import 'package:hezzstar/widgets/userStatut/userStatus.dart';
 import '../../../ExperieneManager.dart';
 import '../../../Manager/HelperClass/FlyingSpending/FlyingSpendingManager.dart';
+import '../../../main.dart';
 import '../../../tools/AudioManager/AudioManager.dart';
 import '../../../tools/ConnectivityManager/ConnectivityManager.dart';
+import '../../Bot/BotStack.dart';
 import 'GameLauncher_Tools/AnmatedCard_GameLauncher.dart';
 import 'GameLauncher_Tools/RewardInfoDialog.dart';
 import 'GameLauncher_Tools/RewardinfoButton.dart';
@@ -65,15 +67,28 @@ class _CardGameLauncherState extends State<CardGameLauncher>
   ];
 
   final List<Map<String, dynamic>> handOptions = [
-    {"label": "Quick", "size": 1},
+    {"label": "Quick", "size": 3},
     {"label": "Medium", "size": 5},
     {"label": "Long", "size": 7},
   ];
 
-  final List<Map<String, dynamic>> gameModes = [
-    {"label": "Play to Win", "type": GameModeType.playToWin},
-    {"label": "Elimination", "type": GameModeType.elimination},
+  final List<GameModeType> gameModes = [
+    GameModeType.playToWin,
+    GameModeType.elimination,
   ];
+
+
+  String localizedGameModeLabel(BuildContext context, GameModeType mode) {
+    switch (mode) {
+      case GameModeType.playToWin:
+        return tr(context).playToWin; // localized string for "Play to Win"
+      case GameModeType.elimination:
+        return tr(context).elimination; // localized string for "Elimination"
+      default:
+        return "";
+    }
+  }
+
 
   // dynamic colors based on mode
   Color primaryAccent = Colors.orangeAccent;
@@ -333,8 +348,8 @@ class _CardGameLauncherState extends State<CardGameLauncher>
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text(
-              "🎴 Lobby",
+             Text(
+              "🎴 ${tr(context).lobby}",
               style: TextStyle(
                 fontSize: 26,
                 fontWeight: FontWeight.bold,
@@ -365,7 +380,7 @@ class _CardGameLauncherState extends State<CardGameLauncher>
                 border: Border.all(color: Colors.white24),
               ),
               child: Text(
-                gameMode == GameModeType.playToWin ? "Mode: Play" : "Mode: Elim.",
+                gameMode == GameModeType.playToWin ? "${tr(context).mode}: ${tr(context).play}" : "${tr(context).mode}: ${tr(context).elim}.",
                 style: const TextStyle(color: Colors.white70, fontWeight: FontWeight.w600),
               ),
             ),
@@ -381,7 +396,7 @@ class _CardGameLauncherState extends State<CardGameLauncher>
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: gameModes.map((mode) {
-        bool isSelected = gameMode == mode["type"];
+        bool isSelected = gameMode == mode;
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 2),
           child: GestureDetector(
@@ -389,9 +404,8 @@ class _CardGameLauncherState extends State<CardGameLauncher>
               final audioManager = Provider.of<AudioManager>(context, listen: false);
               audioManager.playEventSound("sandClick");
               setState(() {
-                gameMode = mode["type"];
+                gameMode = mode;
                 _applyThemeForMode();
-                // animate hand entrance again for visual feedback
                 _handEntranceController.forward(from: 0.0);
               });
             },
@@ -404,7 +418,8 @@ class _CardGameLauncherState extends State<CardGameLauncher>
                     : LinearGradient(colors: [Colors.grey.shade800, Colors.grey.shade900]),
                 borderRadius: BorderRadius.circular(18),
                 boxShadow: [
-                  if (isSelected) BoxShadow(color: primaryAccent.withOpacity(0.45), blurRadius: 14, offset: const Offset(0, 6)),
+                  if (isSelected)
+                    BoxShadow(color: primaryAccent.withOpacity(0.45), blurRadius: 14, offset: const Offset(0, 6)),
                 ],
               ),
               child: Row(
@@ -416,7 +431,7 @@ class _CardGameLauncherState extends State<CardGameLauncher>
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    mode["label"],
+                    localizedGameModeLabel(context, mode),
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -431,6 +446,7 @@ class _CardGameLauncherState extends State<CardGameLauncher>
       }).toList(),
     );
   }
+
 
   /// ===== HAND SIZE SELECTOR =====
   Widget _handSizeSelectorRow() {
@@ -465,7 +481,7 @@ class _CardGameLauncherState extends State<CardGameLauncher>
                     : [BoxShadow(color: Colors.black45, blurRadius: 6, offset: const Offset(0, 3))],
               ),
               child: Text(
-                "${opt["size"]} Cards",
+                "${opt["size"]} ${tr(context).cards}",
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.bold,
@@ -619,9 +635,9 @@ class _CardGameLauncherState extends State<CardGameLauncher>
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(
-                              "${_formatGold(bet['gold'])} G",
+                              "${_formatGold(bet['gold'])} ${tr(context).gold}",
                               style: TextStyle(
-                                fontSize: isSelected ? 40 : 32,
+                                fontSize: isSelected ? 34 : 29,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.yellowAccent,
                                 shadows: const [
@@ -728,7 +744,7 @@ class _CardGameLauncherState extends State<CardGameLauncher>
   Widget _premiumStartButton(ExperienceManager expManager) {
     final bet = bets[selectedBetIndex];
     final enough = expManager.gold >= bet['gold'];
-    final label = gameMode == GameModeType.playToWin ? "Start Match" : "Start Elimination";
+    final label = gameMode == GameModeType.playToWin ? tr(context).startMatch : tr(context).startElimination;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
@@ -761,6 +777,7 @@ class _CardGameLauncherState extends State<CardGameLauncher>
                 final audioManager = Provider.of<AudioManager>(context, listen: false);
                 audioManager.playEventSound("sandClick");
 
+                isGameEnded = false;
                 // Set spending flag
                 setState(() => _isSpending = true);
 
@@ -816,16 +833,16 @@ class _CardGameLauncherState extends State<CardGameLauncher>
                           const Icon(Icons.warning_amber_rounded,
                               color: Colors.amber, size: 50),
                           const SizedBox(height: 10),
-                          const Text(
-                            "Not Enough Gold!",
+                           Text(
+                            tr(context).notEnoughGold ,
                             style: TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.white),
                           ),
                           const SizedBox(height: 8),
-                          const Text(
-                            "Earn or buy more gold to place this bet.",
+                           Text(
+                            tr(context).earnOrBuyGold,
                             style: TextStyle(color: Colors.white70),
                           ),
                           const SizedBox(height: 16),
@@ -870,7 +887,7 @@ class _CardGameLauncherState extends State<CardGameLauncher>
                     ),
                     const SizedBox(width: 10),
                     Text(
-                      !_showDisconnectedOverlay ? label : "No Connection",
+                      !_showDisconnectedOverlay ? label : tr(context).noConnection,
                       style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
                     ),
                     const SizedBox(width: 12),

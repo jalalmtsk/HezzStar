@@ -3,8 +3,8 @@ import 'package:hezzstar/tools/AudioManager/AudioManager.dart';
 import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 
+import '../../../../main.dart';
 import '../../../Models/GameCardEnums.dart';
-import '../../../Tools/MessagesInGame/AnimatedMessages.dart';
 import '../../../Tools/TextUI/CardReamingTextUi.dart';
 
 class PlayerActionPanel extends StatefulWidget {
@@ -79,14 +79,14 @@ class _PlayerActionPanelState extends State<PlayerActionPanel> {
 
     if (widget.eliminated) {
       bannerColor = Colors.redAccent;
-      bannerText = 'OUT';
+      bannerText = tr(context).out;
     } else if (widget.gameModeType == GameModeType.elimination &&
         widget.hand.isEmpty) {
       bannerColor = Colors.blueAccent;
-      bannerText = 'QUAL';
+      bannerText = tr(context).qual;
     } else if (widget.currentPlayer == 0 && !widget.eliminated) {
       bannerColor = Colors.greenAccent;
-      bannerText = 'TURN';
+      bannerText = tr(context).turn;
     }
 
     if (bannerText.isEmpty) return const SizedBox.shrink();
@@ -161,7 +161,7 @@ class _PlayerActionPanelState extends State<PlayerActionPanel> {
                         onPressed: widget.onLeaveGame,
                         style:
                         ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                        child: const Text('Leave Game'),
+                        child:  Text(tr(context).leaveGame),
                       ),
                   ],
                 ),
@@ -170,9 +170,9 @@ class _PlayerActionPanelState extends State<PlayerActionPanel> {
                     const SizedBox(width: 3),
                     Text(
                       widget.eliminated
-                          ? 'Eliminated'
+                          ? tr(context).eliminated
                           : widget.isSpectating
-                          ? 'Spectating'
+                          ? tr(context).spectating
                           : widget.username,
                       style: TextStyle(
                         fontWeight: FontWeight.w600,
@@ -282,13 +282,13 @@ class _PlayerActionPanelState extends State<PlayerActionPanel> {
             Container(
               height: 135,
               alignment: Alignment.center,
-              child: const Column(
+              child:  Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.block, color: Colors.red, size: 40),
-                  Text('You have been eliminated.',
+                  const Icon(Icons.block, color: Colors.red, size: 40),
+                  Text(tr(context).youHaveBeenEliminated,
                       style: TextStyle(fontSize: 16, color: Colors.red)),
-                  Text('Press "Leave Game" to exit.',
+                  Text(tr(context).pressLeaveGameToExit,
                       style: TextStyle(fontSize: 14, color: Colors.grey)),
                 ],
               ),
@@ -303,8 +303,9 @@ class _PlayerActionPanelState extends State<PlayerActionPanel> {
                 physics: const BouncingScrollPhysics(),
                 child: Row(
                   children: List.generate(widget.hand.length, (i) {
-                    if (i >= widget.playerCardKeys.length)
+                    if (i >= widget.playerCardKeys.length) {
                       widget.playerCardKeys.add(GlobalKey());
+                    }
                     return Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 6.0),
                       child: GestureDetector(
@@ -347,8 +348,8 @@ class _PlayerActionPanelState extends State<PlayerActionPanel> {
             Container(
               height: 135,
               alignment: Alignment.center,
-              child: const Text(
-                'You are spectating. Press "Join Game" to play again.',
+              child:  Text(
+                tr(context).spectatingPressJoinGame,
                 style: TextStyle(fontSize: 16, color: Colors.grey),
               ),
             ),

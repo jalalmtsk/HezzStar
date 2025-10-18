@@ -1,6 +1,8 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 
+import '../../main.dart';
+
 class ShopPage extends StatelessWidget {
   const ShopPage({super.key});
 
@@ -36,8 +38,8 @@ class ShopPage extends StatelessWidget {
                       width: 80,
                       height: 80),
                   const SizedBox(height: 16),
-                  const Text(
-                    'SHOP Not Available',
+                   Text(
+                  tr(context).shopNotAvailable,
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 22,
@@ -52,8 +54,8 @@ class ShopPage extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  const Text(
-                    'Coming soon...',
+                   Text(
+                     tr(context).comingSoon,
                     style: TextStyle(color: Colors.white70, fontSize: 14),
                   ),
                 ],

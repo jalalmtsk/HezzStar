@@ -4,6 +4,8 @@ import 'package:lottie/lottie.dart';
 import 'package:hezzstar/ExperieneManager.dart';
 import 'package:provider/provider.dart';
 
+import '../../main.dart';
+
 class AvatarDetailsPopup {
   static void show(BuildContext context, ExperienceManager xpManager) {
     showDialog(
@@ -44,8 +46,8 @@ class AvatarDetailsPopup {
                         alignment: Alignment.center,
                         children: [
                           SizedBox(
-                            width: 120 * scale,
-                            height: 120 * scale,
+                            width: 130 * scale,
+                            height: 130 * scale,
                             child: Lottie.asset(
                               'assets/animations/AnimationSFX/RewawrdLightEffect.json',
                               repeat: true,
@@ -113,17 +115,17 @@ class AvatarDetailsPopup {
 
                       // Stats using Wrap (auto-wrap to avoid overflow)
                       Wrap(
-                        spacing: 6 * scale,
-                        runSpacing: 6 * scale,
+                        spacing: 8 * scale,
+                        runSpacing: 8 * scale,
                         alignment: WrapAlignment.center,
                         children: [
-                          _buildStat("Level", xpManager.level.toString(), scale),
-                          _buildStat("Total Earnings", xpManager.totalGoldEarned.toString(), scale),
-                          _buildStat("Gold", xpManager.gold.toString(), scale),
-                          _buildStat("Wins 1v1", xpManager.wins1v1.toString(), scale),
-                          _buildStat("Wins 3 Players", xpManager.wins3Players.toString(), scale),
-                          _buildStat("Wins 4 Players", xpManager.wins4Players.toString(), scale),
-                          _buildStat("Wins 5 Players", xpManager.wins5Players.toString(), scale),
+                          _buildStat(tr(context).level, xpManager.level.toString(), scale),
+                          _buildStat(tr(context).totalEarnings, xpManager.totalGoldEarned.toString(), scale),
+                          _buildStat(tr(context).gold, xpManager.gold.toString(), scale),
+                          _buildStat(tr(context).wins1v1, xpManager.wins1v1.toString(), scale),
+                          _buildStat(tr(context).wins3Players, xpManager.wins3Players.toString(), scale),
+                          _buildStat(tr(context).wins4Players, xpManager.wins4Players.toString(), scale),
+                          _buildStat(tr(context).wins5Players, xpManager.wins5Players.toString(), scale),
 
                         ],
                       ),
@@ -136,9 +138,9 @@ class AvatarDetailsPopup {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
-                          Expanded(child: _buildUnlock("Skins", xpManager.unlockedCards.length.toString(), scale)),
-                          Expanded(child: _buildUnlock("Tables", xpManager.unlockedTableSkins.length.toString(), scale)),
-                          Expanded(child: _buildUnlock("Avatars", xpManager.unlockedAvatars.length.toString(), scale)),
+                          Expanded(child: _buildUnlock(tr(context).skins, xpManager.unlockedCards.length.toString(), scale)),
+                          Expanded(child: _buildUnlock(tr(context).tables, xpManager.unlockedTableSkins.length.toString(), scale)),
+                          Expanded(child: _buildUnlock(tr(context).avatars, xpManager.unlockedAvatars.length.toString(), scale)),
                         ],
                       ),
                       SizedBox(height: 14 * scale),
@@ -155,7 +157,7 @@ class AvatarDetailsPopup {
                           final audioManager = Provider.of<AudioManager>(context, listen: false);
                           audioManager.playEventSound("sandClick");
                           Navigator.pop(context);},
-                        child: Text("Close", style: TextStyle(fontSize: 14 * scale)),
+                        child: Text(tr(context).close, style: TextStyle(fontSize: 14 * scale)),
                       ),
                     ],
                   ),
@@ -180,13 +182,13 @@ class AvatarDetailsPopup {
       builder: (_) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
         backgroundColor: Colors.black87,
-        title: const Text("Edit Username", style: TextStyle(color: Colors.white)),
+        title:  Text(tr(context).editUsername, style: TextStyle(color: Colors.white)),
         content: TextField(
           controller: controller,
           maxLength: 9, // Limit input to 9 characters
           style: const TextStyle(color: Colors.white),
-          decoration: const InputDecoration(
-            hintText: "Enter new username",
+          decoration:  InputDecoration(
+            hintText: tr(context).enterNewUsername,
             hintStyle: TextStyle(color: Colors.white54),
             counterStyle: TextStyle(color: Colors.white54), // optional: counter color
             enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.amber)),
@@ -199,7 +201,7 @@ class AvatarDetailsPopup {
                 final audioManager = Provider.of<AudioManager>(context, listen: false);
                 audioManager.playEventSound("sandClick");
                 Navigator.pop(context);},
-              child: const Text("Cancel", style: TextStyle(color: Colors.white70))),
+              child:  Text(tr(context).close, style: TextStyle(color: Colors.white70))),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Colors.amber),
             onPressed: () async {
@@ -212,7 +214,7 @@ class AvatarDetailsPopup {
               Navigator.pop(context); // close popup
               show(context, xpManager); // reopen popup with updated name
             },
-            child: const Text("Save", style: TextStyle(color: Colors.black)),
+            child:  Text(tr(context).save, style: TextStyle(color: Colors.black)),
           ),
         ],
       ),
@@ -223,7 +225,7 @@ class AvatarDetailsPopup {
   static Widget _buildStat(String title, String value, double scale) {
     return Container(
       width: 140 * scale,
-      padding: EdgeInsets.symmetric(horizontal: 6 * scale, vertical: 8 * scale),
+      padding: EdgeInsets.symmetric(horizontal: 6 * scale, vertical: 10 * scale),
       decoration: BoxDecoration(
         color: Colors.white10,
         borderRadius: BorderRadius.circular(12 * scale),
@@ -232,9 +234,12 @@ class AvatarDetailsPopup {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(value,
+          Text(
+              textAlign: TextAlign.center,
+              value,
               style: TextStyle(color: Colors.white, fontSize: 14 * scale, fontWeight: FontWeight.bold)),
-          Text(title, style: TextStyle(color: Colors.white70, fontSize: 12 * scale)),
+          Text(              textAlign: TextAlign.center,
+              title, style: TextStyle(color: Colors.white70, fontSize: 12 * scale)),
         ],
       ),
     );
@@ -244,10 +249,13 @@ class AvatarDetailsPopup {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(value,
+        Text(
+            textAlign: TextAlign.center,
+            value,
             style: TextStyle(color: Colors.white, fontSize: 16 * scale, fontWeight: FontWeight.bold)),
         SizedBox(height: 4 * scale),
-        Text(title, style: TextStyle(color: Colors.white70, fontSize: 13 * scale)),
+        Text(              textAlign: TextAlign.center,
+            title, style: TextStyle(color: Colors.white70, fontSize: 13 * scale)),
       ],
     );
   }

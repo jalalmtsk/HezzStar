@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../main.dart';
 import 'CardSkinTabs/FantasyCardsPage.dart';
 import 'CardSkinTabs/MythicalCardsPage.dart';
 import 'CardSkinTabs/NaturalCardsPage.dart';
@@ -21,7 +22,7 @@ class CardSkinsIndexPage extends StatelessWidget {
                 child: Column(
                   children: [
                     Text(
-                      "Card Skins",
+                      tr(context).cardSkins,
                       style: TextStyle(
                         fontSize: 26,
                         fontWeight: FontWeight.bold,
@@ -59,14 +60,14 @@ class CardSkinsIndexPage extends StatelessWidget {
               // Custom TabBar without AppBar
               Container(
                 color: Colors.black.withOpacity(0.5), // optional background
-                child: const TabBar(
+                child:  TabBar(
                   indicatorColor: Colors.yellowAccent, // glowing indicator
                   labelColor: Colors.white,
                   unselectedLabelColor: Colors.white54,
                   indicatorWeight: 3,
                   tabs: [
-                    Tab(text: "Mythical"),
-                    Tab(text: "Fantasy"),
+                    Tab(text: tr(context).mythical),
+                    Tab(text: tr(context).fantasy),
                   ],
                 ),
               ),

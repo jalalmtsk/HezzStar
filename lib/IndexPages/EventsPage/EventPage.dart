@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../Manager/HelperClass/FlyingRewardManager.dart';
 import '../../Manager/HelperClass/RewardDimScreen.dart';
+import '../../main.dart';
 import '../../tools/AdsManager/AdsManager.dart';
 import '../../widgets/LoadingScreen/LoadinScreenDim.dart';
 import '../../widgets/SpiningWheel/Spiningwheel.dart';
@@ -99,7 +100,7 @@ class _EventsPageState extends State<EventsPage> {
     if (_remainingTime.inSeconds > 0) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text(
-            "You can spin again in ${_remainingTime.inHours}h ${_remainingTime.inMinutes % 60}m ${_remainingTime.inSeconds % 60}s"),
+            "${tr(context).youCanSpinAgainIn} ${_remainingTime.inHours}h ${_remainingTime.inMinutes % 60}m ${_remainingTime.inSeconds % 60}s"),
       ));
       return;
     }
@@ -118,7 +119,7 @@ class _EventsPageState extends State<EventsPage> {
   }
 
   void _showRandomReward() {
-    List<int> rewards = [500, 500, 500, 1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000];
+    List<int> rewards = [0,0,0,0,0,0, 500, 500, 500, 500, 500, 500, 1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000];
     int rewardAmount = rewards[_random.nextInt(rewards.length)];
 
     RewardDimScreen.show(
@@ -147,7 +148,7 @@ class _EventsPageState extends State<EventsPage> {
   }
 
   String _formatDuration(Duration duration) {
-    if (duration == Duration.zero) return "Ready!";
+    if (duration == Duration.zero) return "${tr(context).ready}!";
     final hours = duration.inHours.toString().padLeft(2, '0');
     final minutes = (duration.inMinutes % 60).toString().padLeft(2, '0');
     final seconds = (duration.inSeconds % 60).toString().padLeft(2, '0');
@@ -172,7 +173,7 @@ class _EventsPageState extends State<EventsPage> {
 
                     // Title
                     Text(
-                      "🎡 Spin Wheel 🎡",
+                      "🎡 ${tr(context).spinWheel} 🎡",
                       style: TextStyle(
                         color: Colors.yellowAccent,
                         fontSize: 32,
@@ -259,7 +260,7 @@ class _EventsPageState extends State<EventsPage> {
                                       shadowColor: Colors.yellowAccent,
                                     ),
                                     child: Text(
-                                      "Spin",
+                                      tr(context).spin,
                                       style: const TextStyle(
                                         fontSize: 20,
                                         fontWeight: FontWeight.bold,
@@ -283,8 +284,8 @@ class _EventsPageState extends State<EventsPage> {
                                       if (adWatched) {
                                         _resetCooldown();
                                         ScaffoldMessenger.of(context).showSnackBar(
-                                          const SnackBar(
-                                            content: Text('Cooldown reset! You can spin now.'),
+                                           SnackBar(
+                                            content: Text(tr(context).cooldownReset),
                                           ),
                                         );
                                       }
@@ -304,7 +305,8 @@ class _EventsPageState extends State<EventsPage> {
                                           : Colors.greenAccent,
                                     ),
                                     child: Text(
-                                      isReady ? "🎁 Timer Ready" : "🎁 Spin Again",
+                                      textAlign: TextAlign.center,
+                                      isReady ? "🎁 ${tr(context).timerReady}" : "🎁 ${tr(context).spinAgain}",
                                       style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                                     ),
                                   ),
@@ -376,5 +378,4 @@ class _EventsPageState extends State<EventsPage> {
       ),
     );
   }
-
 }

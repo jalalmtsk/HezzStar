@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 
+import '../../../main.dart';
+
 class CardPreview extends StatelessWidget {
   final List<dynamic> hand;
   final bool vertical;
@@ -60,8 +62,8 @@ class CardPreview extends StatelessWidget {
                       child: Container(
                         alignment: Alignment.center,
                         color: Colors.red.withOpacity(0.4),
-                        child: const Text(
-                          "ELIMINATED",
+                        child:  Text(
+                          tr(context).eliminated,
                           style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
                         ),
                       ),
@@ -72,8 +74,8 @@ class CardPreview extends StatelessWidget {
                       child: Container(
                         alignment: Alignment.center,
                         color: Colors.blue.withOpacity(0.4),
-                        child: const Text(
-                          "QUALIFIED",
+                        child:  Text(
+                          tr(context).qualified,
                           style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
                         ),
                       ),

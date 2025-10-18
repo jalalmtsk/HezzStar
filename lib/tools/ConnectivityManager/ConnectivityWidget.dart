@@ -17,7 +17,7 @@ class ConnectivityIndicator extends StatelessWidget {
         // WiFi icon
         Icon(
           connected ? Icons.wifi : Icons.wifi_off,
-          size: 28,
+          size: 20,
           color: connected ? Colors.green : Colors.grey,
         ),
 
@@ -27,8 +27,8 @@ class ConnectivityIndicator extends StatelessWidget {
           right: 0,
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 600),
-            width: 12,
-            height: 12,
+            width: 6,
+            height: 6,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: connected ? Colors.green : Colors.red,

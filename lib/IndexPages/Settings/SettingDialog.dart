@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:hezzstar/main.dart';
 import 'package:provider/provider.dart';
 import '../../Hezz2FinalGame/Bot/BotStack.dart';
 import '../../tools/AudioManager/AudioManager.dart';
@@ -133,7 +134,7 @@ class _SettingsDialogState extends State<SettingsDialog>
                               : Colors.white12),
                     ),
                     child: Text(
-                      enabled ? "On" : "Off",
+                      enabled ? tr(context).on : tr(context).off,
                       style: TextStyle(
                           color: enabled ? Colors.white : Colors.white70,
                           fontSize: 13),
@@ -256,7 +257,7 @@ class _SettingsDialogState extends State<SettingsDialog>
                       _buildPanel(
                         id: 'bg',
                         icon: Icons.music_note,
-                        title: "Background Music",
+                        title: tr(context).backgroundMusic,
                         accent: Colors.deepOrange,
                         open: _bgOpen,
                         enabled: !audioManager.isBgMuted,
@@ -273,7 +274,7 @@ class _SettingsDialogState extends State<SettingsDialog>
                       _buildPanel(
                         id: 'sfx',
                         icon: Icons.speaker,
-                        title: "Sound Effects",
+                        title: tr(context).soundEffects,
                         accent: Colors.cyanAccent.shade700,
                         open: _sfxOpen,
                         enabled: !audioManager.isSfxMuted,
@@ -290,7 +291,7 @@ class _SettingsDialogState extends State<SettingsDialog>
                       _buildPanel(
                         id: 'btn',
                         icon: Icons.touch_app,
-                        title: "Button Sounds",
+                        title: tr(context).buttonSounds,
                         accent: Colors.lightGreen,
                         open: _btnOpen,
                         enabled: !audioManager.isButtonMuted,
@@ -308,7 +309,7 @@ class _SettingsDialogState extends State<SettingsDialog>
                       _buildPanel(
                         id: 'emoji',
                         icon: Icons.emoji_emotions,
-                        title: "Emoji Animations",
+                        title: tr(context).emojiAnimations,
                         accent: Colors.purpleAccent,
                         open: false, // no need for expansion since it's just a toggle
                         enabled: isLottieActivated,
@@ -334,7 +335,7 @@ class _SettingsDialogState extends State<SettingsDialog>
                                 },
                                 icon: const Icon(Icons.refresh,
                                     color: Colors.white70, size: 18),
-                                label: const Text("Reset",
+                                label:  Text(tr(context).reset,
                                     style: TextStyle(color: Colors.white70)),
                                 style: TextButton.styleFrom(
                                   backgroundColor: Colors.white.withOpacity(0.06),
@@ -353,7 +354,7 @@ class _SettingsDialogState extends State<SettingsDialog>
                                 },
                                 icon: const Icon(Icons.close,
                                     color: Colors.white, size: 18),
-                                label: const Text("Close",
+                                label:  Text(tr(context).close,
                                     style: TextStyle(color: Colors.white)),
                                 style: TextButton.styleFrom(
                                   backgroundColor: primaryAccent.withOpacity(0.8),
@@ -371,7 +372,7 @@ class _SettingsDialogState extends State<SettingsDialog>
                         padding: const EdgeInsets.only(bottom: 6),
                         child: Center(
                           child: Text(
-                            "Version $appVersion",
+                            "${tr(context).version} $appVersion",
                             style: const TextStyle(
                                 color: Colors.white54, fontSize: 13),
                           ),

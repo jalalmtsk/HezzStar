@@ -50,7 +50,9 @@ class _AnimatedLottieEmojiBubbleState extends State<AnimatedLottieEmojiBubble>
 
     if (_isShowing) {
       // Dispose old controllers
-      for (final c in _controllers) c.dispose();
+      for (final c in _controllers) {
+        c.dispose();
+      }
       _controllers = List.generate(_funnyLotties.length, (_) {
         return AnimationController(
           vsync: this,
@@ -67,18 +69,24 @@ class _AnimatedLottieEmojiBubbleState extends State<AnimatedLottieEmojiBubble>
       // Auto hide after 3 seconds
       Future.delayed(const Duration(seconds: 3), () {
         if (mounted) setState(() => _isShowing = false);
-        for (var c in _controllers) c.dispose();
+        for (var c in _controllers) {
+          c.dispose();
+        }
         _controllers.clear();
       });
     } else {
-      for (var c in _controllers) c.dispose();
+      for (var c in _controllers) {
+        c.dispose();
+      }
       _controllers.clear();
     }
   }
 
   @override
   void dispose() {
-    for (var c in _controllers) c.dispose();
+    for (var c in _controllers) {
+      c.dispose();
+    }
     _controllers.clear();
     super.dispose();
   }

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 import '../../../../MainScreenIndex.dart';
+import '../../../../main.dart';
 import '../../../../tools/AudioManager/AudioManager.dart';
 import '../../../../tools/ConnectivityManager/ConnectivityManager.dart';
 import '../../../Models/GameCardEnums.dart';
@@ -32,8 +33,8 @@ class SearchingPopup {
                   children: [
                     const Icon(Icons.wifi_off, size: 80, color: Colors.white),
                     const SizedBox(height: 20),
-                    const Text(
-                      'Disconnected',
+                     Text(
+                      tr(context).disconnected,
                       style: TextStyle(
                           decoration: TextDecoration.none,
                           color: Colors.white,
@@ -42,7 +43,7 @@ class SearchingPopup {
                     ),
                     const SizedBox(height: 10),
                     Text(
-                      'Redirecting in ${remaining.toStringAsFixed(1)}',
+                      '${tr(context).redirectingIn} ${remaining.toStringAsFixed(1)}',
                       style: const TextStyle(
                           decoration: TextDecoration.none,
                           color: Colors.white70,
@@ -196,8 +197,8 @@ class SearchingPopup {
                               const SizedBox(height: 10),
                               Text(
                                 foundPlayers < players
-                                    ? "Searching for players..."
-                                    : "⚡ Match Found!",
+                                    ? tr(context).searchingForPlayers
+                                    : tr(context).matchFound,
                                 style: TextStyle(
                                   color: foundPlayers < players
                                       ? Colors.white70
@@ -242,8 +243,8 @@ class SearchingPopup {
                                 }),
                               ),
                               const SizedBox(height: 16),
-                              const Text(
-                                "Please wait...",
+                               Text(
+                                tr(context).pleaseWait,
                                 style: TextStyle(
                                   color: Colors.white70,
                                   fontSize: 14,
@@ -260,7 +261,7 @@ class SearchingPopup {
                     Positioned.fill(
                       child: Container(
                         color: Colors.black.withOpacity(0.85),
-                        child: const Center(
+                        child:  Center(
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
@@ -268,7 +269,7 @@ class SearchingPopup {
                                   size: 80, color: Colors.white),
                               SizedBox(height: 20),
                               Text(
-                                "Disconnected",
+                                tr(context).disconnected,
                                 style: TextStyle(
                                     decoration: TextDecoration.none,
                                     color: Colors.white,

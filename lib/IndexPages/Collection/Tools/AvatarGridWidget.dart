@@ -5,6 +5,7 @@ import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 
 import '../../../ExperieneManager.dart';
+import '../../../main.dart';
 import '../../../tools/AudioManager/AudioManager.dart';
 import 'CardItem.dart';
 import 'CurrencyTypeEnum.dart';
@@ -123,8 +124,8 @@ class AvatarGridWidget extends StatelessWidget {
                     const SizedBox(height: 28),
 
                     // 🎉 Title text
-                    const Text(
-                      "Avatar Unlocked!",
+                     Text(
+                       tr(context).avatarUnlocked,
                       style: TextStyle(
                         fontSize: 30,
                         fontWeight: FontWeight.w800,
@@ -155,8 +156,8 @@ class AvatarGridWidget extends StatelessWidget {
                       onPressed: () {
                         Navigator.of(context, rootNavigator: true).pop();
                       },
-                      child: const Text(
-                        "Awesome!",
+                      child:  Text(
+                        tr(context).awesome,
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
@@ -191,7 +192,7 @@ class AvatarGridWidget extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text("Unlock Avatar",
+                Text(tr(context).unlockAvatar,
                     style: Theme.of(context)
                         .textTheme
                         .titleLarge
@@ -206,7 +207,7 @@ class AvatarGridWidget extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    "Unlock for $cost",
+                    "${tr(context).unlockFor} $cost",
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                   Image.asset(
@@ -227,7 +228,7 @@ class AvatarGridWidget extends StatelessWidget {
                         audioManager.playEventSound("sandClick");
                         Navigator.pop(context);
                       },
-                      child: const Text("Cancel"),
+                      child:  Text(tr(context).cancel),
                     ),
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
@@ -264,11 +265,11 @@ class AvatarGridWidget extends StatelessWidget {
 
                           Navigator.pop(context);
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text("Not enough $currencySymbol!")),
+                            SnackBar(content: Text("${tr(context).notEnough} $currencySymbol!")),
                           );
                         }
                       },
-                      child: const Text("Unlock"),
+                      child:  Text(tr(context).unlock),
                     )
 
                   ],

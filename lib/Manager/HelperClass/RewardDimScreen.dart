@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hezzstar/tools/AudioManager/AudioManager.dart';
 import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
+import '../../main.dart';
 import 'FlyingRewardManager.dart';
 
 class RewardDimScreen {
@@ -220,7 +221,7 @@ class RewardDimScreen {
                               ),
                               const SizedBox(height: 14),
                               Text(
-                                'Tap anywhere to collect',
+                                tr(context).tapAnywhereToCollect,
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w500,

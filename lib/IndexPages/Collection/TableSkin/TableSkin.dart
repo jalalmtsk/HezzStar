@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hezzstar/IndexPages/Collection/Tools/TableGridWidget.dart';
 
+import '../../../main.dart';
 import '../Tools/CurrencyTypeEnum.dart';
 
 class TableSkin extends StatelessWidget {
@@ -17,7 +18,7 @@ class TableSkin extends StatelessWidget {
             child: Column(
               children: [
                 Text(
-                  "Table Skins",
+                  tr(context).tableSkins,
                   style: TextStyle(
                     fontSize: 26,
                     fontWeight: FontWeight.bold,
@@ -54,8 +55,8 @@ class TableSkin extends StatelessWidget {
           Expanded(
             child: TableSkinGridWidget(
               tableSkins: [
-                {"image": "assets/images/Skins/TableSkins/table1.jpg", 'currency': CurrencyType.gold, "cost": 50},
-                {"image": "assets/images/Skins/TableSkins/table2.jpg", 'currency': CurrencyType.gems, "cost": 100},
+                {"image": "assets/images/Skins/TableSkins/table1.jpg", 'currency': CurrencyType.gold, "cost": 0},
+                {"image": "assets/images/Skins/TableSkins/table2.jpg", 'currency': CurrencyType.gems, "cost": 2000},
 
               ],
             ),

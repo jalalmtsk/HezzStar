@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../main.dart';
 import '../../../tools/AudioManager/AudioManager.dart';
 import '../../Bot/BotStack.dart';
 
@@ -86,7 +87,7 @@ class _GameInfoDialogState extends State<GameInfoDialog> {
                         ),
                         const SizedBox(width: 10),
                         Text(
-                          "Winning Gold: ${widget.prize}",
+                          "${tr(context).winningGold}: ${widget.prize}",
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
@@ -141,7 +142,7 @@ class _GameInfoDialogState extends State<GameInfoDialog> {
                             ),
                             const SizedBox(width: 12),
                             Text(
-                              "Players: ${widget.players}",
+                              "${tr(context).players}: ${widget.players}",
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 16,
@@ -182,7 +183,7 @@ class _GameInfoDialogState extends State<GameInfoDialog> {
                                 ),
                                 const SizedBox(width: 6),
                                 Text(
-                                  isLottieActivated ? "On" : "Off",
+                                  isLottieActivated ? "${tr(context).on}" : "${tr(context).off}",
                                   style: const TextStyle(
                                     color: Colors.white,
                                     fontSize: 14,
@@ -205,21 +206,21 @@ class _GameInfoDialogState extends State<GameInfoDialog> {
                       _buildActionButton(
                         context: context,
                         icon: Icons.settings,
-                        label: "Settings",
+                        label: tr(context).settings,
                         gradient: const [Colors.deepPurple, Colors.purpleAccent],
                         onTap: widget.onSettings,
                       ),
                       _buildActionButton(
                         context: context,
                         icon: Icons.info,
-                        label: "Instructions",
+                        label: tr(context).instructions,
                         gradient: const [Colors.green, Colors.teal],
                         onTap: widget.onInstructions,
                       ),
                       _buildActionButton(
                         context: context,
                         icon: Icons.exit_to_app,
-                        label: "Exit",
+                        label: tr(context).exit,
                         gradient: const [Colors.redAccent, Colors.deepOrange],
                         onTap: widget.onExit, // ✅ use callback
                       ),

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:hezzstar/main.dart';
 import 'package:hezzstar/tools/AudioManager/AudioManager.dart';
 import 'package:provider/provider.dart';
 import 'package:lottie/lottie.dart';
@@ -185,7 +186,7 @@ class PlayerSelector {
 
                 // ✨ Glowing name
                 Text(
-                  "$name Selected!",
+                  "$name ${tr(context).selected}!",
 
                   style: TextStyle(
                     decoration: TextDecoration.none, // ✅ remove underline

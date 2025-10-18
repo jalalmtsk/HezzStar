@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 
+import '../../../main.dart';
 import '../../../tools/ConnectivityManager/ConnectivityWidget.dart';
 
 class AvatarCard extends StatelessWidget {
@@ -94,7 +95,7 @@ class AvatarCard extends StatelessWidget {
               children: [
                 _buildAnimatedAvatar(),
                 const SizedBox(width: 10),
-                _buildPlayerInfo(),
+                _buildPlayerInfo(context),
                 const ConnectivityIndicator()
               ]),
           ),
@@ -158,16 +159,16 @@ class AvatarCard extends StatelessWidget {
     );
   }
 
-  Widget _buildPlayerInfo() {
+  Widget _buildPlayerInfo(BuildContext context) {
     return Expanded(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            '- PLAYER -',
+            '- ${tr(context).player} -',
             style: TextStyle(
-              fontSize: 12,
+              fontSize: 10,
               fontWeight: FontWeight.w800,
               color: Colors.white.withOpacity(0.75),
               letterSpacing: 2,
@@ -180,7 +181,7 @@ class AvatarCard extends StatelessWidget {
                 playerName,
                 style: const TextStyle(
                   fontFamily: 'Aladin', // <-- your asset font family
-                  fontSize: 16,
+                  fontSize: 13,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
                   shadows: [
@@ -188,8 +189,8 @@ class AvatarCard extends StatelessWidget {
                   ],
                 ),
               ),
-              const SizedBox(width: 4,),
-              Icon(Icons.edit, color: Colors.white, size: 15,)
+              const SizedBox(width: 6,),
+              Icon(Icons.edit, color: Colors.white, size: 11,)
             ],
           )
 

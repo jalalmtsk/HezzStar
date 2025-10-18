@@ -3,6 +3,7 @@ import 'package:hezzstar/widgets/LoadingScreen/LoadinScreenDim.dart';
 import 'package:lottie/lottie.dart';
 import '../../../IndexPages/Settings/SettingDialog.dart';
 import '../../../MainScreenIndex.dart';
+import '../../../main.dart';
 import 'GameInfoDialog.dart';
 import 'InstructionDialog.dart';
 
@@ -110,8 +111,8 @@ class _MenuOverlayButtonState extends State<MenuOverlayButton> {
                                   ),
                                 ),
                                 const SizedBox(height: 10),
-                                const Text(
-                                  "Do you really want to leave the game\n and return to the launcher?",
+                                 Text(
+                                  "${tr(context).confirmLeaveGame}\n ${tr(context).returnToLauncher}",
                                   textAlign: TextAlign.center,
                                   style: TextStyle(color: Colors.black, fontSize: 15),
                                 ),
@@ -124,7 +125,7 @@ class _MenuOverlayButtonState extends State<MenuOverlayButton> {
                                     // Cancel
                                     ElevatedButton.icon(
                                       icon: const Icon(Icons.close, color: Colors.white),
-                                      label: const Text("Cancel", style: TextStyle(color: Colors.white)),
+                                      label:  Text(tr(context).cancel, style: TextStyle(color: Colors.white)),
                                       style: ElevatedButton.styleFrom(
                                         backgroundColor: Colors.yellow.withOpacity(0.7),
                                         padding: const EdgeInsets.symmetric(
@@ -138,7 +139,7 @@ class _MenuOverlayButtonState extends State<MenuOverlayButton> {
                                     // Exit
                                     ElevatedButton.icon(
                                       icon: const Icon(Icons.exit_to_app, color: Colors.white),
-                                      label: const Text("Exit", style: TextStyle(color: Colors.white),),
+                                      label:  Text(tr(context).exit, style: TextStyle(color: Colors.white),),
                                       style: ElevatedButton.styleFrom(
                                         backgroundColor: Colors.redAccent,
                                         padding: const EdgeInsets.symmetric(

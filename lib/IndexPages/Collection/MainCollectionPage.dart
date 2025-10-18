@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:hezzstar/widgets/userStatut/userStatus.dart';
+import '../../main.dart';
 import 'AvatrSkins/AvatarShopIndex.dart';
 import 'CardSkins/CardSkinsIndexPage.dart';
 import 'TableSkin/TableSkin.dart';
@@ -100,8 +101,8 @@ class _MainCollectionPageState extends State<MainCollectionPage>
                     parent: _introController,
                     curve: const Interval(0.2, 0.45, curve: Curves.easeOutBack),
                   )),
-                  child: const Text(
-                    "Collection",
+                  child:  Text(
+                    tr(context).collections,
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 24,
@@ -127,8 +128,8 @@ class _MainCollectionPageState extends State<MainCollectionPage>
                     child: BackdropFilter(
                       filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
                       child: Container(
-                        height: 80,
-                        color: Colors.black.withOpacity(0.5),
+                        height: 84,
+                        color: Colors.black.withOpacity(0.7),
                       ),
                     ),
                   ),
@@ -142,15 +143,15 @@ class _MainCollectionPageState extends State<MainCollectionPage>
                       labelColor: Colors.amber,
                       unselectedLabelColor: Colors.white,
                       indicatorColor: Colors.transparent,
-                      tabs: const [
+                      tabs:  [
                         Tab(
                           icon: Image(
                             image: AssetImage(
                                 'assets/UI/Icons/TabBars_Icons/CardSkin_Icon.png'),
-                            width: 50,
-                            height: 50,
+                            width: 45,
+                            height: 45,
                           ),
-                          text: "Card Skins",
+                          text: tr(context).cardSkins,
                         ),
                         Tab(
                           icon: Image(
@@ -159,7 +160,7 @@ class _MainCollectionPageState extends State<MainCollectionPage>
                             width: 46,
                             height: 46,
                           ),
-                          text: "Avatars",
+                          text: tr(context).avatars,
                         ),
                         Tab(
                           icon: Image(
@@ -168,52 +169,15 @@ class _MainCollectionPageState extends State<MainCollectionPage>
                             width: 45,
                             height: 45,
                           ),
-                          text: "Table Skins",
+                          text: tr(context).tableSkins,
                         ),
                       ],
                     ),
                   ),
-                  // Animated Glow & Bounce Indicator
-                  AnimatedBuilder(
-                    animation: Listenable.merge(
-                        [_tabController.animation!, _bounceController]),
-                    builder: (context, child) {
-                      double animationValue = _tabController.animation!.value;
-                      double bounceValue = _bounceController.value * 0.9;
-
-                      return Positioned(
-                        bottom: bounceValue * 2.9,
-                        left: animationValue * tabWidth,
-                        width: tabWidth,
-                        child: Center(
-                          child: Container(
-                            height: 4,
-                            width: tabWidth * 0.9,
-                            decoration: BoxDecoration(
-                              color: Colors.amber,
-                              borderRadius: BorderRadius.circular(8),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.amber.withOpacity(0.6),
-                                  blurRadius: 12,
-                                  spreadRadius: 1,
-                                ),
-                                BoxShadow(
-                                  color: Colors.amber.withOpacity(0.3),
-                                  blurRadius: 20,
-                                  spreadRadius: 5,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ],
+                 ],
               ),
 
-              const SizedBox(height: 8),
+              const SizedBox(height: 4),
 
               // 🌟 Animated TabBarView
               Expanded(

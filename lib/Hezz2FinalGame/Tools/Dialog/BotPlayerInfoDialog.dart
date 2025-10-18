@@ -3,6 +3,7 @@ import 'package:lottie/lottie.dart';
 import 'dart:math';
 
 import '../../../ExperieneManager.dart';
+import '../../../main.dart';
 import '../../Bot/BotAvatars.dart';
 import '../../Bot/BotInfoModel.dart';
 import '../../Bot/BotNames.dart';
@@ -10,15 +11,6 @@ import '../../Bot/BotStack.dart';
 
 class BotDetailsPopup {
   static final Map<int, BotInfo> botInfos = {};
-
-  // Make emojiCosts static
-  static const Map<String, int> emojiCosts = {
-    "🎁": 50,
-    "💎": 100,
-    "⭐": 75,
-    "❤️": 60,
-    "🔥": 120,
-  };
 
   static BotInfo getBotInfo(int bot) {
     final random = Random();
@@ -116,14 +108,13 @@ class BotDetailsPopup {
                     runSpacing: height * 0.015,
                     alignment: WrapAlignment.center,
                     children: [
-                      _buildStat("Level", info.level.toString(), width),
-                      _buildStat("Gold", info.gold.toString(), width),
-                      _buildStat("Earnings", info.totalEarnings.toString(), width),
-                      _buildStat("Wins 1v1", info.wins1v1.toString(), width),
-                      _buildStat("Wins 2P", info.wins2.toString(), width),
-                      _buildStat("Wins 3P", info.wins3.toString(), width),
-                      _buildStat("Wins 4P", info.wins4.toString(), width),
-                      _buildStat("Wins 5P", info.wins5.toString(), width),
+                      _buildStat(tr(context).level, info.level.toString(), width),
+                      _buildStat(tr(context).gold, info.gold.toString(), width),
+                      _buildStat(tr(context).totalEarnings, info.totalEarnings.toString(), width),
+                      _buildStat(tr(context).wins1v1, info.wins1v1.toString(), width),
+                      _buildStat(tr(context).wins3Players, info.wins3.toString(), width),
+                      _buildStat(tr(context).wins4Players, info.wins4.toString(), width),
+                      _buildStat(tr(context).wins5Players, info.wins5.toString(), width),
                     ],
                   ),
                   SizedBox(height: height * 0.015),
@@ -137,149 +128,12 @@ class BotDetailsPopup {
                           vertical: height * 0.015, horizontal: width * 0.15),
                     ),
                     onPressed: () => Navigator.pop(context),
-                    child: Text("Close", style: TextStyle(fontSize: width * 0.045)),
+                    child: Text(tr(context).close, style: TextStyle(fontSize: width * 0.045)),
                   )
                 ],
               ),
             ),
             // Gift Button positioned at top-right
-            Positioned(
-              top: 10,
-              right: 10,
-              child: Row(
-                children: [
-                  IconButton(
-                    icon: Icon(Icons.card_giftcard, color: Colors.amberAccent, size: width * 0.08),
-                    onPressed: () {
-                      Navigator.pop(context); // Close current bot dialog
-
-                      // Show emoji selection dialog
-                      showDialog(
-                        context: context,
-                        barrierDismissible: true,
-                        builder: (_) {
-                          final media = MediaQuery.of(context).size;
-                          final dialogWidth = media.width * 0.8;
-                          final dialogHeight = media.height * 0.25;
-
-                          return Dialog(
-                            backgroundColor: Colors.transparent,
-                            insetPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 40),
-                            child: Center(
-                              child: Container(
-                                width: dialogWidth,
-                                height: dialogHeight,
-                                padding: EdgeInsets.all(4),
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    colors: [Colors.grey.shade900, Colors.black87],
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                  ),
-                                  borderRadius: BorderRadius.circular(25),
-                                  border: Border.all(color: Colors.amberAccent, width: 2),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.amberAccent.withOpacity(0.5),
-                                      blurRadius: 20,
-                                      spreadRadius: 2,
-                                    ),
-                                  ],
-                                ),
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      "Choose a Gift",
-                                      style: TextStyle(
-                                        color: Colors.amberAccent,
-                                        fontSize: dialogWidth * 0.07,
-                                        fontWeight: FontWeight.bold,
-                                        shadows: [
-                                          Shadow(color: Colors.black, blurRadius: 4),
-                                        ],
-                                      ),
-                                    ),
-                                    SizedBox(height: 16),
-                                    Expanded(
-                                      child: Row(
-                                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                        children: [
-                                          _emojiCard(context, "🎁", expManager),
-                                          _emojiCard(context, "💎", expManager),
-                                          _emojiCard(context, "⭐", expManager),
-                                          _emojiCard(context, "❤️", expManager),
-                                          _emojiCard(context, "🔥", expManager),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          );
-                        },
-                      );
-                    },
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
- static Widget _emojiCard(BuildContext context, String emoji, ExperienceManager expManager) {
-    final int cost = BotDetailsPopup.emojiCosts[emoji] ?? 50;
-
-    return GestureDetector(
-      onTap: () async {
-        bool success = await expManager.spendGold(cost);
-        if (success) {
-          Navigator.pop(context);
-          print("Sent $emoji for $cost gold");
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Not enough gold for $emoji!")),
-          );
-        }
-      },
-      child: Container(
-        width: 60,
-        height: 90,
-        padding: EdgeInsets.all(4),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Colors.black54, Colors.grey.shade800],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.amberAccent, width: 1.5),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.amberAccent.withOpacity(0.5),
-              blurRadius: 8,
-              spreadRadius: 1,
-            ),
-          ],
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(emoji, style: TextStyle(fontSize: 32)),
-            SizedBox(height: 6),
-            Text(
-              "$cost 💰",
-              style: TextStyle(
-                color: Colors.amberAccent,
-                fontWeight: FontWeight.bold,
-                fontSize: 12,
-                shadows: [Shadow(color: Colors.black, blurRadius: 2)],
-              ),
-            ),
           ],
         ),
       ),

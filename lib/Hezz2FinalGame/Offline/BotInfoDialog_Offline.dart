@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hezzstar/main.dart';
 
 class OfflineBotPopup {
   /// Show a simple offline bot popup with a single avatar
@@ -41,8 +42,8 @@ class OfflineBotPopup {
                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 ),
                 onPressed: () => Navigator.pop(context),
-                child: const Text(
-                  "Close",
+                child:  Text(
+                  tr(context).close,
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
               ),

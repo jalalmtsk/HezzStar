@@ -8,6 +8,7 @@ import '../../Hezz2FinalGame/Offline/GameLauncher_Offline.dart';
 import '../../Hezz2FinalGame/Screen/GameLauncher/CardGameLauncher.dart';
 import '../../Manager/HelperClass/FlyingRewardManager.dart';
 import '../../Manager/HelperClass/RewardDimScreen.dart';
+import '../../main.dart';
 import '../../tools/AdsManager/AdsGameButton.dart';
 import '../../tools/AudioManager/AudioManager.dart';
 import '../../tools/ConnectivityManager/ConnectivityManager.dart';
@@ -148,37 +149,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       ),
                     ),
                   ),
-
-                  GestureDetector(
-                    child: Icon(Icons.add, color: Colors.white,),
-                    onTap: () {
-                      final audioManager = Provider.of<AudioManager>(context, listen: false);
-                      audioManager.playSfx("assets/audios/UI/SplashScreen_Audio/LoadindSound.mp3");
-
-                      RewardDimScreen.show(
-                        context,
-                        start: const Offset(200, 400),
-                        endKey: gemsKeyHome,
-                        amount: 5000,
-                        type: RewardType.gem,
-                      );
-
-                      RewardDimScreen.show(
-                        context,
-                        start: const Offset(200, 400),
-                        endKey: goldKeyHome,
-                        amount: 10000,
-                        type: RewardType.gold,
-                      );
-                      RewardDimScreen.show(
-                        context,
-                        start: const Offset(200, 400),
-                        endKey: xpKeyHome,
-                        amount: 50,
-                        type: RewardType.star,
-                      );
-                    },
-                  ),
+const SizedBox(height: 80,),
 
                   Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -280,8 +251,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   final List<Map<String, dynamic>> _modes = [
     {'title': '⚡ 1 vs 1', 'botCount': 1, 'mode': GameMode.online},
-    {'title': '👥 3 Players', 'botCount': 2, 'mode': GameMode.online},
-    {'title': '🎯 4 Players', 'botCount': 3, 'mode': GameMode.online},
+    {'title': '🔥 3 Players', 'botCount': 2, 'mode': GameMode.online},
+    {'title': '🔥 4 Players', 'botCount': 3, 'mode': GameMode.online},
     {'title': '🔥 5 Players', 'botCount': 4, 'mode': GameMode.online},
     {'title': '🛰 Offline Mode', 'botCount': 4, 'mode': GameMode.local},
   ];
@@ -318,10 +289,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           }
               : () {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text("⚠️ You are not connected to the internet"),
+              SnackBar(
+                content: Text("⚠️ ${tr(context).notConnectedToInternet}"),
                 backgroundColor: Colors.redAccent,
-                duration: Duration(seconds: 2),
+                duration: const Duration(seconds: 2),
               ),
             );
           },
@@ -409,7 +380,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                               Text(
                                 isOfflineMode
                                     ? "Offline"
-                                    : "${botCount + 1} Players",
+                                    : "${botCount + 1} ${tr(context).players}",
                                 style: const TextStyle(
                                   color: Colors.white70,
                                   fontSize: 14,
@@ -431,13 +402,13 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                           fontWeight: FontWeight.bold)),
                                   content: Text(
                                     isOfflineMode
-                                        ? "Play without internet. Great for practicing!"
-                                        : "Challenge ${botCount + 1} players in this mode.",
+                                        ? tr(context).playWithoutInternet
+                                        : "${tr(context).challenge} ${botCount + 1} ${tr(context).playersInThisMode}>.",
                                     style: const TextStyle(color: Colors.white70),
                                   ),
                                   actions: [
                                     TextButton(
-                                      child: const Text("Close",
+                                      child:  Text(tr(context).close,
                                           style: TextStyle(color: Colors.green)),
                                       onPressed: () => Navigator.pop(context),
                                     ),

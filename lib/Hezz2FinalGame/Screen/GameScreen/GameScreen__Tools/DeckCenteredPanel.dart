@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hezzstar/tools/AudioManager/AudioManager.dart';
 import 'package:provider/provider.dart';
+import '../../../../main.dart';
 import '../../../Models/Deck.dart';
 import '../../../Tools/TextUI/CardReamingTextUi.dart';
 import '../../../Tools/TextUI/MinimalBageText.dart';
@@ -92,7 +93,7 @@ class _DeckCenterPanelState extends State<DeckCenterPanel>
                 onTap: widget.onDraw,
                 child: Column(
                   children: [
-                    MinimalBadgeText(label: "Draw Pile", fontSize: 14),
+                    MinimalBadgeText(label: tr(context).drawPile, fontSize: 14),
                     const SizedBox(height: 4),
                     SizedBox(
                       key: widget.deckKey,
@@ -104,7 +105,7 @@ class _DeckCenterPanelState extends State<DeckCenterPanel>
                           borderRadius: BorderRadius.circular(8),
                           color: Colors.white70,
                         ),
-                        child: const Center(child: Text('Empty')),
+                        child:  Center(child: Text(tr(context).empty)),
                       )
                           : Image.asset(
                         widget.deck.cards.last.backAsset(context),
@@ -122,7 +123,7 @@ class _DeckCenterPanelState extends State<DeckCenterPanel>
               // Top Card with click animation
               Column(
                 children: [
-                  MinimalBadgeText(label: "Top Card"),
+                  MinimalBadgeText(label: tr(context).topCard),
                   const SizedBox(height: 4),
                   SizedBox(
                     key: widget.centerKey,

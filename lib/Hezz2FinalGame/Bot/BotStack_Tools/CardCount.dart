@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hezzstar/main.dart';
 
 class CardCount extends StatelessWidget {
   final int count;
@@ -7,7 +8,7 @@ class CardCount extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Text(
-      "$count cards",
+      "$count ${tr(context).cards}",
       style: const TextStyle(
         fontSize: 10,
         fontWeight: FontWeight.w600,

@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../../main.dart';
 import '../../../tools/AudioManager/AudioManager.dart';
 
 class InstructionsDialog extends StatefulWidget {
@@ -107,9 +108,9 @@ class _InstructionsDialogState extends State<InstructionsDialog>
           ],
         ),
         child: Row(
-          children: const [
+          children:  [
             Text(
-              "📖 Instructions",
+              "📖 ${tr(context).instructions}",
               style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -263,7 +264,7 @@ class _InstructionsDialogState extends State<InstructionsDialog>
                         _buildPanel(
                           id: 'controls',
                           icon: Icons.gamepad,
-                          title: "Game Setup & Controls",
+                          title: tr(context).gameSetupAndControls,
                           accent: Colors.tealAccent,
                           open: _controlsOpen,
                           child: SizedBox(
@@ -279,14 +280,14 @@ class _InstructionsDialogState extends State<InstructionsDialog>
                                           'assets/images/Tutorials/PlayToWinVsElim.png',
                                           title: 'Player Mode',
                                           description:
-                                          '•• Choose mode:\n PlayToWin or Elimination'),
+                                          tr(context).chooseMode),
 
                                       _specialCardPage(
                                           imagePath:
                                           'assets/images/Tutorials/SameSuitSameRank.png',
                                           title: 'Suits/Ranks',
                                           description:
-                                          '• 4 Suits / 10 Ranks\n• Choose The Same Suit Or Same Rank'),
+                                          tr(context).suitsAndRanks),
                                     ],
                                   ),
                                 ),
@@ -301,7 +302,7 @@ class _InstructionsDialogState extends State<InstructionsDialog>
                         _buildPanel(
                           id: 'rewards',
                           icon: Icons.military_tech,
-                          title: "Special Cards & Effects",
+                          title: tr(context).specialCardsAndEffects,
                           accent: Colors.amberAccent,
                           open: _rewardsOpen,
                           child: SizedBox(
@@ -315,21 +316,21 @@ class _InstructionsDialogState extends State<InstructionsDialog>
                                       _specialCardPage(
                                           imagePath:
                                           'assets/images/Tutorials/StackOfOnes_Tuto.png',
-                                          title: '1: Skip',
+                                          title: tr(context).skipCard ,
                                           description:
-                                          '• Skips the next player\'s turn.'),
+                                          tr(context).skipsNextPlayerTurn),
                                       _specialCardPage(
                                           imagePath:
                                           'assets/images/Tutorials/StacksOfTwos_Tuto.png',
-                                          title: '2: Draw +2',
+                                          title: tr(context).drawTwoCard,
                                           description:
-                                          '• Adds +2 to pending draw.\n• Can chain with another 2.'),
+                                          tr(context).drawTwoEffect),
                                       _specialCardPage(
                                           imagePath:
                                           'assets/images/Tutorials/StackOfSevens_Tuto.png',
-                                          title: '7: Change Suit',
+                                          title: tr(context).changeSuitCard,
                                           description:
-                                          '• Allows player to change the suit.'),
+                                          tr(context).changeSuitEffect),
                                     ],
                                   ),
                                 ),
@@ -344,7 +345,7 @@ class _InstructionsDialogState extends State<InstructionsDialog>
                         _buildPanel(
                           id: 'tips',
                           icon: Icons.lightbulb,
-                          title: "Gameplay Tips",
+                          title: tr(context).gameplayTips,
                           accent: Colors.greenAccent,
                           open: _tipsOpen,
                           child: SizedBox(
@@ -358,21 +359,21 @@ class _InstructionsDialogState extends State<InstructionsDialog>
                                       _specialCardPage(
                                           imagePath:
                                           'assets/images/Tutorials/Tip1.png',
-                                          title: 'Tip #1',
+                                          title: tr(context).tip1,
                                           description:
-                                          'Aim to empty your hand first in PlayToWin mode.'),
+                                          tr(context).tip1Description),
                                       _specialCardPage(
                                           imagePath:
                                           'assets/images/Tutorials/Tip2.png',
-                                          title: 'Tip #2',
+                                          title: tr(context).tip2,
                                           description:
                                           'In Elimination mode, avoid being last to finish.'),
                                       _specialCardPage(
                                           imagePath:
                                           'assets/images/Tutorials/SpecialCards.png',
-                                          title: 'Tip #3',
+                                          title: tr(context).tip3,
                                           description:
-                                          'Watch for special combos (1,2,7) to control the flow.'),
+                                          tr(context).tip3Description),
                                     ],
                                   ),
                                 ),
@@ -407,12 +408,12 @@ class _InstructionsDialogState extends State<InstructionsDialog>
                                         offset: const Offset(0, 6))
                                   ],
                                 ),
-                                child: const Row(
+                                child:  Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     Icon(Icons.close, color: Colors.white),
                                     SizedBox(width: 8),
-                                    Text("Close",
+                                    Text(tr(context).close,
                                         style: TextStyle(
                                             color: Colors.white,
                                             fontWeight: FontWeight.bold)),
@@ -452,7 +453,7 @@ class _InstructionsDialogState extends State<InstructionsDialog>
           ),
         ),
         Expanded(
-          flex: 4,
+          flex: 5,
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8),
             child: Column(

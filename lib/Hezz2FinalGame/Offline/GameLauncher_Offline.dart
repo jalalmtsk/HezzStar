@@ -9,6 +9,7 @@ import 'package:hezzstar/Hezz2FinalGame/Screen/GameScreen.dart';
 import 'package:hezzstar/Hezz2FinalGame/Models/GameCardEnums.dart';
 import 'package:hezzstar/widgets/userStatut/userStatus.dart';
 import '../../../tools/AudioManager/AudioManager.dart';
+import '../../main.dart';
 import '../Screen/GameLauncher/GameLauncher_Tools/SearchingPopup.dart';
 
 class OfflineCardGameLauncher extends StatefulWidget {
@@ -80,11 +81,11 @@ class _OfflineCardGameLauncherState extends State<OfflineCardGameLauncher>
                   showPlusButton: false,
                 ),
                 const SizedBox(height: 28),
-                _title("🎴 Offline Lobby 🎴"),
+                _title("🎴 ${tr(context).offlineLobby} 🎴"),
                 const SizedBox(height: 14),
                 _playerSelectorRow(),
                 const SizedBox(height: 14),
-                _title("Cards"),
+                _title(tr(context).cards),
                 const SizedBox(height: 14),
                 _handSizeSelectorRow(),
                 Expanded(child: _animatedHandPreview()),
@@ -135,7 +136,7 @@ class _OfflineCardGameLauncherState extends State<OfflineCardGameLauncher>
                 ),
               ),
               child: Text(
-                "${opt["size"]} Cards",
+                "${opt["size"]} ${tr(context).cards}",
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.bold,
@@ -166,7 +167,7 @@ class _OfflineCardGameLauncherState extends State<OfflineCardGameLauncher>
                 border: Border.all(color: isSelected ? primaryAccent : Colors.white24, width: 2),
               ),
               child: Text(
-                "$count Players",
+                "$count ${tr(context).players}",
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
@@ -250,9 +251,9 @@ class _OfflineCardGameLauncherState extends State<OfflineCardGameLauncher>
                     )
                   ],
                 ),
-                child: const Center(
+                child:  Center(
                   child: Text(
-                    "Exit",
+                    tr(context).exit,
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -302,9 +303,9 @@ class _OfflineCardGameLauncherState extends State<OfflineCardGameLauncher>
                     )
                   ],
                 ),
-                child: const Center(
+                child:  Center(
                   child: Text(
-                    "Start Game",
+                    tr(context).startMatch,
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,

@@ -1,6 +1,9 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:hezzstar/ExperieneManager.dart';
+import 'package:hezzstar/main.dart';
 import 'package:lottie/lottie.dart';
+import 'package:provider/provider.dart';
 
 class RoundCompleteOverlay extends StatefulWidget {
   final int currentRound;
@@ -44,6 +47,7 @@ class _RoundCompleteOverlayState extends State<RoundCompleteOverlay> {
 
   @override
   Widget build(BuildContext context) {
+    final xpManager = Provider.of<ExperienceManager>(context, listen: false);
     return Positioned.fill(
       child: Container(
         color: Colors.black.withOpacity(0.75),
@@ -53,7 +57,7 @@ class _RoundCompleteOverlayState extends State<RoundCompleteOverlay> {
             children: [
               // Round complete title
               Text(
-                'Round ${widget.currentRound} Complete!',
+                '${tr(context).round} ${widget.currentRound} ${tr(context).complete}!',
                 style: const TextStyle(
                   fontSize: 34,
                   color: Colors.white,
@@ -65,7 +69,7 @@ class _RoundCompleteOverlayState extends State<RoundCompleteOverlay> {
 
               // Qualified players
               Text(
-                'Qualified: ${widget.qualifiedPlayers.map((p) => p == 0 ? "You" : "Player $p").join(", ")}',
+                '${tr(context).qualified}: ${widget.qualifiedPlayers.map((p) => p == 0 ? xpManager.username : "${tr(context).player} $p").join(", ")}',
                 style: const TextStyle(
                   fontSize: 22,
                   color: Colors.white70,
@@ -88,7 +92,7 @@ class _RoundCompleteOverlayState extends State<RoundCompleteOverlay> {
 
               // Preparing text + countdown
               Text(
-                'Preparing next round',
+                tr(context).preparingNextRound,
                 style: const TextStyle(
                   fontSize: 20,
                   color: Colors.white,

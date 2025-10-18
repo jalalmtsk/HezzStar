@@ -1,5 +1,8 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:hezzstar/ExperieneManager.dart';
+import 'package:provider/provider.dart';
+import '../../../../main.dart';
 import '../../../Models/GameCardEnums.dart';
 
 class RewardDialog extends StatelessWidget {
@@ -22,6 +25,9 @@ class RewardDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
+    final xpManager = Provider.of<ExperienceManager>(context, listen: false);
+
     final int playerCount = botCount + 1;
     final int totalPool = betGold * playerCount;
 
@@ -49,8 +55,8 @@ class RewardDialog extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text(
-              "Reward Distribution",
+             Text(
+              tr(context).rewardDistribution,
               style: TextStyle(
                   color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
             ),
@@ -65,7 +71,7 @@ class RewardDialog extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text("Total Pool: ${_formatNumber(totalPool)} G",
+                  Text("${tr(context).totalPool}: ${_formatNumber(totalPool)} G",
                       style: const TextStyle(
                           color: Colors.yellowAccent, fontWeight: FontWeight.bold)),
                 ],
@@ -109,7 +115,7 @@ class RewardDialog extends StatelessWidget {
                                   ),
                                   const SizedBox(width: 12),
                                   Text(
-                                    index == 0 ? "You" : "Player ${index + 1}",
+                                    index == 0 ? xpManager.username : "${tr(context).player} ${index + 1}",
                                     style: TextStyle(
                                         color: isWinner ? Colors.amberAccent : Colors.white70,
                                         fontWeight: FontWeight.bold,
@@ -132,11 +138,11 @@ class RewardDialog extends StatelessWidget {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text("Bet: ${_formatNumber(betGold)} G",
+                              Text("${tr(context).bet}: ${_formatNumber(betGold)} G",
                                   style: const TextStyle(color: Colors.white54)),
 
                               Text(
-                                  "Loss: ${_formatNumber(loss > 0 ? loss : 0)} G",
+                                  "${tr(context).loss}: ${_formatNumber(loss > 0 ? loss : 0)} G",
                                   style: const TextStyle(color: Colors.redAccent)),
                             ],
                           ),
@@ -190,8 +196,8 @@ class RewardDialog extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 ),
                 onPressed: () => Navigator.pop(context),
-                child: const Text(
-                  "Close",
+                child:  Text(
+                  tr(context).close,
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
               ),

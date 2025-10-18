@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
+import '../../main.dart';
+
 class AdHelper {
   /// Initialize Ads
   static void initializeAds() {
@@ -115,7 +117,7 @@ class AdHelper {
           _hideLoadingDialog(context);
           debugPrint('❌ Rewarded failed: ${error.message}');
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Ad failed to load. Try again later.')),
+            SnackBar(content: Text(tr(context).adFailedToLoad)),
           );
         },
       ),
@@ -157,7 +159,7 @@ class AdHelper {
           if (!completer.isCompleted) completer.complete(false);
           debugPrint('❌ Rewarded failed to load: ${error.message}');
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Ad failed to load. Try again later.')),
+             SnackBar(content: Text(tr(context).adFailedToLoad)),
           );
         },
       ),

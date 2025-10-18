@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../main.dart';
 import 'AvatarSkinTabs/CardMaster.dart';
 import 'AvatarSkinTabs/Elements.dart';
 import 'AvatarSkinTabs/Warriors.dart';
@@ -22,7 +23,7 @@ class AvatarShopIndex extends StatelessWidget {
                 child: Column(
                   children: [
                     Text(
-                      "Avatar Skins",
+                      tr(context).avatarSkins,
                       style: TextStyle(
                         fontSize: 26,
                         fontWeight: FontWeight.bold,
@@ -60,15 +61,15 @@ class AvatarShopIndex extends StatelessWidget {
               // TabBar
               Container(
                 color: Colors.black.withOpacity(0.3),
-                child: const TabBar(
+                child:  TabBar(
                   indicatorColor: Colors.amberAccent,
                   labelColor: Colors.white,
                   unselectedLabelColor: Colors.white54,
                   indicatorWeight: 3,
                   tabs: [
-                    Tab(text: "CardMaster"),
-                    Tab(text: "Warriors"),
-                    Tab(text: "Elements"),
+                    Tab(text: tr(context).cardMaster),
+                    Tab(text: tr(context).warriors),
+                    Tab(text: tr(context).elements),
                   ],
                 ),
               ),

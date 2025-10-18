@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../../main.dart';
+
 class RewardButton extends StatefulWidget {
   final VoidCallback onPressed;
   const RewardButton({super.key, required this.onPressed});
@@ -69,11 +71,11 @@ class _RewardButtonState extends State<RewardButton>
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
-            children: const [
-              Icon(Icons.card_giftcard, color: Colors.white, size: 22),
-              SizedBox(width: 8),
+            children:  [
+              const Icon(Icons.card_giftcard, color: Colors.white, size: 22),
+             const SizedBox(width: 8),
               Text(
-                "Prizes",
+                tr(context).prizes,
                 style: TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,

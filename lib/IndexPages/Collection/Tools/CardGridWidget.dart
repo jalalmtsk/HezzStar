@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hezzstar/main.dart';
 import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 
@@ -53,8 +54,8 @@ class CardGridWidget extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 20),
-                const Text(
-                  "Card Unlocked!",
+                 Text(
+                  tr(context).cardUnlocked,
                   style: TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
@@ -75,7 +76,7 @@ class CardGridWidget extends StatelessWidget {
                       onPressed: () {
                         Navigator.of(buttonContext, rootNavigator: true).pop(); // properly closes popup
                       },
-                      child: const Text("Awesome!", style: TextStyle(fontSize: 18)),
+                      child:  Text("${tr(context).awesome}!", style: TextStyle(fontSize: 18)),
                     );
                   },
                 ),
@@ -102,7 +103,7 @@ class CardGridWidget extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  "Unlock Card",
+                  tr(context).unlockCard,
                   style: Theme.of(context)
                       .textTheme
                       .titleLarge
@@ -118,7 +119,7 @@ class CardGridWidget extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      "Unlock for $cost",
+                      "${tr(context).unlockFor} $cost",
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                     Image.asset(
@@ -139,7 +140,7 @@ class CardGridWidget extends StatelessWidget {
                         audioManager.playEventSound("sandClick");
                         Navigator.of(context).pop();
                       },
-                      child: const Text("Cancel"),
+                      child:  Text(tr(context).cancel),
                     ),
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
@@ -171,11 +172,11 @@ class CardGridWidget extends StatelessWidget {
                         } else {
                           Navigator.of(context).pop();
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text("Not enough $currencySymbol!")),
+                            SnackBar(content: Text("${tr(context).notEnough} $currencySymbol!")),
                           );
                         }
                       },
-                      child: const Text("Unlock"),
+                      child:  Text(tr(context).unlock),
                     ),
                   ],
                 ),

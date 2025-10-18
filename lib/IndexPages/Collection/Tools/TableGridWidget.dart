@@ -4,6 +4,7 @@ import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 
 import '../../../ExperieneManager.dart';
+import '../../../main.dart';
 import '../../../tools/AudioManager/AudioManager.dart';
 import 'CardItem.dart';
 import 'CurrencyTypeEnum.dart';
@@ -57,8 +58,8 @@ class TableSkinGridWidget extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 20),
-                    const Text(
-                      "Table Skin Unlocked!",
+                     Text(
+                      tr(context).tableSkinUnlocked,
                       style: TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
@@ -79,7 +80,7 @@ class TableSkinGridWidget extends StatelessWidget {
                         Navigator.of(context, rootNavigator: true).pop();
                       },
                       child:
-                      const Text("Awesome!", style: TextStyle(fontSize: 18)),
+                       Text(tr(context).awesome, style: TextStyle(fontSize: 18)),
                     ),
                   ],
                 ),
@@ -106,7 +107,7 @@ class TableSkinGridWidget extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text("Unlock Table Skin",
+                Text(tr(context).unlockTableSkin,
                     style: Theme.of(context)
                         .textTheme
                         .titleLarge
@@ -121,7 +122,7 @@ class TableSkinGridWidget extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      "Unlock for $cost",
+                      "${tr(context).unlockFor} $cost",
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                     Image.asset(
@@ -142,7 +143,7 @@ class TableSkinGridWidget extends StatelessWidget {
                         audioManager.playEventSound("sandClick");
                         Navigator.pop(context);
                       },
-                      child: const Text("Cancel"),
+                      child:  Text(tr(context).exit),
                     ),
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
@@ -171,11 +172,11 @@ class TableSkinGridWidget extends StatelessWidget {
                         } else {
                           Navigator.pop(context);
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text("Not enough $currencySymbol!")),
+                            SnackBar(content: Text("${tr(context).notEnough} $currencySymbol!")),
                           );
                         }
                       },
-                      child: const Text("Unlock"),
+                      child:  Text(tr(context).unlock),
                     ),
                   ],
                 ),

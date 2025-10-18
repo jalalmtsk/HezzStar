@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
+import '../../../main.dart';
 import '../../../tools/AudioManager/AudioManager.dart';
 import 'CurrencyTypeEnum.dart';
 
@@ -67,7 +68,7 @@ class TableSkinItemWidget extends StatelessWidget {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(
-                      "Not enough ${currencyType == CurrencyType.gold ? "gold" : "gems"}!"),
+                      "${tr(context).notEnough} ${currencyType == CurrencyType.gold ? "gold" : "gems"}!"),
                   behavior: SnackBarBehavior.floating,
                 ),
               );
@@ -109,13 +110,13 @@ class TableSkinItemWidget extends StatelessWidget {
                   Positioned(
                     top: 8,
                     right: 12,
-                    child: _badge("Selected", Colors.green, badgeFontSize),
+                    child: _badge(tr(context).selected, Colors.green, badgeFontSize),
                   )
                 else if (unlocked)
                   Positioned(
                     top: 8,
                     right: 12,
-                    child: _badge("Unlocked", Colors.orange, badgeFontSize),
+                    child: _badge(tr(context).unlocked, Colors.orange, badgeFontSize),
                   ),
                 // Bottom-center cost
                 if (!unlocked)

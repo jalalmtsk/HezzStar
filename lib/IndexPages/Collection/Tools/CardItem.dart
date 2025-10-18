@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hezzstar/main.dart';
 import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
 import '../../../tools/AudioManager/AudioManager.dart';
@@ -69,7 +70,7 @@ class CardItemWidget extends StatelessWidget {
             } else {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text("Not enough ${currencyType == CurrencyType.gold ? "gold" : "gems"}!"),
+                  content: Text("${tr(context).notEnough} ${currencyType == CurrencyType.gold ? "gold" : "gems"}!"),
                   behavior: SnackBarBehavior.floating,
                 ),
               );
@@ -110,13 +111,13 @@ class CardItemWidget extends StatelessWidget {
                   Positioned(
                     top: imageHeight * 0.97,
                     right: 18,
-                    child: _badge("Selected", Colors.green, badgeFontSize),
+                    child: _badge(tr(context).selected, Colors.green, badgeFontSize),
                   )
                 else if (unlocked)
                   Positioned(
                     top: imageHeight * 0.97,
                     right: 18,
-                    child: _badge("Unlocked", Colors.orange, badgeFontSize),
+                    child: _badge(tr(context).unlocked, Colors.orange, badgeFontSize),
                   ),
                 if (!unlocked)
                   Positioned(

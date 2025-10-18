@@ -7,12 +7,15 @@ import 'package:hezzstar/tools/AudioManager/AudioManager.dart';
 import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 import '../../ExperieneManager.dart';
+import '../../main.dart';
 import '../Tools/Dialog/BotPlayerInfoDialog.dart';
 import 'BotStack_Tools/CardCount.dart';
 import 'BotStack_Tools/CardPreview.dart';
 import 'BotStack_Tools/PlayerName.dart';
 
 bool isLottieActivated = true;
+bool isGameEnded = false;
+
 
 class PlayerCard extends StatefulWidget {
   final int bot;
@@ -78,45 +81,50 @@ class _PlayerCardState extends State<PlayerCard> with TickerProviderStateMixin {
   }
 
   void _startRandomReactions() {
-    if (!isLottieActivated) return;
-    final random = Random();
-    _reactionTimer = Timer(
-      Duration(milliseconds: 4500 + random.nextInt(10000)),
-      _playRandomReaction,
-    );
+    if(!isGameEnded){
+      if (!isLottieActivated) return;
+      final random = Random();
+      _reactionTimer = Timer(
+        Duration(milliseconds: 4500 + random.nextInt(10000)),
+        _playRandomReaction,
+      );
+    }
   }
 
   void _playRandomReaction() {
-    if (!mounted || !isLottieActivated) return;
-    final random = Random();
-    final keys = _reactionSounds.keys.toList();
-    final selectedAnimation = keys[random.nextInt(keys.length)];
-
-    setState(() {
-      reactionAnimation = selectedAnimation;
-    });
-
-    final audioManager = Provider.of<AudioManager>(context, listen: false);
-    final soundPath = _reactionSounds[selectedAnimation];
-    if (soundPath != null && isLottieActivated && widget.mode == GameMode.online) {
-      audioManager.playSfx(soundPath);
-    }
-
-    int animDuration = 1500 + random.nextInt(1500);
-    _reactionTimer = Timer(Duration(milliseconds: animDuration), () {
+    if(!isGameEnded) {
       if (!mounted || !isLottieActivated) return;
-      setState(() => reactionAnimation = null);
+      final random = Random();
+      final keys = _reactionSounds.keys.toList();
+      final selectedAnimation = keys[random.nextInt(keys.length)];
 
-      _reactionTimer = Timer(
-        Duration(milliseconds: 6000 + random.nextInt(18000)),
-        _playRandomReaction,
-      );
-    });
+      setState(() {
+        reactionAnimation = selectedAnimation;
+      });
+
+      final audioManager = Provider.of<AudioManager>(context, listen: false);
+      final soundPath = _reactionSounds[selectedAnimation];
+      if (soundPath != null && isLottieActivated &&
+          widget.mode == GameMode.online) {
+        audioManager.playSfx(soundPath);
+      }
+
+      int animDuration = 1500 + random.nextInt(1500);
+      _reactionTimer = Timer(Duration(milliseconds: animDuration), () {
+        if (!mounted || !isLottieActivated) return;
+        setState(() => reactionAnimation = null);
+
+        _reactionTimer = Timer(
+          Duration(milliseconds: 6000 + random.nextInt(18000)),
+          _playRandomReaction,
+        );
+      });
+    }
   }
 
   void toggleLottie(bool value) {
     isLottieActivated = value;
-    if (!isLottieActivated) {
+    if (!isLottieActivated && !isGameEnded) {
       _reactionTimer?.cancel();
       setState(() => reactionAnimation = null);
     } else {
@@ -134,7 +142,7 @@ class _PlayerCardState extends State<PlayerCard> with TickerProviderStateMixin {
     if (!success) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text("Not enough gold to use this animation (${effect.cost} 💰)!"),
+          content: Text("${tr(context).notEnoughGoldForAnimation} (${effect.cost} 💰)!"),
         ),
       );
       return; // stop here if not enough gold
@@ -181,15 +189,15 @@ class _PlayerCardState extends State<PlayerCard> with TickerProviderStateMixin {
     if (widget.isEliminated) {
       borderColor = Colors.redAccent;
       statusColor = Colors.redAccent;
-      statusText = 'OUT';
+      statusText = tr(context).out;
     } else if (widget.isQualified) {
       borderColor = Colors.blueAccent;
       statusColor = Colors.blueAccent;
-      statusText = 'QUAL';
+      statusText = tr(context).qual;
     } else if (widget.isTurn) {
       borderColor = Colors.greenAccent;
       statusColor = Colors.greenAccent;
-      statusText = 'TURN';
+      statusText = tr(context).turn;
     }
 
     if (widget.bot > 0 && widget.isTurn && !_botTurnSoundPlayed) {

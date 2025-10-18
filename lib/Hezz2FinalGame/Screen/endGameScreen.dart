@@ -2,6 +2,7 @@ import 'dart:math';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:hezzstar/MainScreenIndex.dart';
+import 'package:hezzstar/main.dart';
 import 'package:hezzstar/widgets/userStatut/userStatus.dart';
 import 'package:provider/provider.dart';
 import '../../ExperieneManager.dart';
@@ -267,7 +268,8 @@ class _EndGameScreenLuxState extends State<EndGameScreen>
   }
 
   Widget _luxTitle() {
-    final winnerName = widget.winnerIndex == 0 ? 'You' : 'Player ${widget.winnerIndex + 1}';
+    final xpManager = Provider.of<ExperienceManager>(context, listen: false);
+    final winnerName = widget.winnerIndex == 0 ? xpManager.username : '${tr(context).player} ${widget.winnerIndex + 1}';
     final bool isElimination = widget.gameModeType == GameModeType.elimination;
 
     return Padding(
@@ -288,7 +290,7 @@ class _EndGameScreenLuxState extends State<EndGameScreen>
         child: Column(
           children: [
             Text(
-              isElimination ? "Final Scoreboard" : "$winnerName Wins!",
+              isElimination ? tr(context).finalScoreboard : "$winnerName ${tr(context).wins}!",
               style: const TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
@@ -299,8 +301,8 @@ class _EndGameScreenLuxState extends State<EndGameScreen>
             const SizedBox(height: 6),
             Text(
               isElimination
-                  ? "Rewards shared by score ratio"
-                  : "Congratulations!",
+                  ? tr(context).rewardsSharedByScoreRatio
+                  : tr(context).congratulations,
               style: const TextStyle(fontSize: 18, color: Colors.white70),
             ),
           ],
@@ -355,7 +357,7 @@ class _EndGameScreenLuxState extends State<EndGameScreen>
         ),
         trailing:(widget.gameModeType == GameModeType.elimination && isTied)
             ? Text(
-          '⏳ Playing',
+          '⏳ ${tr(context).playing}',
           style: TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 18,
@@ -406,9 +408,9 @@ class _EndGameScreenLuxState extends State<EndGameScreen>
             )
           ],
         ),
-        child: const Center(
+        child:  Center(
           child: Text(
-            'Back to Lobby',
+            tr(context).backToLobby,
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
           ),
         ),
