@@ -508,4 +508,90 @@ class AppLocalizationsZgh extends AppLocalizations {
 
   @override
   String get general => 'ⴰⵎⵙⵙⴰⵏ';
+
+  @override
+  String earnGold(Object amount) {
+    return 'ⴰⵣⵣⵓ ⵏ $amount ⵏ ⵓⵡⵓⴷ';
+  }
+
+  @override
+  String win1v1(Object count) {
+    return 'ⴰⵣⵣⵓ ⵏ $count ⴰⵙⴳⵉⵏ 1ⴷ1';
+  }
+
+  @override
+  String reachLevel(Object level) {
+    return 'ⵉⵎⴰⵣⵉ ⵏ ⵍⵉⴼⵍⴰⵏ $level';
+  }
+
+  @override
+  String win3Players(Object count) {
+    return 'ⴰⵣⵣⵓ ⵏ $count ⴰⵙⴳⵉⵏ ⵏ 3 ⵎⴰⵣⵉⵖ';
+  }
+
+  @override
+  String win4Players(Object count) {
+    return 'ⴰⵣⵣⵓ ⵏ $count ⴰⵙⴳⵉⵏ ⵏ 4 ⵎⴰⵣⵉⵖ';
+  }
+
+  @override
+  String win5Players(Object count) {
+    return 'ⴰⵣⵣⵓ ⵏ $count ⴰⵙⴳⵉⵏ ⵏ 5 ⵎⴰⵣⵉⵖ';
+  }
+
+  @override
+  String get unlockFirstCard => 'ⴰⵣⵣⵓ ⵏ ⴰⵎⴰⵣⵉⵖ ⵉⵎⵏⴰⵏⵏ';
+
+  @override
+  String unlockCardAmount(Object amount) {
+    return 'ⴰⵣⵣⵓ $amount ⴰⵎⴰⵣⵉⵖ';
+  }
+
+  @override
+  String get unlockFirstAvatar => 'ⴰⵣⵣⵓ ⵏ ⵎⴰⵣⵉⵖ ⵉⵎⵏⴰⵏⵏ';
+
+  @override
+  String unlockAvatarAmount(Object amount) {
+    return 'ⴰⵣⵣⵓ $amount ⵎⴰⵣⵉⵖ';
+  }
+
+  @override
+  String get unlockFirstTable => 'ⴰⵣⵣⵓ ⵏ ⴰⵙⴽⴰⵍ ⵉⵎⵏⴰⵏⵏ';
+
+  @override
+  String unlockTableAmount(Object amount) {
+    return 'ⴰⵣⵣⵓ $amount ⴰⵙⴽⴰⵍ';
+  }
+
+  @override
+  String totalWins(Object count) {
+    return 'ⴰⵣⵣⵓ ⵏ $count ⴰⵙⴳⵉⵏ ⵓⵡⵓⴷ';
+  }
+
+  @override
+  String get welcome => 'ⴰⵣⵣⵓ ⵣⵣⵓⵍ';
+
+  @override
+  String get noTasksAvailable => 'ⵓⵔ ⵢⴻⵣⵎⵉⵔ ⴰⵔⴰ ⵜⴰⵙⴽⵉⵏ';
+
+  @override
+  String get taskRewards => 'ⵉⵀⵓⵡⴰⵍⴻⵏ ⵏ ⵜⴰⵙⴽⵉⵏ';
+
+  @override
+  String get all => 'ⵢⴻⵍⵍⴰⵏ';
+
+  @override
+  String get claimed => 'ⵢⴻⵜⵜⵡⴰⴼⴰⵇⴻⵏ';
+
+  @override
+  String get unclaimed => 'ⵓⵔ ⵢⴻⵜⵜⵡⴰⴼⴰⵇ ⴰⵔⴰ';
+
+  @override
+  String get claim => 'ⵙⵙⴻⴼⵔⵓ';
+
+  @override
+  String get rewards => 'ⵉⵀⵓⵡⴰⵍⴻⵏ';
+
+  @override
+  String get loading => 'ⴰⵖⵉⵍⴰⵙ';
 }

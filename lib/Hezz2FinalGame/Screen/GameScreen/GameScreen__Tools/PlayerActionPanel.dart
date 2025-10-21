@@ -358,78 +358,128 @@ class _PlayerActionPanelState extends State<PlayerActionPanel> {
     );
   }
 
-
   void _showEmojiDialog(BuildContext context) {
     final audioManager = Provider.of<AudioManager>(context, listen: false);
+    final ScrollController scrollController = ScrollController();
 
     showDialog(
       context: context,
       builder: (context) {
         final List<Map<String, String>> emojiOptions = [
-          {
-            "lottie": "assets/animations/MessageAnimations/CoolEmoji.json",
-            "sound": "assets/audios/UI/SFX/MessageSound/ohYeah.mp3"
-          },
-          {
-            "lottie": "assets/animations/MessageAnimations/AngryEmoji.json",
-            "sound": "assets/audios/UI/SFX/MessageSound/evilLaugh.mp3"
-          },
-          {
-            "lottie": "assets/animations/MessageAnimations/LaughingCat.json",
-            "sound": "assets/audios/UI/SFX/MessageSound/CatLaugh.mp3"
-          },
-          {
-            "lottie": "assets/animations/MessageAnimations/cryingSmoothymon.json",
-            "sound": "assets/audios/UI/SFX/MessageSound/CryingAziza.mp3"
-          },
-          {
-            "lottie": "assets/animations/MessageAnimations/StreamOfHearts.json",
-            "sound": "assets/audios/UI/SFX/MessageSound/ohYeah.mp3"
-          },
+          {"lottie": "assets/animations/MessageAnimations/CoolEmoji.json", "sound": "assets/audios/UI/SFX/MessageSound/ohYeah.mp3"},
+          {"lottie": "assets/animations/MessageAnimations/AngryEmoji.json", "sound": "assets/audios/UI/SFX/MessageSound/evilLaugh.mp3"},
+          {"lottie": "assets/animations/MessageAnimations/LaughingCat.json", "sound": "assets/audios/UI/SFX/MessageSound/CatLaugh.mp3"},
+          {"lottie": "assets/animations/MessageAnimations/cryingSmoothymon.json", "sound": "assets/audios/UI/SFX/MessageSound/CryingAziza.mp3"},
+          {"lottie": "assets/animations/MessageAnimations/StreamOfHearts.json", "sound": "assets/audios/UI/SFX/MessageSound/ohYeah.mp3"},
         ];
 
-        return AlertDialog(
-          backgroundColor: Colors.black87.withValues(alpha: 0.6),
-          content: SizedBox(
-            height: 40,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: emojiOptions.map((emoji) {
-                return GestureDetector(
-                  onTap: () {
-                    // Play sound
-                    audioManager.playSfx(emoji["sound"]!);
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            double maxWidth = constraints.maxWidth * 0.9;
+            double maxHeight = constraints.maxHeight * 0.25; // flexible height
 
-                    // Show selected animation
-                    setState(() {
-                      _selectedEmojiAnimation = Lottie.asset(
-                        emoji["lottie"]!,
-                        width: 55,
-                        height: 55,
-                        repeat: true,
-                      );
-                      _showSelectedEmoji = true;
-                    });
+            return AlertDialog(
+              backgroundColor: Colors.black87.withOpacity(0.6),
+              contentPadding: const EdgeInsets.all(12),
+              content: ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxWidth: maxWidth,
+                  maxHeight: maxHeight,
+                ),
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    SingleChildScrollView(
+                      controller: scrollController,
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: emojiOptions.map((emoji) {
+                          return GestureDetector(
+                            onTap: () {
+                              audioManager.playSfx(emoji["sound"]!);
 
-                    Navigator.of(context).pop(); // close dialog
+                              setState(() {
+                                _selectedEmojiAnimation = Lottie.asset(
+                                  emoji["lottie"]!,
+                                  width: 55,
+                                  height: 55,
+                                  repeat: true,
+                                );
+                                _showSelectedEmoji = true;
+                              });
 
-                    // Hide after 2 seconds
-                    Future.delayed(const Duration(seconds: 2), () {
-                      if (mounted) {
-                        setState(() {
-                          _showSelectedEmoji = false;
-                          _selectedEmojiAnimation = null;
-                        });
-                      }
-                    });
-                  },
-                  child: Lottie.asset(emoji["lottie"]!, width: 50, height: 50),
-                );
-              }).toList(),
-            ),
-          ),
+                              Navigator.of(context).pop();
+
+                              Future.delayed(const Duration(seconds: 2), () {
+                                if (mounted) {
+                                  setState(() {
+                                    _showSelectedEmoji = false;
+                                    _selectedEmojiAnimation = null;
+                                  });
+                                }
+                              });
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 6.0),
+                              child: Lottie.asset(emoji["lottie"]!, width: 50, height: 50),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                    // Left Arrow
+                    Positioned(
+                      left: 0,
+                      child: GestureDetector(
+                        onTap: () {
+                          scrollController.animateTo(
+                            scrollController.offset - 100,
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.easeOut,
+                          );
+                        },
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.black38,
+                            shape: BoxShape.circle,
+                          ),
+                          padding: const EdgeInsets.all(6),
+                          child: const Icon(Icons.arrow_left, color: Colors.white, size: 18
+                          ),
+                        ),
+                      ),
+                    ),
+                    // Right Arrow
+                    Positioned(
+                      right: 0,
+                      child: GestureDetector(
+                        onTap: () {
+                          scrollController.animateTo(
+                            scrollController.offset + 100,
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.easeOut,
+                          );
+                        },
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.black38,
+                            shape: BoxShape.circle,
+                          ),
+                          padding: const EdgeInsets.all(6),
+                          child: const Icon(Icons.arrow_right, color: Colors.white, size: 18),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
         );
       },
     );
   }
+
+
 }

@@ -508,4 +508,90 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get general => 'General';
+
+  @override
+  String earnGold(Object amount) {
+    return 'Earn $amount Gold';
+  }
+
+  @override
+  String win1v1(Object count) {
+    return 'Win $count Games 1v1';
+  }
+
+  @override
+  String reachLevel(Object level) {
+    return 'Reach Level $level';
+  }
+
+  @override
+  String win3Players(Object count) {
+    return 'Win $count Games 3 Players';
+  }
+
+  @override
+  String win4Players(Object count) {
+    return 'Win $count Games 4 Players';
+  }
+
+  @override
+  String win5Players(Object count) {
+    return 'Win $count Games 5 Players';
+  }
+
+  @override
+  String get unlockFirstCard => 'Unlock Your First Skin Card';
+
+  @override
+  String unlockCardAmount(Object amount) {
+    return 'Unlock $amount Skin Cards';
+  }
+
+  @override
+  String get unlockFirstAvatar => 'Unlock a New Avatar';
+
+  @override
+  String unlockAvatarAmount(Object amount) {
+    return 'Unlock $amount Avatars';
+  }
+
+  @override
+  String get unlockFirstTable => 'Unlock a New TableSkin';
+
+  @override
+  String unlockTableAmount(Object amount) {
+    return 'Unlock $amount TableSkins';
+  }
+
+  @override
+  String totalWins(Object count) {
+    return 'Reach $count Wins Total';
+  }
+
+  @override
+  String get welcome => 'Welcome';
+
+  @override
+  String get noTasksAvailable => 'No tasks available';
+
+  @override
+  String get taskRewards => 'Task Rewards';
+
+  @override
+  String get all => 'Toutes';
+
+  @override
+  String get claimed => 'Réclamées';
+
+  @override
+  String get unclaimed => 'Non réclamées';
+
+  @override
+  String get claim => 'Claim';
+
+  @override
+  String get rewards => 'Rewards';
+
+  @override
+  String get loading => 'Loading';
 }

@@ -124,7 +124,6 @@ class _EndGameScreenLuxState extends State<EndGameScreen>
           type: RewardType.gold,
         );
         xpManager.addWin(widget.hands.length);
-        xpManager.addGold(totalPool);
 
 
       }
@@ -163,7 +162,6 @@ class _EndGameScreenLuxState extends State<EndGameScreen>
           type: RewardType.gold,
         );
         xpManager.addWin(widget.hands.length);
-        xpManager.addGold(playerReward);
       }
     }
 

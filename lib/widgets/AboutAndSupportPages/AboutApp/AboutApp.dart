@@ -71,17 +71,17 @@ class _AboutDialogHezz2StarState extends State<AboutDialogHezz2Star> {
       children: [
         IconButton(
           icon: const FaIcon(FontAwesomeIcons.facebookF, color: Colors.blue),
-          onPressed: () => _launchURL("https://facebook.com/hezz2star"),
+          onPressed: () {}  //=> _launchURL("https://facebook.com/hezz2star"),
         ),
         const SizedBox(width: 12),
         IconButton(
           icon: const FaIcon(FontAwesomeIcons.instagram, color: Colors.purple),
-          onPressed: () => _launchURL("https://instagram.com/hezz2star"),
+          onPressed: () {} //=> _launchURL("https://instagram.com/hezz2star"),
         ),
         const SizedBox(width: 12),
         IconButton(
           icon: const FaIcon(FontAwesomeIcons.tiktok, color: Colors.black),
-          onPressed: () => _launchURL("https://tiktok.com/hezz2star"),
+          onPressed: () {} //=> _launchURL("https://tiktok.com/hezz2star"),
         ),
       ],
     );
@@ -158,7 +158,7 @@ class _AboutDialogHezz2StarState extends State<AboutDialogHezz2Star> {
 
                   const SizedBox(height: 16),
                   const Text(
-                    "Contact: support@hezz2star.com",
+                    "Contact: jalnixstudio@gmail.com",
                     style: TextStyle(fontSize: 13, color: Colors.black87),
                   ),
                   const SizedBox(height: 20),

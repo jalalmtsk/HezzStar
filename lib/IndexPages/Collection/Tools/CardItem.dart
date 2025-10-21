@@ -110,13 +110,15 @@ class CardItemWidget extends StatelessWidget {
                 if (selected)
                   Positioned(
                     top: imageHeight * 0.97,
-                    right: 18,
+                    right: 8,
+                    left: 8,
                     child: _badge(tr(context).selected, Colors.green, badgeFontSize),
                   )
                 else if (unlocked)
                   Positioned(
                     top: imageHeight * 0.97,
-                    right: 18,
+                    right: 8,
+                    left: 8,
                     child: _badge(tr(context).unlocked, Colors.orange, badgeFontSize),
                   ),
                 if (!unlocked)
@@ -185,12 +187,13 @@ class CardItemWidget extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
       decoration: BoxDecoration(
         color: color,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(10),
         boxShadow: [
           BoxShadow(color: color.withOpacity(0.7), blurRadius: 4, offset: const Offset(0, 2))
         ],
       ),
       child: Text(
+        textAlign: TextAlign.center,
         text.toUpperCase(),
         style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: fontSize),
       ),

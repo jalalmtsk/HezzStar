@@ -1,12 +1,22 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:hezzstar/tools/TaskManager/TaskManager.dart';
+import 'package:hezzstar/widgets/userStatut/globalKeyUserStatusBar.dart' as TaskRewardKeys;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'Manager/HelperClass/FlyingRewardManager.dart';
 import 'Manager/HelperClass/RewardDimScreen.dart';
 import 'Manager/UserProfileManager.dart';
+import 'Tasks.dart';
 
 class ExperienceManager with ChangeNotifier {
   late UserProfile userProfile = UserProfile();
+  late TaskManager taskManager;
+
+  ExperienceManager() {
+    taskManager = TaskManager(this);
+    _loadData().then((_) async {
+    });
+  }
 
   int _experience = 0;
   int _gold = 500;
@@ -18,6 +28,9 @@ class ExperienceManager with ChangeNotifier {
   int _wins4Players = 0;
   int _wins5Players = 0;
 
+  bool canClaim(Task task) {
+    return !task.claimed && task.condition(this);
+  }
 
   // ---------------------------
   // CARD SYSTEM
@@ -68,9 +81,6 @@ class ExperienceManager with ChangeNotifier {
   String get nationality => userProfile.nationality;
   String get gender => userProfile.gender;
 
-  ExperienceManager() {
-    _loadData();
-  }
 
   // ---------------------------
   // LOAD / SAVE DATA
@@ -99,6 +109,7 @@ class ExperienceManager with ChangeNotifier {
     _unlockedTableSkins = prefs.getStringList('unlockedTableSkins') ?? ["assets/images/Skins/TableSkins/table1.jpg"];
     _selectedTableSkin = prefs.getString('selectedTableSkin') ?? _unlockedTableSkins.first;
 
+
     // Load profile
     userProfile = UserProfile.fromPrefs(prefs);
 
@@ -126,9 +137,13 @@ class ExperienceManager with ChangeNotifier {
     if (_selectedCard != null) await prefs.setString('selectedCard', _selectedCard!);
     if (_selectedAvatar != null) await prefs.setString('selectedAvatar', _selectedAvatar!);
 
+
     // Save profile
     await userProfile.saveToPrefs(prefs);
+
   }
+
+
 
   // ---------------------------
   // RESOURCE MANAGEMENT
@@ -160,12 +175,13 @@ class ExperienceManager with ChangeNotifier {
         await Future.delayed(const Duration(milliseconds: 200));
       }
     }
+
   }
 
 
 
 
-  Future<void> addGold(int amount) async {
+  Future<void> addGold(int amount, {BuildContext? context}) async {
     _gold += amount;
     _totalGoldEarned += amount; // track total earnings
     await _saveData();
@@ -211,7 +227,7 @@ class ExperienceManager with ChangeNotifier {
     }
   }
 
-  Future<void> addWin(int playerCount) async {
+  Future<void> addWin(int playerCount, {BuildContext? context}) async {
     switch (playerCount) {
       case 2:
         _wins1v1++;
@@ -228,6 +244,7 @@ class ExperienceManager with ChangeNotifier {
     }
     await _saveData();
     notifyListeners();
+
   }
 
 

@@ -101,8 +101,8 @@ class _MenuOverlayButtonState extends State<MenuOverlayButton> {
                                   repeat: false,
                                 ),
                                 const SizedBox(height: 10),
-                                const Text(
-                                  "Exit Game?",
+                                 Text(
+                                  "${tr(context).exit} ?",
                                   style: TextStyle(
                                     color: Colors.black,
                                     fontSize: 22,
@@ -120,7 +120,7 @@ class _MenuOverlayButtonState extends State<MenuOverlayButton> {
 
                                 // Buttons Row
                                 Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                  mainAxisAlignment: MainAxisAlignment.spaceAround,
                                   children: [
                                     // Cancel
                                     ElevatedButton.icon(
@@ -143,7 +143,7 @@ class _MenuOverlayButtonState extends State<MenuOverlayButton> {
                                       style: ElevatedButton.styleFrom(
                                         backgroundColor: Colors.redAccent,
                                         padding: const EdgeInsets.symmetric(
-                                            horizontal: 25, vertical: 12),
+                                            horizontal: 12, vertical: 12),
                                         shape: RoundedRectangleBorder(
                                             borderRadius: BorderRadius.circular(15)),
                                       ),

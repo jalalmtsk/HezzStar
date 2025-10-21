@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hezzstar/ExperieneManager.dart';
+import 'package:lottie/lottie.dart';
 
 import 'package:provider/provider.dart';
 
@@ -15,6 +16,7 @@ import '../../tools/ConnectivityManager/ConnectivityManager.dart';
 import '../../widgets/userStatut/userStatus.dart';
 import 'AvatarDetailsPopup.dart';
 import 'Widgets/AvatarCard.dart';
+import 'Widgets/TaskRewardDialog.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -30,7 +32,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   final GlobalKey goldKeyHome = GlobalKey();
   final GlobalKey gemsKeyHome = GlobalKey();
   final GlobalKey xpKeyHome = GlobalKey();
-
+  GlobalKey rewardCounterKey = GlobalKey(); // Attach to your XP/Gold/Gems counter
 
 
 
@@ -155,38 +157,54 @@ const SizedBox(height: 80,),
                     children: [
 
                       IconButton(onPressed: (){
-                        /*   xpManager.addExperience(
+                  /*      xpManager.addGold(10);
+                       xpManager.addExperience(
                               10,              // XP amount
                               context: context, // needed for dimmed reward screen
                               gemsKey: gemsKeyHome, // where the flying gems fly to
-
-
                             );
 
-                          */
+
+                   */
                       }, icon: Image.asset(
                           height: 60,
                           width: 60,
                           "assets/UI/Icons/Locked_Icon.png")),
 
-                      Row(
+                      Stack(
+                        alignment: Alignment.center,
                         children: [
-                          IconButton(onPressed: (){
-                         /*   xpManager.addExperience(
-                              10,              // XP amount
-                              context: context, // needed for dimmed reward screen
-                              gemsKey: gemsKeyHome, // where the flying gems fly to
+                          // Show Lottie animation only when a task can be claimed
+                          if (xpManager.taskManager.tasks.any((t) => xpManager.canClaim(t)))
+                            Lottie.asset(
+                              "assets/animations/AnimationSFX/RewawrdLightEffect.json", // put your Lottie file here
+                              width: 80,
+                              height: 80,
+                              repeat: true,
+                            ),
 
-
-                            );
-
-                          */
-                          }, icon: Image.asset(
+                          // Task icon changes depending on claimable state
+                          GestureDetector(
+                            onTap: () {
+                              TaskRewardListDialog.show(
+                                context,
+                                xpManager,
+                                goldKey: goldKeyHome,
+                                gemsKey: gemsKeyHome,
+                                xpKey: xpKeyHome,
+                              );
+                            },
+                            child: Image.asset(
+                              xpManager.taskManager.tasks.any((t) => xpManager.canClaim(t))
+                                  ? "assets/UI/Icons/QuestActiveY_Icon.png" // active/claimable state
+                                  : "assets/UI/Icons/QuestNotActive_Icon.png",   // inactive/locked state
                               height: 60,
                               width: 60,
-                              "assets/UI/Icons/Locked_Icon.png")),
+                            ),
+                          ),
                         ],
-                      ),
+                      )
+
                     ],
                   ),
                   // 🌟 Horizontal game modes

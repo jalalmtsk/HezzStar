@@ -455,7 +455,7 @@ class _InstructionsDialogState extends State<InstructionsDialog>
         Expanded(
           flex: 5,
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 4),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [

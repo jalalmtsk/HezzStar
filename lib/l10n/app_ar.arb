@@ -193,5 +193,29 @@
   "finalScoreboard": "النتائج النهائية",
   "congratulations": "تهانينا",
   "backToLobby": "العودة إلى الردهة",
-  "playing": "جارٍ اللعب"
+  "playing": "جارٍ اللعب",
+
+   "earnGold": "احصل على {amount} ذهب",
+      "win1v1": "اربح {count} مباراة 1 ضد 1",
+      "reachLevel": "الوصول إلى المستوى {level}",
+      "win3Players": "اربح {count} مباريات 3 لاعبين",
+      "win4Players": "اربح {count} مباريات 4 لاعبين",
+      "win5Players": "اربح {count} مباريات 5 لاعبين",
+      "unlockFirstCard": "افتح أول بطاقة لديك",
+      "unlockCardAmount": "افتح {amount} بطاقات",
+      "unlockFirstAvatar": "افتح شخصية جديدة",
+      "unlockAvatarAmount": "افتح {amount} شخصيات",
+      "unlockFirstTable": "افتح تصميم طاولة جديدة",
+      "unlockTableAmount": "افتح {amount} تصميمات طاولات",
+      "totalWins": "الوصول إلى {count} فوز إجمالي",
+      "welcome": "مرحبا",
+
+       "noTasksAvailable": "لا توجد مهام متاحة",
+        "taskRewards": "مكافآت المهام",
+        "all": "الكل",
+        "claimed": "تم المطالبة بها",
+        "unclaimed": "لم يتم المطالبة بها",
+        "claim": "مطالبة",
+        "rewards": "مكافآت",
+        "loading": "جارٍ التحميل"
 }

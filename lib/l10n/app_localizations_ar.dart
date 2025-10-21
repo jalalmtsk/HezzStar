@@ -508,4 +508,90 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get general => 'عام';
+
+  @override
+  String earnGold(Object amount) {
+    return 'احصل على $amount ذهب';
+  }
+
+  @override
+  String win1v1(Object count) {
+    return 'اربح $count مباراة 1 ضد 1';
+  }
+
+  @override
+  String reachLevel(Object level) {
+    return 'الوصول إلى المستوى $level';
+  }
+
+  @override
+  String win3Players(Object count) {
+    return 'اربح $count مباريات 3 لاعبين';
+  }
+
+  @override
+  String win4Players(Object count) {
+    return 'اربح $count مباريات 4 لاعبين';
+  }
+
+  @override
+  String win5Players(Object count) {
+    return 'اربح $count مباريات 5 لاعبين';
+  }
+
+  @override
+  String get unlockFirstCard => 'افتح أول بطاقة لديك';
+
+  @override
+  String unlockCardAmount(Object amount) {
+    return 'افتح $amount بطاقات';
+  }
+
+  @override
+  String get unlockFirstAvatar => 'افتح شخصية جديدة';
+
+  @override
+  String unlockAvatarAmount(Object amount) {
+    return 'افتح $amount شخصيات';
+  }
+
+  @override
+  String get unlockFirstTable => 'افتح تصميم طاولة جديدة';
+
+  @override
+  String unlockTableAmount(Object amount) {
+    return 'افتح $amount تصميمات طاولات';
+  }
+
+  @override
+  String totalWins(Object count) {
+    return 'الوصول إلى $count فوز إجمالي';
+  }
+
+  @override
+  String get welcome => 'مرحبا';
+
+  @override
+  String get noTasksAvailable => 'لا توجد مهام متاحة';
+
+  @override
+  String get taskRewards => 'مكافآت المهام';
+
+  @override
+  String get all => 'الكل';
+
+  @override
+  String get claimed => 'تم المطالبة بها';
+
+  @override
+  String get unclaimed => 'لم يتم المطالبة بها';
+
+  @override
+  String get claim => 'مطالبة';
+
+  @override
+  String get rewards => 'مكافآت';
+
+  @override
+  String get loading => 'جارٍ التحميل';
 }

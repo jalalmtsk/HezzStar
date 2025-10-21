@@ -378,10 +378,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get empty => 'Vacío';
 
   @override
-  String get drawPile => 'Mazo de robo';
+  String get drawPile => 'Mazo';
 
   @override
-  String get topCard => 'Carta superior';
+  String get topCard => 'Tope';
 
   @override
   String get out => 'FUERA';
@@ -423,7 +423,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get elimination => 'Eliminación';
 
   @override
-  String get playToWin => 'Jugar para ganar';
+  String get playToWin => 'A ganar';
 
   @override
   String get offlineLobby => 'Sala sin conexión';
@@ -508,4 +508,90 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get general => 'General';
+
+  @override
+  String earnGold(Object amount) {
+    return 'Gana $amount de oro';
+  }
+
+  @override
+  String win1v1(Object count) {
+    return 'Gana $count partidas 1v1';
+  }
+
+  @override
+  String reachLevel(Object level) {
+    return 'Alcanza el nivel $level';
+  }
+
+  @override
+  String win3Players(Object count) {
+    return 'Gana $count partidas de 3 jugadores';
+  }
+
+  @override
+  String win4Players(Object count) {
+    return 'Gana $count partidas de 4 jugadores';
+  }
+
+  @override
+  String win5Players(Object count) {
+    return 'Gana $count partidas de 5 jugadores';
+  }
+
+  @override
+  String get unlockFirstCard => 'Desbloquea tu primera carta';
+
+  @override
+  String unlockCardAmount(Object amount) {
+    return 'Desbloquea $amount cartas';
+  }
+
+  @override
+  String get unlockFirstAvatar => 'Desbloquea un nuevo avatar';
+
+  @override
+  String unlockAvatarAmount(Object amount) {
+    return 'Desbloquea $amount avatares';
+  }
+
+  @override
+  String get unlockFirstTable => 'Desbloquea una nueva mesa';
+
+  @override
+  String unlockTableAmount(Object amount) {
+    return 'Desbloquea $amount mesas';
+  }
+
+  @override
+  String totalWins(Object count) {
+    return 'Alcanza $count victorias totales';
+  }
+
+  @override
+  String get welcome => 'Bienvenido';
+
+  @override
+  String get noTasksAvailable => 'No hay tareas disponibles';
+
+  @override
+  String get taskRewards => 'Recompensas de tareas';
+
+  @override
+  String get all => 'Todas';
+
+  @override
+  String get claimed => 'Reclamadas';
+
+  @override
+  String get unclaimed => 'No reclamadas';
+
+  @override
+  String get claim => 'Reclamar';
+
+  @override
+  String get rewards => 'Recompensas';
+
+  @override
+  String get loading => 'Cargando';
 }

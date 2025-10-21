@@ -57,6 +57,9 @@ class TableSkin extends StatelessWidget {
               tableSkins: [
                 {"image": "assets/images/Skins/TableSkins/table1.jpg", 'currency': CurrencyType.gold, "cost": 0},
                 {"image": "assets/images/Skins/TableSkins/table2.jpg", 'currency': CurrencyType.gems, "cost": 2000},
+                {"image": "assets/images/Skins/TableSkins/table3.png", 'currency': CurrencyType.gems, "cost": 2500},
+                {"image": "assets/images/Skins/TableSkins/table4.png", 'currency': CurrencyType.gems, "cost": 2500},
+                {"image": "assets/images/Skins/TableSkins/table5.png", 'currency': CurrencyType.gems, "cost": 3000},
 
               ],
             ),

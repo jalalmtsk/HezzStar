@@ -5,6 +5,7 @@ import 'package:hezzstar/IndexPages/Settings/SettingPage.dart';
 import 'package:hezzstar/tools/AudioManager/AudioManager.dart';
 import 'package:hezzstar/widgets/LoadingScreen/LoadinScreenDim.dart';
 import 'package:provider/provider.dart';
+import 'ExperieneManager.dart';
 import 'IndexPages/Collection/MainCollectionPage.dart';
 import 'IndexPages/EventsPage/EventPage.dart';
 import 'IndexPages/HomePage/HomePage.dart';
@@ -59,6 +60,14 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
       vsync: this,
       duration: const Duration(seconds: 2),
     )..repeat();
+
+    // Initialize tasks after first frame
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final xpManager = Provider.of<ExperienceManager>(context, listen: false);
+      xpManager.taskManager.init(context); // Pass BuildContext here
+    });
+
+
   }
 
   void playSfx(String asset) async{
@@ -127,7 +136,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                   // Background image
                   Positioned.fill(
                     child: Image.asset(
-                      "assets/UI/BackgroundImage/bg7.png",
+                      "assets/UI/BackgroundImage/HomeScreenBg.jpg",
                       fit: BoxFit.cover,
                     ),
                   ),

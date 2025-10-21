@@ -357,10 +357,10 @@ class AppLocalizationsFr extends AppLocalizations {
   String get notEnoughGold => 'Or insuffisant !';
 
   @override
-  String get startMatch => 'Commencer le match';
+  String get startMatch => 'Commencer Match';
 
   @override
-  String get startElimination => 'Commencer l\'élimination';
+  String get startElimination => 'Commencer L\'élim';
 
   @override
   String get mode => 'Mode';
@@ -381,7 +381,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get drawPile => 'Pioche';
 
   @override
-  String get topCard => 'Carte du dessus';
+  String get topCard => 'Top';
 
   @override
   String get out => 'HORS JEU';
@@ -423,7 +423,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get elimination => 'Élimination';
 
   @override
-  String get playToWin => 'Jouer pour gagner';
+  String get playToWin => 'Pour Gagner';
 
   @override
   String get offlineLobby => 'Salon hors ligne';
@@ -508,4 +508,90 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get general => 'Général';
+
+  @override
+  String earnGold(Object amount) {
+    return 'Gagner $amount d\'or';
+  }
+
+  @override
+  String win1v1(Object count) {
+    return 'Gagner $count parties 1v1';
+  }
+
+  @override
+  String reachLevel(Object level) {
+    return 'Atteindre le niveau $level';
+  }
+
+  @override
+  String win3Players(Object count) {
+    return 'Gagner $count parties à 3 joueurs';
+  }
+
+  @override
+  String win4Players(Object count) {
+    return 'Gagner $count parties à 4 joueurs';
+  }
+
+  @override
+  String win5Players(Object count) {
+    return 'Gagner $count parties à 5 joueurs';
+  }
+
+  @override
+  String get unlockFirstCard => 'Débloquer votre première carte';
+
+  @override
+  String unlockCardAmount(Object amount) {
+    return 'Débloquer $amount cartes';
+  }
+
+  @override
+  String get unlockFirstAvatar => 'Débloquer un nouvel avatar';
+
+  @override
+  String unlockAvatarAmount(Object amount) {
+    return 'Débloquer $amount avatars';
+  }
+
+  @override
+  String get unlockFirstTable => 'Débloquer une nouvelle table';
+
+  @override
+  String unlockTableAmount(Object amount) {
+    return 'Débloquer $amount tables';
+  }
+
+  @override
+  String totalWins(Object count) {
+    return 'Atteindre $count victoires au total';
+  }
+
+  @override
+  String get welcome => 'Bienvenue';
+
+  @override
+  String get noTasksAvailable => 'Aucune tâche disponible';
+
+  @override
+  String get taskRewards => 'Récompenses des tâches';
+
+  @override
+  String get all => 'Toutes';
+
+  @override
+  String get claimed => 'Réclamées';
+
+  @override
+  String get unclaimed => 'Non réclamées';
+
+  @override
+  String get claim => 'Réclamer';
+
+  @override
+  String get rewards => 'Récompenses';
+
+  @override
+  String get loading => 'Chargement';
 }

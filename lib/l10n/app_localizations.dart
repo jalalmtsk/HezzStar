@@ -1102,6 +1102,138 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'General'**
   String get general;
+
+  /// No description provided for @earnGold.
+  ///
+  /// In en, this message translates to:
+  /// **'Earn {amount} Gold'**
+  String earnGold(Object amount);
+
+  /// No description provided for @win1v1.
+  ///
+  /// In en, this message translates to:
+  /// **'Win {count} Games 1v1'**
+  String win1v1(Object count);
+
+  /// No description provided for @reachLevel.
+  ///
+  /// In en, this message translates to:
+  /// **'Reach Level {level}'**
+  String reachLevel(Object level);
+
+  /// No description provided for @win3Players.
+  ///
+  /// In en, this message translates to:
+  /// **'Win {count} Games 3 Players'**
+  String win3Players(Object count);
+
+  /// No description provided for @win4Players.
+  ///
+  /// In en, this message translates to:
+  /// **'Win {count} Games 4 Players'**
+  String win4Players(Object count);
+
+  /// No description provided for @win5Players.
+  ///
+  /// In en, this message translates to:
+  /// **'Win {count} Games 5 Players'**
+  String win5Players(Object count);
+
+  /// No description provided for @unlockFirstCard.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock Your First Skin Card'**
+  String get unlockFirstCard;
+
+  /// No description provided for @unlockCardAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock {amount} Skin Cards'**
+  String unlockCardAmount(Object amount);
+
+  /// No description provided for @unlockFirstAvatar.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock a New Avatar'**
+  String get unlockFirstAvatar;
+
+  /// No description provided for @unlockAvatarAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock {amount} Avatars'**
+  String unlockAvatarAmount(Object amount);
+
+  /// No description provided for @unlockFirstTable.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock a New TableSkin'**
+  String get unlockFirstTable;
+
+  /// No description provided for @unlockTableAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock {amount} TableSkins'**
+  String unlockTableAmount(Object amount);
+
+  /// No description provided for @totalWins.
+  ///
+  /// In en, this message translates to:
+  /// **'Reach {count} Wins Total'**
+  String totalWins(Object count);
+
+  /// No description provided for @welcome.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome'**
+  String get welcome;
+
+  /// No description provided for @noTasksAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'No tasks available'**
+  String get noTasksAvailable;
+
+  /// No description provided for @taskRewards.
+  ///
+  /// In en, this message translates to:
+  /// **'Task Rewards'**
+  String get taskRewards;
+
+  /// No description provided for @all.
+  ///
+  /// In en, this message translates to:
+  /// **'Toutes'**
+  String get all;
+
+  /// No description provided for @claimed.
+  ///
+  /// In en, this message translates to:
+  /// **'Réclamées'**
+  String get claimed;
+
+  /// No description provided for @unclaimed.
+  ///
+  /// In en, this message translates to:
+  /// **'Non réclamées'**
+  String get unclaimed;
+
+  /// No description provided for @claim.
+  ///
+  /// In en, this message translates to:
+  /// **'Claim'**
+  String get claim;
+
+  /// No description provided for @rewards.
+  ///
+  /// In en, this message translates to:
+  /// **'Rewards'**
+  String get rewards;
+
+  /// No description provided for @loading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading'**
+  String get loading;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

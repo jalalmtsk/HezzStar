@@ -176,5 +176,29 @@
                   "gameInstructions": "ⵜⴰⴳⵍⵍⵓⴷⵜ ⵏ ⴰⵎⵓⵣⵣⵓⵍ",
                   "selectLanguage": "ⴰⵙⵙⴰⵡ ⵏ ⵉⵍⵍⴰⵎⴰ",
                   "language": "ⵉⵍⵍⴰⵎⴰ",
-                  "general": "ⴰⵎⵙⵙⴰⵏ"
+                  "general": "ⴰⵎⵙⵙⴰⵏ",
+
+                   "earnGold": "ⴰⵣⵣⵓ ⵏ {amount} ⵏ ⵓⵡⵓⴷ",
+                      "win1v1": "ⴰⵣⵣⵓ ⵏ {count} ⴰⵙⴳⵉⵏ 1ⴷ1",
+                      "reachLevel": "ⵉⵎⴰⵣⵉ ⵏ ⵍⵉⴼⵍⴰⵏ {level}",
+                      "win3Players": "ⴰⵣⵣⵓ ⵏ {count} ⴰⵙⴳⵉⵏ ⵏ 3 ⵎⴰⵣⵉⵖ",
+                      "win4Players": "ⴰⵣⵣⵓ ⵏ {count} ⴰⵙⴳⵉⵏ ⵏ 4 ⵎⴰⵣⵉⵖ",
+                      "win5Players": "ⴰⵣⵣⵓ ⵏ {count} ⴰⵙⴳⵉⵏ ⵏ 5 ⵎⴰⵣⵉⵖ",
+                      "unlockFirstCard": "ⴰⵣⵣⵓ ⵏ ⴰⵎⴰⵣⵉⵖ ⵉⵎⵏⴰⵏⵏ",
+                      "unlockCardAmount": "ⴰⵣⵣⵓ {amount} ⴰⵎⴰⵣⵉⵖ",
+                      "unlockFirstAvatar": "ⴰⵣⵣⵓ ⵏ ⵎⴰⵣⵉⵖ ⵉⵎⵏⴰⵏⵏ",
+                      "unlockAvatarAmount": "ⴰⵣⵣⵓ {amount} ⵎⴰⵣⵉⵖ",
+                      "unlockFirstTable": "ⴰⵣⵣⵓ ⵏ ⴰⵙⴽⴰⵍ ⵉⵎⵏⴰⵏⵏ",
+                      "unlockTableAmount": "ⴰⵣⵣⵓ {amount} ⴰⵙⴽⴰⵍ",
+                      "totalWins": "ⴰⵣⵣⵓ ⵏ {count} ⴰⵙⴳⵉⵏ ⵓⵡⵓⴷ",
+                      "welcome": "ⴰⵣⵣⵓ ⵣⵣⵓⵍ",
+
+                       "noTasksAvailable": "ⵓⵔ ⵢⴻⵣⵎⵉⵔ ⴰⵔⴰ ⵜⴰⵙⴽⵉⵏ",
+                        "taskRewards": "ⵉⵀⵓⵡⴰⵍⴻⵏ ⵏ ⵜⴰⵙⴽⵉⵏ",
+                        "all": "ⵢⴻⵍⵍⴰⵏ",
+                        "claimed": "ⵢⴻⵜⵜⵡⴰⴼⴰⵇⴻⵏ",
+                        "unclaimed": "ⵓⵔ ⵢⴻⵜⵜⵡⴰⴼⴰⵇ ⴰⵔⴰ",
+                        "claim": "ⵙⵙⴻⴼⵔⵓ",
+                        "rewards": "ⵉⵀⵓⵡⴰⵍⴻⵏ",
+                        "loading": "ⴰⵖⵉⵍⴰⵙ"
 }

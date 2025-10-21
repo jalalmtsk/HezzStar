@@ -2,6 +2,7 @@
 import 'dart:math';
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:hezzstar/Hezz2FinalGame/Offline/BotInfoDialog_Offline.dart';
 import 'package:hezzstar/MainScreenIndex.dart';
 import 'package:provider/provider.dart';
 import 'package:hezzstar/ExperieneManager.dart';
@@ -11,6 +12,7 @@ import 'package:hezzstar/widgets/userStatut/userStatus.dart';
 import '../../../tools/AudioManager/AudioManager.dart';
 import '../../main.dart';
 import '../Screen/GameLauncher/GameLauncher_Tools/SearchingPopup.dart';
+import 'Tools_Offline/OfflineLoadingPopUp.dart';
 
 class OfflineCardGameLauncher extends StatefulWidget {
   const OfflineCardGameLauncher({super.key});
@@ -33,8 +35,9 @@ class _OfflineCardGameLauncherState extends State<OfflineCardGameLauncher>
   final List<int> playerCounts = [2, 3, 4, 5]; // total players
   int selectedPlayerCount = 2;
 
-  Color primaryAccent = Colors.orangeAccent;
-  Color secondaryAccent = Colors.deepOrange;
+  // Premium Blue & Gold palette
+  Color primaryAccent = const Color(0xFF1E3A8A); // deep blue
+  Color secondaryAccent = const Color(0xFFFACC15); // gold yellow
 
   late AnimationController _handEntranceController;
 
@@ -65,7 +68,7 @@ class _OfflineCardGameLauncherState extends State<OfflineCardGameLauncher>
           Container(
             decoration: const BoxDecoration(
               image: DecorationImage(
-                image: AssetImage('assets/UI/BackgroundImage/EndScreenBackground.jpg'),
+                image: AssetImage('assets/UI/BackgroundImage/bg5.jpg'),
                 fit: BoxFit.cover,
               ),
             ),
@@ -87,7 +90,7 @@ class _OfflineCardGameLauncherState extends State<OfflineCardGameLauncher>
                 const SizedBox(height: 14),
                 _title(tr(context).cards),
                 const SizedBox(height: 14),
-                _handSizeSelectorRow(),
+                Container(child: _handSizeSelectorRow()),
                 Expanded(child: _animatedHandPreview()),
                 _offlineStartRowButtons(expManager, audioManager),
                 const SizedBox(height: 40),
@@ -105,53 +108,90 @@ class _OfflineCardGameLauncherState extends State<OfflineCardGameLauncher>
         padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(30),
-          gradient: LinearGradient(colors: [primaryAccent, secondaryAccent]),
+          gradient: LinearGradient(
+            colors: [primaryAccent, secondaryAccent],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: primaryAccent.withOpacity(0.5),
+              blurRadius: 15,
+              offset: const Offset(0, 6),
+            ),
+          ],
         ),
-        child:  Text(
+        child: Text(
           title,
-          style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.white),
+          style: const TextStyle(
+            fontSize: 28,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+            shadows: [
+              Shadow(
+                color: Colors.black26,
+                blurRadius: 4,
+                offset: Offset(2, 2),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
   Widget _handSizeSelectorRow() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: handOptions.map((opt) {
-        bool isSelected = handSize == opt["size"];
-        return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 6),
-          child: GestureDetector(
-            onTap: () => setState(() => handSize = opt["size"]),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 18),
-              decoration: BoxDecoration(
-                color: isSelected ? Colors.white : Colors.black54,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(
-                  color: isSelected ? primaryAccent : Colors.white24,
-                  width: isSelected ? 2.5 : 1.2,
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: handOptions.map((opt) {
+          bool isSelected = handSize == opt["size"];
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 6),
+            child: GestureDetector(
+              onTap: () => setState(() => handSize = opt["size"]),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 22),
+                decoration: BoxDecoration(
+                  color: isSelected ? Colors.white : Colors.black54,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: isSelected ? secondaryAccent : Colors.white30,
+                    width: isSelected ? 2.5 : 1.5,
+                  ),
+                  boxShadow: isSelected
+                      ? [
+                    BoxShadow(
+                      color: secondaryAccent.withOpacity(0.6),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
+                    )
+                  ]
+                      : [],
                 ),
-              ),
-              child: Text(
-                "${opt["size"]} ${tr(context).cards}",
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: isSelected ? Colors.black87 : Colors.white,
+                child: Text(
+                  "${opt["size"]} ${tr(context).cards}",
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: isSelected ? primaryAccent : Colors.white,
+                  ),
                 ),
               ),
             ),
-          ),
-        );
-      }).toList(),
+          );
+        }).toList(),
+      ),
     );
   }
 
   Widget _playerSelectorRow() {
     return Wrap(
+      spacing: 15,
+      runSpacing: 5,
+      alignment: WrapAlignment.center,
       children: playerCounts.map((count) {
         bool isSelected = selectedPlayerCount == count;
         return Padding(
@@ -160,18 +200,29 @@ class _OfflineCardGameLauncherState extends State<OfflineCardGameLauncher>
             onTap: () => setState(() => selectedPlayerCount = count),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 300),
-              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 18),
               decoration: BoxDecoration(
                 color: isSelected ? Colors.white : Colors.black54,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: isSelected ? primaryAccent : Colors.white24, width: 2),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(
+                    color: isSelected ? secondaryAccent : Colors.white30,
+                    width: 2),
+                boxShadow: isSelected
+                    ? [
+                  BoxShadow(
+                    color: secondaryAccent.withOpacity(0.6),
+                    blurRadius: 10,
+                    offset: const Offset(0, 5),
+                  )
+                ]
+                    : [],
               ),
               child: Text(
                 "$count ${tr(context).players}",
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  color: isSelected ? Colors.black87 : Colors.white70,
+                  color: isSelected ? primaryAccent : Colors.white70,
                 ),
               ),
             ),
@@ -182,8 +233,8 @@ class _OfflineCardGameLauncherState extends State<OfflineCardGameLauncher>
   }
 
   Widget _animatedHandPreview() {
-    final cardWidth = 50.0;
-    final cardHeight = cardWidth * 1.4;
+    final cardWidth = 60.0;
+    final cardHeight = cardWidth * 1.5;
 
     return Center(
       child: AnimatedBuilder(
@@ -191,25 +242,54 @@ class _OfflineCardGameLauncherState extends State<OfflineCardGameLauncher>
         builder: (context, _) {
           double entrance = Curves.elasticOut.transform(_handEntranceController.value);
           return SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: List.generate(handSize, (index) {
-                double tilt = (index - (handSize - 1) / 2) * 0.1 * entrance;
+                double tilt = (index - (handSize - 1) / 2) * 0.12 * entrance;
                 return Transform.rotate(
                   angle: tilt,
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 6),
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
                     child: Container(
                       width: cardWidth,
                       height: cardHeight,
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(8),
-                        gradient: LinearGradient(colors: [primaryAccent, secondaryAccent]),
+                        borderRadius: BorderRadius.circular(12),
+                        gradient: LinearGradient(
+                          colors: [primaryAccent.withValues(alpha: 0.7), secondaryAccent],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: secondaryAccent.withOpacity(0.5),
+                            blurRadius: 12,
+                            spreadRadius: 1,
+                            offset: const Offset(0, 6),
+                          ),
+                          BoxShadow(
+                            color: Colors.black26,
+                            blurRadius: 6,
+                            offset: const Offset(2, 4),
+                          ),
+                        ],
+                        border: Border.all(color: Colors.white24, width: 1.5),
                       ),
                       child: Center(
                         child: Text(
                           "${index + 1}",
-                          style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
+                          style: const TextStyle(
+                            fontSize: 26,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                            shadows: [
+                              Shadow(
+                                  color: Colors.black38,
+                                  blurRadius: 3,
+                                  offset: Offset(1, 2))
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -229,53 +309,58 @@ class _OfflineCardGameLauncherState extends State<OfflineCardGameLauncher>
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-
-
+          // Exit Button
           Expanded(
             child: GestureDetector(
               onTap: () {
                 audioManager.playEventSound("sandClick");
-                Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => MainScreen()));
-                // your logic for online button
+                Navigator.of(context).pushReplacement(
+                    MaterialPageRoute(builder: (_) => MainScreen()));
               },
               child: Container(
                 height: 60,
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(colors: [Colors.redAccent, Colors.deepOrange]),
+                  gradient: LinearGradient(
+                    colors: [primaryAccent, primaryAccent.withValues(alpha: 0.4)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
                   borderRadius: BorderRadius.circular(18),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.orangeAccent.withOpacity(0.4),
+                      color: Colors.blueAccent.withOpacity(0.4),
                       blurRadius: 12,
                       offset: const Offset(0, 6),
-                    )
+                    ),
                   ],
                 ),
-                child:  Center(
+                child: Center(
                   child: Text(
                     tr(context).exit,
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
+                    style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        shadows: [
+                          Shadow(
+                              color: Colors.black26,
+                              blurRadius: 4,
+                              offset: Offset(2, 2))
+                        ]),
                   ),
                 ),
               ),
             ),
           ),
           const SizedBox(width: 16),
-
-          // Offline Start Button
+          // Start Match Button
           Expanded(
             child: GestureDetector(
               onTap: () async {
                 audioManager.playEventSound("sandClick");
 
-                // Add XP for offline mode
-                expManager.addExperience(1);
+                await OfflineLoadingPopup.show(context, durationSeconds: 3);
 
-                // Navigate to GameScreen
                 Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(
@@ -284,8 +369,8 @@ class _OfflineCardGameLauncherState extends State<OfflineCardGameLauncher>
                       botCount: selectedPlayerCount - 1,
                       mode: GameMode.local,
                       gameModeType: GameModeType.playToWin,
-                      selectedBet: 0, // no gold in offline
-                      xpReward: 0,
+                      selectedBet: 0,
+                      xpReward: 1,
                     ),
                   ),
                 );
@@ -293,32 +378,39 @@ class _OfflineCardGameLauncherState extends State<OfflineCardGameLauncher>
               child: Container(
                 height: 60,
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(colors: [primaryAccent, secondaryAccent]),
+                  gradient: LinearGradient(
+                    colors: [primaryAccent, secondaryAccent],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
                   borderRadius: BorderRadius.circular(18),
                   boxShadow: [
                     BoxShadow(
-                      color: primaryAccent.withOpacity(0.4),
-                      blurRadius: 12,
+                      color: secondaryAccent.withOpacity(0.5),
+                      blurRadius: 14,
                       offset: const Offset(0, 6),
-                    )
+                    ),
                   ],
                 ),
-                child:  Center(
+                child: Center(
                   child: Text(
+                    textAlign: TextAlign.center,
                     tr(context).startMatch,
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
+                    style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        shadows: [
+                          Shadow(
+                              color: Colors.black26,
+                              blurRadius: 4,
+                              offset: Offset(2, 2))
+                        ]),
                   ),
                 ),
               ),
             ),
           ),
-
-
-          // Example: Second button (e.g. Online Mode)
         ],
       ),
     );

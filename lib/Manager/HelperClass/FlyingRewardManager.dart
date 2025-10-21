@@ -1,6 +1,5 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:hezzstar/IndexPages/HomePage/HomePage.dart';
 import 'package:provider/provider.dart';
 import '../../ExperieneManager.dart';
 import '../../widgets/userStatut/globalKeyUserStatusBar.dart';
@@ -30,28 +29,33 @@ class FlyingRewardManager {
     required BuildContext context,
     required Offset start,
     required GlobalKey endKey,
-    required int amount,
+    required int amount, // actual reward amount
     RewardType type = RewardType.gold,
+    int? iconAmount, // optional visual-only icon count
+    bool giveReward = true, // optional: set false if you only want visual reward
   }) {
     if (_overlayState == null) _overlayState = Overlay.of(context)!;
 
-    int numIcons = _getNumIconsForReward(type, amount);
+    // Determine how many icons to spawn visually
+    int numIcons = iconAmount ?? _getNumIconsForReward(type, amount);
     List<int> amounts = _splitAmount(amount, numIcons);
 
     final audioManager = Provider.of<AudioManager>(context, listen: false);
     final xpManager = Provider.of<ExperienceManager>(context, listen: false);
 
-    // ✅ Give full reward immediately (logic safe)
-    switch (type) {
-      case RewardType.gold:
-        xpManager.addGold(amount);
-        break;
-      case RewardType.gem:
-        xpManager.addGems(amount);
-        break;
-      case RewardType.star:
-        xpManager.addExperience(amount,context: context,gemsKey: gemsKey);
-        break;
+    // ✅ Give full reward immediately (only if giveReward is true)
+    if (giveReward) {
+      switch (type) {
+        case RewardType.gold:
+          xpManager.addGold(amount);
+          break;
+        case RewardType.gem:
+          xpManager.addGems(amount);
+          break;
+        case RewardType.star:
+          xpManager.addExperience(amount, context: context); // adjust params
+          break;
+      }
     }
 
     // 🎵 Play sounds
@@ -86,6 +90,7 @@ class FlyingRewardManager {
       });
     }
   }
+
 
 
   int _getSpawnDelay(RewardType type) {
@@ -127,6 +132,82 @@ class FlyingRewardManager {
     }
     return result;
   }
+
+
+  void spawnVisualReward({
+    required BuildContext context,
+    required Offset start,
+    required GlobalKey endKey,
+    RewardType type = RewardType.gold,
+    int? iconAmount,    // optional: visual-only icon count
+    int? totalAmount,   // optional: used to show number on icon
+  }) {
+    if (_overlayState == null) _overlayState = Overlay.of(context)!;
+
+    final audioManager = Provider.of<AudioManager>(context, listen: false);
+
+    // 🎵 Play sounds
+    if (type == RewardType.gold) {
+      audioManager.playSfxLoop(_soundAssets[type]!);
+    } else {
+      _playSound(context, type);
+    }
+
+    // Determine number of icons visually
+    int numIcons;
+    if (iconAmount != null) {
+      numIcons = iconAmount;
+    } else if (totalAmount != null) {
+      // Scale icons based on totalAmount, capped
+      if (totalAmount <= 500) {
+        numIcons = 10;
+      } else if (totalAmount <= 1000) {
+        numIcons = 20;
+      } else if (totalAmount <= 2000) {
+        numIcons = 25;
+      } else if (totalAmount <= 5000) {
+        numIcons = 30;
+      } else {
+        numIcons = 35; // max cap for huge rewards
+      }
+    } else {
+      numIcons = 5; // default fallback
+    }
+
+    // Determine visual amount per icon (for display only)
+    int displayAmount = 0;
+    if (totalAmount != null && numIcons > 0) {
+      displayAmount = (totalAmount / numIcons).ceil();
+    }
+
+    // ✨ Spawn purely cosmetic animations
+    for (int i = 0; i < numIcons; i++) {
+      Future.delayed(Duration(milliseconds: i * _getSpawnDelay(type)), () {
+        OverlayEntry? entry;
+        entry = OverlayEntry(
+          builder: (context) => FlyingRewardWidget(
+            startOffset: start,
+            endKey: endKey,
+            amount: displayAmount, // visual only
+            type: type,
+            onCompleted: () {
+              entry?.remove();
+
+              // Stop looping gold sound after last coin
+              if (type == RewardType.gold && i == numIcons - 1) {
+                audioManager.stopSfxLoop();
+              }
+            },
+          ),
+        );
+
+        _overlayState.insert(entry);
+      });
+    }
+  }
+
+
+
 
   void _playSound(BuildContext context, RewardType type) {
     final audioManager = Provider.of<AudioManager>(context, listen: false);
