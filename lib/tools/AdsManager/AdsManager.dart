@@ -1,8 +1,8 @@
 import 'dart:async';
+import 'dart:io'; // 👈 for Platform checks
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-
 import '../../main.dart';
 
 class AdHelper {
@@ -16,10 +16,10 @@ class AdHelper {
     showDialog(
       context: context,
       barrierDismissible: false,
-      barrierColor: Colors.black.withOpacity(0.6), // dim background
+      barrierColor: Colors.black.withOpacity(0.6),
       builder: (_) => Center(
         child: Lottie.asset(
-          "assets/animations/AnimationSFX/HezzFinal.json", // put your animation path
+          "assets/animations/AnimationSFX/HezzFinal.json",
           width: 300,
           height: 300,
           repeat: true,
@@ -32,10 +32,41 @@ class AdHelper {
     if (Navigator.canPop(context)) Navigator.of(context).pop();
   }
 
-  /// Banner Ad
+  /// --- ✅ Get Ad Unit IDs by Platform ---
+  static String get bannerAdUnitId {
+    if (Platform.isAndroid) {
+      return 'ca-app-pub-9936922975297046/9578151004'; // Android Banner
+    } else if (Platform.isIOS) {
+      return 'ca-app-pub-9936922975297046/1879138627'; // iOS Banner
+    } else {
+      throw UnsupportedError('Unsupported platform');
+    }
+  }
+
+  static String get interstitialAdUnitId {
+    if (Platform.isAndroid) {
+      return 'ca-app-pub-9936922975297046/3703347104'; // Android Interstitial
+    } else if (Platform.isIOS) {
+      return 'ca-app-pub-9936922975297046/2947504253'; // iOS Interstitial
+    } else {
+      throw UnsupportedError('Unsupported platform');
+    }
+  }
+
+  static String get rewardedAdUnitId {
+    if (Platform.isAndroid) {
+      return 'ca-app-pub-9936922975297046/7890552865'; // Android Rewarded
+    } else if (Platform.isIOS) {
+      return 'ca-app-pub-9936922975297046/7195345801'; // iOS Rewarded
+    } else {
+      throw UnsupportedError('Unsupported platform');
+    }
+  }
+
+  /// --- 🪧 Banner Ad ---
   static BannerAd getBannerAd(Function onAdLoaded) {
     final BannerAd banner = BannerAd(
-      adUnitId: 'ca-app-pub-9936922975297046/9578151004', // ✅ real ID
+      adUnitId: bannerAdUnitId,
       request: const AdRequest(),
       size: AdSize.banner,
       listener: BannerAdListener(
@@ -50,7 +81,7 @@ class AdHelper {
     return banner;
   }
 
-  /// Interstitial Ad with Lottie loading
+  /// --- 🎬 Interstitial Ad with Lottie loading ---
   static Future<void> showInterstitialAd({
     required BuildContext context,
     Function? onDismissed,
@@ -58,7 +89,7 @@ class AdHelper {
     _showLoadingDialog(context);
 
     await InterstitialAd.load(
-      adUnitId: 'ca-app-pub-9936922975297046/3703347104',
+      adUnitId: interstitialAdUnitId,
       request: const AdRequest(),
       adLoadCallback: InterstitialAdLoadCallback(
         onAdLoaded: (InterstitialAd ad) {
@@ -87,7 +118,7 @@ class AdHelper {
     );
   }
 
-  /// Rewarded Ad with Lottie loading
+  /// --- 🎁 Rewarded Ad with Lottie loading ---
   static Future<void> showRewardedAdWithLoading(
       BuildContext context,
       VoidCallback onRewardEarned,
@@ -95,7 +126,7 @@ class AdHelper {
     _showLoadingDialog(context);
 
     await RewardedAd.load(
-      adUnitId: 'ca-app-pub-9936922975297046/7890552865',
+      adUnitId: rewardedAdUnitId,
       request: const AdRequest(),
       rewardedAdLoadCallback: RewardedAdLoadCallback(
         onAdLoaded: (RewardedAd ad) {
@@ -124,13 +155,13 @@ class AdHelper {
     );
   }
 
-  /// Rewarded Ad returning Future<bool>
+  /// --- 🔁 Rewarded Ad returning Future<bool> ---
   static Future<bool> showRewardedAd(BuildContext context) {
     Completer<bool> completer = Completer<bool>();
     _showLoadingDialog(context);
 
     RewardedAd.load(
-      adUnitId: 'ca-app-pub-9936922975297046/7890552865',
+      adUnitId: rewardedAdUnitId,
       request: const AdRequest(),
       rewardedAdLoadCallback: RewardedAdLoadCallback(
         onAdLoaded: (RewardedAd ad) {
@@ -159,7 +190,7 @@ class AdHelper {
           if (!completer.isCompleted) completer.complete(false);
           debugPrint('❌ Rewarded failed to load: ${error.message}');
           ScaffoldMessenger.of(context).showSnackBar(
-             SnackBar(content: Text(tr(context).adFailedToLoad)),
+            SnackBar(content: Text(tr(context).adFailedToLoad)),
           );
         },
       ),

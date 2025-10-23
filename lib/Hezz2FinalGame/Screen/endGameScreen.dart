@@ -1,3 +1,4 @@
+
 import 'dart:math';
 import 'dart:ui';
 import 'package:flutter/material.dart';
@@ -10,6 +11,7 @@ import 'package:hezzstar/Hezz2FinalGame/Models/Cards.dart';
 import 'package:hezzstar/Hezz2FinalGame/Models/GameCardEnums.dart';
 import '../../Manager/HelperClass/FlyingRewardManager.dart';
 import '../../Manager/HelperClass/RewardDimScreen.dart';
+
 
 class EndGameScreen extends StatefulWidget {
   final List<List<PlayingCard>> hands;
@@ -188,7 +190,6 @@ class _EndGameScreenLuxState extends State<EndGameScreen>
           widget.playerScores.where((s) => s == score).length;
       isTied[i] = countSameScore > 1;
     }
-
     return Scaffold(
       body: Stack(
         children: [
@@ -382,8 +383,6 @@ class _EndGameScreenLuxState extends State<EndGameScreen>
             ),
           ],
         ),
-
-
       ),
     );
   }
