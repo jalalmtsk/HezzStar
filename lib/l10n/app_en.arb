@@ -206,7 +206,13 @@
      "unclaimed": "Non réclamées",
      "claim": "Claim",
      "rewards": "Rewards",
-     "loading": "Loading"
+     "loading": "Loading",
+
+       "mode1v1": "1 vs 1",
+       "mode3p": "3 Players",
+       "mode4p": "4 Players",
+       "mode5p": "5 Players",
+       "modeOffline": "Offline Mode"
 
 
 

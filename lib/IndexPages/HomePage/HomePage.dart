@@ -241,11 +241,12 @@ const SizedBox(height: 80,),
                                       child: Padding(
                                         padding: const EdgeInsets.only(right: 10,left: 10, bottom: 80, top: 50),
                                         child: _modeCard(
-                                          mode['title']!,
+                                          getModeTitle(context, mode['key']!, mode['emoji']!),
                                           mode['botCount']!,
-                                          mode['mode'], // <-- Pass the GameMode here
+                                          mode['mode'],
                                           index,
                                         ),
+
                                       ),
                                     );
                                   },
@@ -268,12 +269,31 @@ const SizedBox(height: 80,),
   }
 
   final List<Map<String, dynamic>> _modes = [
-    {'title': '⚡ 1 vs 1', 'botCount': 1, 'mode': GameMode.online},
-    {'title': '🔥 3 Players', 'botCount': 2, 'mode': GameMode.online},
-    {'title': '🔥 4 Players', 'botCount': 3, 'mode': GameMode.online},
-    {'title': '🔥 5 Players', 'botCount': 4, 'mode': GameMode.online},
-    {'title': '🛰 Offline Mode', 'botCount': 4, 'mode': GameMode.local},
+    {'key': '1v1', 'botCount': 1, 'mode': GameMode.online, 'emoji': '⚡'},
+    {'key': '3p', 'botCount': 2, 'mode': GameMode.online, 'emoji': '🔥'},
+    {'key': '4p', 'botCount': 3, 'mode': GameMode.online, 'emoji': '🔥'},
+    {'key': '5p', 'botCount': 4, 'mode': GameMode.online, 'emoji': '🔥'},
+    {'key': 'offline', 'botCount': 4, 'mode': GameMode.local, 'emoji': '🛰'},
   ];
+
+
+  String getModeTitle(BuildContext context, String key, String emoji) {
+    switch (key) {
+      case '1v1':
+        return '$emoji ${tr(context).mode1v1}';
+      case '3p':
+        return '$emoji ${tr(context).mode3p}';
+      case '4p':
+        return '$emoji ${tr(context).mode4p}';
+      case '5p':
+        return '$emoji ${tr(context).mode5p}';
+      case 'offline':
+        return '$emoji ${tr(context).modeOffline}';
+      default:
+        return '$emoji $key';
+    }
+  }
+
 
 
   Widget _modeCard(String title, int botCount, GameMode mode, int index) {

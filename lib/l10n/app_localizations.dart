@@ -1234,6 +1234,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Loading'**
   String get loading;
+
+  /// No description provided for @mode1v1.
+  ///
+  /// In en, this message translates to:
+  /// **'1 vs 1'**
+  String get mode1v1;
+
+  /// No description provided for @mode3p.
+  ///
+  /// In en, this message translates to:
+  /// **'3 Players'**
+  String get mode3p;
+
+  /// No description provided for @mode4p.
+  ///
+  /// In en, this message translates to:
+  /// **'4 Players'**
+  String get mode4p;
+
+  /// No description provided for @mode5p.
+  ///
+  /// In en, this message translates to:
+  /// **'5 Players'**
+  String get mode5p;
+
+  /// No description provided for @modeOffline.
+  ///
+  /// In en, this message translates to:
+  /// **'Offline Mode'**
+  String get modeOffline;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

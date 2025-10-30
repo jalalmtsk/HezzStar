@@ -594,4 +594,19 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get loading => 'جارٍ التحميل';
+
+  @override
+  String get mode1v1 => '1 ضد 1';
+
+  @override
+  String get mode3p => '3 لاعبين';
+
+  @override
+  String get mode4p => '4 لاعبين';
+
+  @override
+  String get mode5p => '5 لاعبين';
+
+  @override
+  String get modeOffline => 'الوضع بدون إنترنت';
 }

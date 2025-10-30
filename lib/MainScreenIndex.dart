@@ -123,7 +123,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withOpacity(0.7),
-                  blurRadius: 20,
+                  blurRadius: 2,
                   offset: const Offset(0, 8),
                 ),
               ],
@@ -159,7 +159,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                   // Blur effect
                   Positioned.fill(
                     child: BackdropFilter(
-                      filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
+                      filter: ImageFilter.blur(sigmaX: 1, sigmaY: 1),
                       child: Container(color: Colors.transparent),
                     ),
                   ),
@@ -253,12 +253,12 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                       boxShadow: [
                         BoxShadow(
                           color: Color(0xFFF1C40F).withOpacity(0.8),
-                          blurRadius: 20,
+                          blurRadius: 8,
                           spreadRadius: 2,
                         ),
                         BoxShadow(
                           color: Color(0xFF9B59B6).withOpacity(0.6),
-                          blurRadius: 30,
+                          blurRadius: 6,
                           spreadRadius: 3,
                         ),
                       ],

@@ -594,4 +594,19 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get loading => 'Chargement';
+
+  @override
+  String get mode1v1 => '1 contre 1';
+
+  @override
+  String get mode3p => '3 Joueurs';
+
+  @override
+  String get mode4p => '4 Joueurs';
+
+  @override
+  String get mode5p => '5 Joueurs';
+
+  @override
+  String get modeOffline => 'Mode Hors-ligne';
 }

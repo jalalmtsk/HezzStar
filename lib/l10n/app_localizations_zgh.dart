@@ -594,4 +594,19 @@ class AppLocalizationsZgh extends AppLocalizations {
 
   @override
   String get loading => 'ⴰⵖⵉⵍⴰⵙ';
+
+  @override
+  String get mode1v1 => 'ⵢⵓⵣ 1 ⴷⵓ 1';
+
+  @override
+  String get mode3p => '3 ⵉⵙⵉⵏⴰⵏ';
+
+  @override
+  String get mode4p => '4 ⵉⵙⵉⵏⴰⵏ';
+
+  @override
+  String get mode5p => '5 ⵉⵙⵉⵏⴰⵏ';
+
+  @override
+  String get modeOffline => 'ⵓⵙⴳⴳⴰ ⵏⴰⵍⵍⵓⵏ ⵏⵉⵏⵜⵉⵔⵏⴰⵜ';
 }

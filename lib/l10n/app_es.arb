@@ -198,6 +198,12 @@
             "unclaimed": "No reclamadas",
             "claim": "Reclamar",
             "rewards": "Recompensas",
-            "loading": "Cargando"
+            "loading": "Cargando",
+
+              "mode1v1": "1 contra 1",
+              "mode3p": "3 Jugadores",
+              "mode4p": "4 Jugadores",
+              "mode5p": "5 Jugadores",
+              "modeOffline": "Modo sin conexión"
 
 }

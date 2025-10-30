@@ -74,7 +74,6 @@ class UserStatusBar extends StatelessWidget {
             padding: padding,
             showPlus: showPlusButton,
             onPlusTap: () {
-              mainScreenKey.currentState?.goToShop();
             },
           ));
         }
@@ -88,7 +87,6 @@ class UserStatusBar extends StatelessWidget {
             padding: padding,
             showPlus: showPlusButton,
             onPlusTap: () {
-              mainScreenKey.currentState?.goToShop();
               },
           ));
         }

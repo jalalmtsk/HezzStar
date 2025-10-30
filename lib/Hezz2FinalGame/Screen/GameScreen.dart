@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:math';
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
+
 import 'package:hezzstar/ExperieneManager.dart';
 import 'package:hezzstar/Hezz2FinalGame/Models/GameCardEnums.dart';
 import 'package:hezzstar/Hezz2FinalGame/Offline/BotInfoDialog_Offline.dart';
@@ -149,8 +149,6 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     }
   }
 
-
-
   Future<void> _attemptReconnect() async {
     const int totalTime = 20; // seconds
     int remaining = totalTime;
@@ -280,8 +278,6 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
 
     _maybeAutoPlay();
   }
-
-
 
   Future<void> _dealCardToPlayer(int playerIndex, {bool animate = true}) async {
     if (deck.isEmpty) _recycle();
@@ -493,9 +489,6 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     ctrl.dispose();
   }
 
-
-
-
 // Public methods
   Future<void> _animateMove(PlayingCard card, Offset from, Offset to, {bool cinematic = false}) async {
     return _animateCardInternal(card, from, to, faceUp: true, flip: false, cinematic: cinematic);
@@ -508,7 +501,6 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   Future<void> _animateMoveFaceDownToFaceUp(PlayingCard card, Offset from, Offset to) async {
     return _animateCardInternal(card, from, to, faceUp: true, flip: true);
   }
-
 
   Future<void> _playCardByHuman(int idx) async {
     if (eliminatedPlayers[0]) return; // Skip if eliminated
@@ -535,13 +527,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     final card = hands[player][idx];
     final start = _cardStartForPlayer(player, idx);
     final centerRect = _rectFor(centerKey);
-    final to = centerRect?.center ?? Offset(MediaQuery
-        .of(context)
-        .size
-        .width / 2, MediaQuery
-        .of(context)
-        .size
-        .height * 0.38);
+    final to = centerRect?.center ?? Offset(MediaQuery.of(context).size.width / 2, MediaQuery.of(context).size.height * 0.38);
     if (start != null) {
       final audioManager = Provider.of<AudioManager>(context, listen: false);
       audioManager.playSfx("assets/audios/UI/SFX/CardSwapVolumeUp.mp3");
@@ -686,7 +672,6 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     });
     return best;
   }
-
 
   void _showSnack(String t) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -848,7 +833,6 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     await _playCard(bot, choice);
   }
 
-
   Future<void> _playerDraw() async {
     if (eliminatedPlayers[0]) {
       return;
@@ -875,7 +859,6 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     }
 
     isAnimating = true;
-
     int drawCount = pendingDraw > 0 ? pendingDraw : 1;
     for (int i = 0; i < drawCount; i++) {
       if (deck.isEmpty) _recycle();
@@ -888,14 +871,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       final idx = hands[0].length;
       Offset handPos;
       if (idx < playerCardKeys.length) {
-        handPos = _rectFor(playerCardKeys[idx])?.center ??
-            Offset(MediaQuery
-                .of(context)
-                .size
-                .width / 2, MediaQuery
-                .of(context)
-                .size
-                .height - 90);
+        handPos = _rectFor(playerCardKeys[idx])?.center ?? Offset(MediaQuery.of(context).size.width / 2, MediaQuery.of(context).size.height - 90);
       } else {
         final w = MediaQuery
             .of(context)
@@ -931,8 +907,6 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
 
     _advanceTurn();
   }
-
-
 
   void checkWin(int p) {
     final xpManager = Provider.of<ExperienceManager>(context, listen: false);
@@ -1002,7 +976,6 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     }
   }
 
-
   bool isSpectating = false;
 
   void _toggleSpectate() {
@@ -1022,8 +995,6 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       }
     });
   }
-
-
 
   void _startNextRound() {
     setState(() {
@@ -1085,8 +1056,6 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       });
     });
   }
-
-
 
   void _showEnd({int? forceWinnerIndex}) {
     // Determine winner index: prefer forced index (for playToWin or explicit calls)
@@ -1166,10 +1135,6 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       },
     );
   }
-
-
-
-
 
   final List<OverlayEntry> _activeOverlays = [];
   @override
@@ -1466,9 +1431,6 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                         ),
                       ),
 
-
-
-
                       if (_CenteredActiveBanner != null)
                         Center(
                           child: _CenteredActiveBanner!,
@@ -1481,16 +1443,10 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                         Center(
                           child: _CenteredActiveImage!,
                         ),
-
                       ..._animatedCardsWidgets,    // Animated cards being played
-
                     ],
-
-
                   ),
                 ),
-
-
 
             ],
           ),
