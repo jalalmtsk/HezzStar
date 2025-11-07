@@ -25,20 +25,31 @@
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>GADApplicationIdentifier</key>
-	<string>ca-app-pub-9936922975297046~7890004127</string>
+	<string>ca-app-pub-9936922975297046~9375960041</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
-	<key>UIMainStoryboardFile</key>
-	<string>Main</string>
 	<key>UIStatusBarHidden</key>
 	<true/>
-	<key>UISupportedInterfaceOrientations</key>
-	<array>
-		<string>UIInterfaceOrientationPortrait</string>
-	</array>
+	<!-- iPhone orientations -->
+    	<key>UISupportedInterfaceOrientations</key>
+    	<array>
+    		<string>UIInterfaceOrientationPortrait</string>
+    		<string>UIInterfaceOrientationPortraitUpsideDown</string>
+    		<string>UIInterfaceOrientationLandscapeLeft</string>
+    		<string>UIInterfaceOrientationLandscapeRight</string>
+    	</array>
+
+    	<!-- iPad orientations -->
+    	<key>UISupportedInterfaceOrientations~ipad</key>
+    	<array>
+    		<string>UIInterfaceOrientationPortrait</string>
+    		<string>UIInterfaceOrientationPortraitUpsideDown</string>
+    		<string>UIInterfaceOrientationLandscapeLeft</string>
+    		<string>UIInterfaceOrientationLandscapeRight</string>
+    	</array>
 </dict>
 </plist>
