@@ -67,7 +67,7 @@ class _CardGameLauncherState extends State<CardGameLauncher>
   ];
 
   final List<Map<String, dynamic>> handOptions = [
-    {"label": "Quick", "size": 1},
+    {"label": "Quick", "size": 3},
     {"label": "Medium", "size": 5},
     {"label": "Long", "size": 7},
   ];
@@ -120,7 +120,6 @@ class _CardGameLauncherState extends State<CardGameLauncher>
 
     // === CONNECTIVITY MONITOR ===
     final connectivityService = context.read<ConnectivityService>();
-    final audioManager = Provider.of<AudioManager>(context, listen: false);
     _showDisconnectedOverlay = !connectivityService.isConnected;
 
     connectivityService.addListener(() async {

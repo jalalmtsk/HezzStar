@@ -1,8 +1,6 @@
 // file: offline_card_game_launcher.dart
-import 'dart:math';
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:hezzstar/Hezz2FinalGame/Offline/BotInfoDialog_Offline.dart';
 import 'package:hezzstar/MainScreenIndex.dart';
 import 'package:provider/provider.dart';
 import 'package:hezzstar/ExperieneManager.dart';
@@ -11,7 +9,6 @@ import 'package:hezzstar/Hezz2FinalGame/Models/GameCardEnums.dart';
 import 'package:hezzstar/widgets/userStatut/userStatus.dart';
 import '../../../tools/AudioManager/AudioManager.dart';
 import '../../main.dart';
-import '../Screen/GameLauncher/GameLauncher_Tools/SearchingPopup.dart';
 import 'Tools_Offline/OfflineLoadingPopUp.dart';
 
 class OfflineCardGameLauncher extends StatefulWidget {

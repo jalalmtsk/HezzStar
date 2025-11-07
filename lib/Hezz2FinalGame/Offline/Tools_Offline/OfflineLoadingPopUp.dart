@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
-import '../../../../MainScreenIndex.dart';
 import '../../../../tools/AudioManager/AudioManager.dart';
 import '../../../main.dart';
 

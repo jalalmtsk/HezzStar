@@ -53,7 +53,7 @@ class RewardDimScreen {
     // Show dialog
     showDialog(
       context: context,
-      barrierColor: Colors.black.withOpacity(0.30), // immersive dim
+      barrierColor: Colors.black.withValues(alpha: 0.30), // immersive dim
       barrierDismissible: false,
       builder: (_) {
         return PopScope(
@@ -115,26 +115,26 @@ class RewardDimScreen {
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
                             colors: [
-                              glowColor.withOpacity(0.15),
+                              glowColor.withValues(alpha: 0.15),
                               Colors.white,
-                              glowColor.withOpacity(0.08),
+                              glowColor.withValues(alpha: 0.08),
                             ],
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                           ),
                           borderRadius: BorderRadius.circular(28),
                           border: Border.all(
-                            color: glowColor.withOpacity(0.6),
+                            color: glowColor.withValues(alpha: 0.6),
                             width: 3,
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: glowColor.withOpacity(0.7),
+                              color: glowColor.withValues(alpha: 0.7),
                               blurRadius: 30,
                               spreadRadius: 2,
                             ),
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.3),
+                              color: Colors.black.withValues(alpha: 0.3),
                               blurRadius: 20,
                               offset: const Offset(0, 8),
                             ),
@@ -149,7 +149,7 @@ class RewardDimScreen {
                                   borderRadius: BorderRadius.circular(28),
                                   gradient: LinearGradient(
                                     colors: [
-                                      Colors.white.withOpacity(0.35),
+                                      Colors.white.withValues(alpha: 0.35),
                                       Colors.transparent,
                                     ],
                                     begin: Alignment.topCenter,
@@ -179,7 +179,7 @@ class RewardDimScreen {
                                         shape: BoxShape.circle,
                                         gradient: RadialGradient(
                                           colors: [
-                                            glowColor.withOpacity(0.5),
+                                            glowColor.withValues(alpha: 0.5),
                                             Colors.transparent,
                                           ],
                                           radius: 0.8,
@@ -196,6 +196,7 @@ class RewardDimScreen {
                                 ),
                                 const SizedBox(height: 16),
                                 Text(
+                                  textAlign : TextAlign.center,
                                   label,
                                   style: TextStyle(
                                     fontSize: 22,
@@ -203,7 +204,7 @@ class RewardDimScreen {
                                     color: glowColor,
                                     shadows: [
                                       Shadow(
-                                        color: glowColor.withOpacity(0.8),
+                                        color: glowColor.withValues(alpha: 0.8),
                                         blurRadius: 12,
                                       )
                                     ],
@@ -211,6 +212,7 @@ class RewardDimScreen {
                                 ),
                                 const SizedBox(height: 10),
                                 Text(
+                                  textAlign :TextAlign.center,
                                   '+$amount',
                                   style: TextStyle(
                                     fontSize: 38,
@@ -218,7 +220,7 @@ class RewardDimScreen {
                                     color: Colors.black87,
                                     shadows: [
                                       Shadow(
-                                        color: Colors.black.withOpacity(0.5),
+                                        color: Colors.black.withValues(alpha: 0.5),
                                         blurRadius: 10,
                                         offset: Offset(2, 2),
                                       )
@@ -227,6 +229,7 @@ class RewardDimScreen {
                                 ),
                                 const SizedBox(height: 14),
                                 Text(
+                                  textAlign :TextAlign.center,
                                   tr(context).tapAnywhereToCollect,
                                   style: TextStyle(
                                     fontSize: 16,

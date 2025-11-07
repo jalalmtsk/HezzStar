@@ -221,7 +221,6 @@ class _EliminationEndPageState extends State<EliminationEndPage>
   }
 
   Widget _eliminationCard(int index, bool isWinner) {
-    final xpManager = Provider.of<ExperienceManager>(context, listen: false);
     final avatarPath = isWinner
         ? widget.winnerAvatar
         : 'assets/images/Skins/AvatarSkins/CardMaster/CardMaster${index % 6 + 1}.png';
