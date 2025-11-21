@@ -52,6 +52,7 @@ dependencies:
   font_awesome_flutter: ^10.9.1
   marquee: ^2.3.0
   in_app_purchase: ^3.2.3
+  flutter_native_splash: ^2.4.7
 
 dev_dependencies:
   flutter_test:
@@ -94,7 +95,6 @@ flutter:
     - assets/UI/Icons/
     - assets/UI/Icons/Gamification/
     - assets/UI/Icons/TabBars_Icons/
-    - assets/UI/Buttons/
     - assets/ImpoImages/
     - assets/images/Tutorials/
 
@@ -115,6 +115,12 @@ flutter:
     - assets/animations/Win/
     - assets/fonts/
 
+
+flutter_native_splash:
+  color: "#ffffff"
+  image: assets/ImpoImages/Jalnix_Logo.png
+  android: false
+  ios: true
 
 flutter_launcher_icons:
   android: true

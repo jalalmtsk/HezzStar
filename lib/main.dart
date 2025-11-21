@@ -9,7 +9,6 @@ import 'package:hezzstar/tools/ConnectivityManager/ConnectivityManager.dart';
 import 'package:hezzstar/tools/LifeCycleManager.dart';
 
 import 'ExperieneManager.dart';
-import 'MainScreenIndex.dart';
 import 'l10n/AmazighMaterialLocalizations.dart';
 import 'l10n/app_localizations.dart';
 

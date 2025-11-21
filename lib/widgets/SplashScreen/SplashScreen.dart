@@ -89,9 +89,6 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
     );
   }
 
-
-
-
   Future<void> _runWithTimeout(String name, Future<void> Function() action) async {
     debugPrint("Starting $name...");
     try {
