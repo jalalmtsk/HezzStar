@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:hezzstar/tools/AudioManager/AudioManager.dart';
 import 'package:provider/provider.dart';
-import '../../../../main.dart';
-import '../../../Models/Deck.dart';
-import '../../../Tools/TextUI/CardReamingTextUi.dart';
-import '../../../Tools/TextUI/MinimalBageText.dart';
+
+import '../../../../../main.dart';
+import '../../../../Tools/TextUI/CardReamingTextUi.dart';
+import '../../../../Tools/TextUI/MinimalBageText.dart';
 
 class DeckCenterPanel extends StatefulWidget {
   final double top;

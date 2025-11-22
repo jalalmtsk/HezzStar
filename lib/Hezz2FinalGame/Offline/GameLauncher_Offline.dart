@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:hezzstar/MainScreenIndex.dart';
 import 'package:provider/provider.dart';
 import 'package:hezzstar/ExperieneManager.dart';
-import 'package:hezzstar/Hezz2FinalGame/Screen/GameScreen.dart';
 import 'package:hezzstar/Hezz2FinalGame/Models/GameCardEnums.dart';
 import 'package:hezzstar/widgets/userStatut/userStatus.dart';
 import '../../../tools/AudioManager/AudioManager.dart';
@@ -357,7 +356,7 @@ class _OfflineCardGameLauncherState extends State<OfflineCardGameLauncher>
                 audioManager.playEventSound("sandClick");
 
                 await OfflineLoadingPopup.show(context, durationSeconds: 3);
-
+/*
                 Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(
@@ -371,6 +370,8 @@ class _OfflineCardGameLauncherState extends State<OfflineCardGameLauncher>
                     ),
                   ),
                 );
+
+ */
               },
               child: Container(
                 height: 60,

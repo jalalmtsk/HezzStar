@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hezzstar/Hezz2FinalGame/Models/GameCardEnums.dart';
 
-import '../../../Hezz2FinalGame/Models/Cards.dart';
+import '../../../Models/Cards.dart';
 import '../endGameScreen.dart';
 import 'EliminationEndScreen.dart';
 import 'PlayTowinScreen.dart';

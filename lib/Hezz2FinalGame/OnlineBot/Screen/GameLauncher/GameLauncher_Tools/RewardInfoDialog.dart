@@ -2,8 +2,10 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:hezzstar/ExperieneManager.dart';
 import 'package:provider/provider.dart';
-import '../../../../main.dart';
-import '../../../Models/GameCardEnums.dart';
+
+import '../../../../../main.dart';
+import '../../../../Models/GameCardEnums.dart';
+
 
 class RewardDialog extends StatelessWidget {
   final int botCount;

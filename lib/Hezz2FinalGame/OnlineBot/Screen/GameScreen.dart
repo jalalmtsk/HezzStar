@@ -13,23 +13,23 @@ import 'package:hezzstar/tools/AudioManager/AudioManager.dart';
 import 'package:hezzstar/widgets/userStatut/SimpleUserStatusBar.dart';
 import 'package:provider/provider.dart';
 
-import '../../main.dart';
-import '../../tools/ConnectivityManager/ConnectivityManager.dart';
-import '../../widgets/LoadingScreen/LoadinScreenDim.dart';
-import '../Models/Cards.dart';
-import '../Models/Deck.dart';
-import '../Bot/BotStack.dart';
-import '../Tools/Banner/CenterBanner.dart';
-import '../Tools/Dialog/BotPlayerInfoDialog.dart';
-import '../Tools/Dialog/MenuOverlayButton.dart';
-import '../Tools/Dialog/PlayerSelectorAnimation.dart';
-import '../Tools/Dialog/SuitSelectionDialog.dart';
-
+import '../../../../../main.dart';
+import '../../../../../tools/ConnectivityManager/ConnectivityManager.dart';
+import '../../../../../widgets/LoadingScreen/LoadinScreenDim.dart';
+import '../../Bot/BotStack.dart';
+import '../../Models/Cards.dart';
+import '../../Models/Deck.dart';
 import 'GameScreen/GameScreen__Tools/DeckCenteredPanel.dart';
 import 'GameScreen/GameScreen__Tools/PlayerActionPanel.dart';
 import 'GameScreen/GameScreen__Tools/RoundCompleteOverlay_Elimination.dart';
 import 'GameScreen/GameScreen__Tools/TableBackground.dart';
 import 'endGameScreen.dart';
+import '../../Tools/Banner/CenterBanner.dart';
+import '../../Tools/Dialog/BotPlayerInfoDialog.dart';
+import '../../Tools/Dialog/MenuOverlayButton.dart';
+import '../../Tools/Dialog/PlayerSelectorAnimation.dart';
+import '../../Tools/Dialog/SuitSelectionDialog.dart';
+
 
 class GameScreen extends StatefulWidget {
   final int startHandSize;
@@ -247,11 +247,11 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
 
     if(widget.mode == GameMode.online) {
       await PlayerSelector(
-      context: context,
-      botCount: widget.botCount,
-      eliminatedPlayers: eliminatedPlayers,
-      onPlayerSelected: (selectedPlayer) => currentPlayer = selectedPlayer,
-    ).animateSelection();
+        context: context,
+        botCount: widget.botCount,
+        eliminatedPlayers: eliminatedPlayers,
+        onPlayerSelected: (selectedPlayer) => currentPlayer = selectedPlayer,
+      ).animateSelection();
     }
 
     await _precacheAssets(context);
@@ -466,7 +466,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
           left: pos.dx - halfW,
           top: pos.dy - halfH,
           child: Opacity(opacity: opacity,
-          child: child),
+              child: child),
         );
       },
     );
@@ -767,7 +767,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
           final botPos = _cardStartForPlayer(bot, hands[bot].length - 1);
           if (start != null && botPos != null) {
             await _animateMoveFaceDown(
-              d, start, botPos);
+                d, start, botPos);
           }
           await Future.delayed(const Duration(milliseconds: 160));
         }
@@ -802,7 +802,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       final botPos = _cardStartForPlayer(bot, hands[bot].length - 1);
       if (start != null && botPos != null) {
         await _animateMoveFaceDown(
-          d, start, botPos);
+            d, start, botPos);
       }
 
       setState(() {
@@ -1252,13 +1252,13 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
 
                                     if(widget.mode == GameMode.online){
                                       BotDetailsPopup.show(
-                                    context, 2, xpManager, hands, eliminatedPlayers, qualifiedPlayers, currentPlayer,
-                                  );
+                                        context, 2, xpManager, hands, eliminatedPlayers, qualifiedPlayers, currentPlayer,
+                                      );
                                     }else{
                                       OfflineBotPopup.show(context, "assets/images/Skins/AvatarSkins/DefaultUser.png");
 
                                     };
-                                    },
+                                  },
                                   child: PlayerCard(
                                     bot: 2,
                                     vertical: false,
@@ -1277,8 +1277,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                                   onTap: () {
 
                                     if(widget.mode == GameMode.online){BotDetailsPopup.show(
-                                    context, 3,xpManager, hands, eliminatedPlayers, qualifiedPlayers, currentPlayer,
-                                  );
+                                      context, 3,xpManager, hands, eliminatedPlayers, qualifiedPlayers, currentPlayer,
+                                    );
                                     }else{
                                       OfflineBotPopup.show(context, "assets/images/Skins/AvatarSkins/DefaultUser.png");
 
@@ -1311,12 +1311,12 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                             onTap: () {
                               if(widget.mode == GameMode.online) {
                                 BotDetailsPopup.show(
-                              context, 1,xpManager, hands, eliminatedPlayers, qualifiedPlayers, currentPlayer);
+                                    context, 1,xpManager, hands, eliminatedPlayers, qualifiedPlayers, currentPlayer);
                               }
                               else{
                                 OfflineBotPopup.show(context, "assets/images/Skins/AvatarSkins/DefaultUser.png");
                               }
-      },
+                            },
                             child: PlayerCard(
                               bot: 1,
                               vertical: true,
@@ -1340,13 +1340,13 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                             onTap: () {
                               if(widget.mode == GameMode.online){
                                 BotDetailsPopup.show(
-                              context, 4,xpManager, hands, eliminatedPlayers, qualifiedPlayers, currentPlayer,
-                            );
+                                  context, 4,xpManager, hands, eliminatedPlayers, qualifiedPlayers, currentPlayer,
+                                );
                               }
-                               else{
-                          OfflineBotPopup.show(context, "assets/images/Skins/AvatarSkins/DefaultUser.png");
-                          }
-                               },
+                              else{
+                                OfflineBotPopup.show(context, "assets/images/Skins/AvatarSkins/DefaultUser.png");
+                              }
+                            },
                             child: PlayerCard(
                               bot: 4,
                               vertical: true,

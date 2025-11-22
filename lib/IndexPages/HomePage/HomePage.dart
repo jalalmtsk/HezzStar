@@ -4,11 +4,15 @@ import 'package:lottie/lottie.dart';
 
 import 'package:provider/provider.dart';
 
+import '../../FirebaseServiceManagement.dart';
 import '../../Hezz2FinalGame/Models/GameCardEnums.dart';
 import '../../Hezz2FinalGame/Offline/GameLauncher_Offline.dart';
-import '../../Hezz2FinalGame/Screen/GameLauncher/CardGameLauncher.dart';
+import '../../Hezz2FinalGame/OnlineBot/Screen/GameLauncher/CardGameLauncher.dart';
+import '../../Authentification/Auth_GameInvitation/LobbyScreen.dart';
 import '../../Manager/HelperClass/FlyingRewardManager.dart';
 import '../../Manager/HelperClass/RewardDimScreen.dart';
+import '../../Authentification/Auth_GameInvitation/MultiplayerMenyScreen.dart';
+import '../../Authentification/Auth_GameInvitation/OnlineGameScreen.dart';
 import '../../main.dart';
 import '../../tools/AdsManager/AdsGameButton.dart';
 import '../../tools/AudioManager/AudioManager.dart';
@@ -156,8 +160,17 @@ const SizedBox(height: 80,),
                   Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
 
-                      IconButton(onPressed: (){
-                  /*      xpManager.addGold(10);
+                      IconButton(onPressed: ()async {
+
+
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => MultiplayerMenuScreen(),
+                          ),
+                        );
+
+                        /*      xpManager.addGold(10);
                        xpManager.addExperience(
                               10,              // XP amount
                               context: context, // needed for dimmed reward screen
@@ -171,6 +184,14 @@ const SizedBox(height: 80,),
                           width: 60,
                           "assets/UI/Icons/Locked_Icon.png")),
 
+                      ElevatedButton(
+                        onPressed: () async {
+                          await Provider.of<ExperienceManager>(context, listen: false).addGold(-100);
+                          print("Gold added and should be saved to Firestore");
+                        },
+                        child: Text("Tes Save"),
+                      ),
+
                       Stack(
                         alignment: Alignment.center,
                         children: [
@@ -182,6 +203,15 @@ const SizedBox(height: 80,),
                               height: 80,
                               repeat: true,
                             ),
+
+                          ElevatedButton(
+                            onPressed: () async {
+                              await Provider.of<ExperienceManager>(context, listen: false).addGold(100);
+                              print("Gold added and should be saved to Firestore");
+                            },
+                            child: Text("Test Firestore Save"),
+                          ),
+
 
                           // Task icon changes depending on claimable state
                           GestureDetector(
@@ -417,7 +447,7 @@ const SizedBox(height: 80,),
                               const SizedBox(width: 4),
                               Text(
                                 isOfflineMode
-                                    ? "Offline"
+                                    ? tr(context).modeOffline
                                     : "${botCount + 1} ${tr(context).players}",
                                 style: const TextStyle(
                                   color: Colors.white70,

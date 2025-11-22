@@ -5,15 +5,16 @@ import 'package:flutter/material.dart';
 import 'package:hezzstar/MainScreenIndex.dart';
 import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
-import 'package:hezzstar/Hezz2FinalGame/Screen/GameScreen.dart';
 import 'package:hezzstar/Hezz2FinalGame/Models/GameCardEnums.dart';
 import 'package:hezzstar/widgets/userStatut/userStatus.dart';
-import '../../../ExperieneManager.dart';
-import '../../../Manager/HelperClass/FlyingSpending/FlyingSpendingManager.dart';
-import '../../../main.dart';
-import '../../../tools/AudioManager/AudioManager.dart';
-import '../../../tools/ConnectivityManager/ConnectivityManager.dart';
-import '../../Bot/BotStack.dart';
+import '../../../../ExperieneManager.dart';
+import '../../../../Manager/HelperClass/FlyingSpending/FlyingSpendingManager.dart';
+import '../../../../main.dart';
+import '../../../../tools/AudioManager/AudioManager.dart';
+import '../../../../tools/ConnectivityManager/ConnectivityManager.dart';
+import '../../../Bot/BotStack.dart';
+
+import '../GameScreen.dart';
 import 'GameLauncher_Tools/AnmatedCard_GameLauncher.dart';
 import 'GameLauncher_Tools/RewardInfoDialog.dart';
 import 'GameLauncher_Tools/RewardinfoButton.dart';
@@ -347,7 +348,7 @@ class _CardGameLauncherState extends State<CardGameLauncher>
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-             Text(
+            Text(
               "🎴 ${tr(context).lobby}",
               style: TextStyle(
                 fontSize: 26,
@@ -535,9 +536,9 @@ class _CardGameLauncherState extends State<CardGameLauncher>
                             key: ValueKey('card_$handSize\_$index'),
                             width: cardWidth,
                             height: cardHeight,
-                              backImagePath: xpManager.selectedCard != null
-                                  ? xpManager.selectedCard!
-                                  :  "assets/images/cards/backCard.png"  ,
+                            backImagePath: xpManager.selectedCard != null
+                                ? xpManager.selectedCard!
+                                :  "assets/images/cards/backCard.png"  ,
                             frontBuilder: (ctx) => _cardFrontPreview(ctx, index, cardWidth, cardHeight),
                             accent: primaryAccent,
                           ),
@@ -832,7 +833,7 @@ class _CardGameLauncherState extends State<CardGameLauncher>
                           const Icon(Icons.warning_amber_rounded,
                               color: Colors.amber, size: 50),
                           const SizedBox(height: 10),
-                           Text(
+                          Text(
                             tr(context).notEnoughGold ,
                             style: TextStyle(
                                 fontSize: 20,
@@ -840,7 +841,7 @@ class _CardGameLauncherState extends State<CardGameLauncher>
                                 color: Colors.white),
                           ),
                           const SizedBox(height: 8),
-                           Text(
+                          Text(
                             tr(context).earnOrBuyGold,
                             style: TextStyle(color: Colors.white70),
                           ),

@@ -1,3 +1,4 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -9,6 +10,8 @@ import 'package:hezzstar/tools/ConnectivityManager/ConnectivityManager.dart';
 import 'package:hezzstar/tools/LifeCycleManager.dart';
 
 import 'ExperieneManager.dart';
+import 'FirebaseServiceManagement.dart';
+import 'firebase_options.dart';
 import 'l10n/AmazighMaterialLocalizations.dart';
 import 'l10n/app_localizations.dart';
 
@@ -24,13 +27,16 @@ void main() async {
   ]);
 
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: []);
-
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => ExperienceManager()),
         ChangeNotifierProvider(create: (_) => AudioManager()),
         ChangeNotifierProvider(create: (_) => ConnectivityService()),
+        Provider(create: (_) => FirebaseGameService()), // Add this
       ],
       child: AppLifecycleManager(
         child: MyApp(),

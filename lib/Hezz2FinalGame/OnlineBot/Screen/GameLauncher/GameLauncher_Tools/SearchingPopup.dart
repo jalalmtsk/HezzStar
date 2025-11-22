@@ -3,11 +3,12 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
-import '../../../../MainScreenIndex.dart';
-import '../../../../main.dart';
-import '../../../../tools/AudioManager/AudioManager.dart';
-import '../../../../tools/ConnectivityManager/ConnectivityManager.dart';
-import '../../../Models/GameCardEnums.dart';
+
+import '../../../../../MainScreenIndex.dart';
+import '../../../../../main.dart';
+import '../../../../../tools/AudioManager/AudioManager.dart';
+import '../../../../../tools/ConnectivityManager/ConnectivityManager.dart';
+import '../../../../Models/GameCardEnums.dart';
 
 class SearchingPopup {
   static Future<void> show(

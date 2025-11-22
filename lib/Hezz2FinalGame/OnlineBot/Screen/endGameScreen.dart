@@ -6,11 +6,11 @@ import 'package:hezzstar/MainScreenIndex.dart';
 import 'package:hezzstar/main.dart';
 import 'package:hezzstar/widgets/userStatut/userStatus.dart';
 import 'package:provider/provider.dart';
-import '../../ExperieneManager.dart';
+import '../../../ExperieneManager.dart';
+import '../../../Manager/HelperClass/FlyingRewardManager.dart';
+import '../../../Manager/HelperClass/RewardDimScreen.dart';
 import 'package:hezzstar/Hezz2FinalGame/Models/Cards.dart';
 import 'package:hezzstar/Hezz2FinalGame/Models/GameCardEnums.dart';
-import '../../Manager/HelperClass/FlyingRewardManager.dart';
-import '../../Manager/HelperClass/RewardDimScreen.dart';
 
 
 class EndGameScreen extends StatefulWidget {

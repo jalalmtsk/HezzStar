@@ -3,11 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:hezzstar/MainScreenIndex.dart';
 import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
-import '../../../ExperieneManager.dart';
-import '../../../Manager/HelperClass/FlyingRewardManager.dart';
-import '../../../Manager/HelperClass/RewardDimScreen.dart';
-import '../../../widgets/userStatut/userStatus.dart';
-import '../../../Hezz2FinalGame/Models/Cards.dart';
+
+import '../../../../ExperieneManager.dart';
+import '../../../../Manager/HelperClass/FlyingRewardManager.dart';
+import '../../../../Manager/HelperClass/RewardDimScreen.dart';
+import '../../../../widgets/userStatut/userStatus.dart';
+import '../../../Models/Cards.dart';
 
 class EliminationEndPage extends StatefulWidget {
   final List<List<PlayingCard>> hands;

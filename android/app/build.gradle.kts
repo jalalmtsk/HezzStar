@@ -13,6 +13,7 @@ plugins {
     id("com.android.application")
     id("kotlin-android")
     id("dev.flutter.flutter-gradle-plugin")
+    id("com.google.gms.google-services") // Apply here
 }
 
 android {
@@ -49,11 +50,23 @@ android {
     buildTypes {
         getByName("release") {
             signingConfig = signingConfigs.getByName("release")
-            isMinifyEnabled = false       // enable code shrinking
-            isShrinkResources = false     // enable resource shrinking
-
+            isMinifyEnabled = false
+            isShrinkResources = false
         }
     }
+}
+
+repositories {
+    google()
+    mavenCentral()
+}
+
+dependencies {
+    // Firebase BoM
+    implementation("com.google.firebase:firebase-firestore-ktx:24.7.1")
+    // Firebase products
+    implementation("com.google.firebase:firebase-analytics")
+    implementation("com.google.firebase:firebase-firestore-ktx")
 }
 
 flutter {
